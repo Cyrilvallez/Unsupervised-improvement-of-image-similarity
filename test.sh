@@ -8,7 +8,7 @@
 #SBATCH --mem=32000
 #SBATCH --partition=nodes
 #SBATCH --gres=gpu:1
-#SBATCH --chdir=/cluster/raid/home/cyril.vallez/Project
+#SBATCH --chdir=/cluster/raid/home/cyril.vallez/Project2
 
 # Verify working directory
 echo $(pwd)
