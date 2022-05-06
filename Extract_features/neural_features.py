@@ -323,7 +323,7 @@ def extract_features(model, dataset, batch_size=256):
         names = np.expand_dims(np.array(names), axis=1)
 
         # First column is the identifier of the image
-        feats = np.concatenate((names,features), axis=1)
+        feats = np.concatenate((names,feats), axis=1)
         
         try:
             features = np.vstack((features, feats))
