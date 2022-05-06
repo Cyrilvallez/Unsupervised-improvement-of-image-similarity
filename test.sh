@@ -25,6 +25,6 @@ eval "$(conda shell.bash hook)"
 # Activate (local) env
 conda activate faiss
 
-python3 test.py 
+python3 Extract_features/neural_features.py
 
 conda deactivate

@@ -336,7 +336,7 @@ def extract_and_save_features(model, dataset, filename, batch_size=256):
 if __name__ == "__main__":
     
     model_name = 'SimCLR v2 ResNet50 2x'
-    dataset_path = '/Users/cyrilvallez/Desktop/images0/0/'
+    dataset_path = 'Datasets/'
     
     model = MODEL_LOADER[model_name](device='cuda')
     transforms = MODEL_TRANSFORMS[model_name]
