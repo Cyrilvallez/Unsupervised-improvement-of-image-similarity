@@ -302,7 +302,37 @@ MODEL_TRANSFORMS = {
     
     }
 
+def extract_features(model, dataset, batch_size=256):
     
+    # Get device of model
+    device = next(model.parameters()).device
+    
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
+                            num_workers=4, pin_memory=True)
+    
+    # 
+    features = None
+    
+    for images, names in tqdm(dataloader):
+        
+        images = images.to(device)
+        
+        with torch.no_grad():
+            feats = model(images).cpu().numpy()
+            
+        names = np.expand_dims(np.array(names), axis=1)
+
+        # First column is the identifier of the image
+        feats = np.concatenate((names,features), axis=1)
+        
+        try:
+            features = np.vstack((features, feats))
+        # It is not defined in 1st iteration
+        except NameError:
+            features = feats
+    
+    return features
+           
 
 def extract_and_save_features(model, dataset, filename, batch_size=256):
     
