@@ -310,9 +310,6 @@ def extract_features(model, dataset, batch_size=256):
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
                             num_workers=4, pin_memory=True)
     
-    # 
-    features = None
-    
     for images, names in tqdm(dataloader):
         
         images = images.to(device)

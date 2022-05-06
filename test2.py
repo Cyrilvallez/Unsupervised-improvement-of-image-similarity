@@ -24,3 +24,4 @@ nf.extract_features(model, dataset, batch_size=512)
 dt = time.time() -t0
 
 print(f'Time needed : {dt:.3f} s')
+
