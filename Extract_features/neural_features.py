@@ -338,7 +338,7 @@ if __name__ == "__main__":
     model_name = 'SimCLR v2 ResNet50 2x'
     dataset_path = '/Users/cyrilvallez/Desktop/images0/0/'
     
-    model = MODEL_LOADER[model_name](device='cpu')
+    model = MODEL_LOADER[model_name](device='cuda')
     transforms = MODEL_TRANSFORMS[model_name]
     
     dataset = ImageDataset(dataset_path, transforms)
