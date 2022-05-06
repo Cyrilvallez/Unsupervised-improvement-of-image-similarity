@@ -306,12 +306,17 @@ MODEL_TRANSFORMS = {
 
 def extract_and_save_features(model, dataset, filename, batch_size=256):
     
+    # Get device of model
+    device = next(model.parameters()).device
+    
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
                             num_workers=4, pin_memory=True)
     
     file = open(filename, 'w+')
     
     for images, names in tqdm(dataloader):
+        
+        images = images.to(device)
         
         with torch.no_grad():
             features = model(images).numpy()
@@ -330,19 +335,3 @@ def extract_and_save_features(model, dataset, filename, batch_size=256):
             
     file.close()
     
-    
-    
-
-
-if __name__ == "__main__":
-    
-    model_name = 'SimCLR v2 ResNet50 2x'
-    dataset_path = 'Datasets/'
-    
-    model = MODEL_LOADER[model_name](device='cuda')
-    transforms = MODEL_TRANSFORMS[model_name]
-    
-    dataset = ImageDataset(dataset_path, transforms)
-    
-    filename = 'test.txt'
-    extract_and_save_features(model, dataset, filename=filename, batch_size=512)
