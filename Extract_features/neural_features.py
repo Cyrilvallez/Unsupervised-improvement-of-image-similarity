@@ -313,7 +313,8 @@ def extract_and_save_features(model, dataset, filename, batch_size=256):
     
     for images, names in tqdm(dataloader):
         
-        features = model(images).numpy()
+        with torch.no_grad():
+            features = model(images).numpy()
         M = len(features)
         N = len(features[0])
         
