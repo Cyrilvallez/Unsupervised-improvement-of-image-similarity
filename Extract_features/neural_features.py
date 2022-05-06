@@ -319,7 +319,7 @@ def extract_and_save_features(model, dataset, filename, batch_size=256):
         images = images.to(device)
         
         with torch.no_grad():
-            features = model(images).numpy()
+            features = model(images).cpu().numpy()
         M = len(features)
         N = len(features[0])
         
