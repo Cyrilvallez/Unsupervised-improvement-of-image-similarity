@@ -32,9 +32,10 @@ import psutil
 model_name = 'SimCLR v2 ResNet50 2x'
 transforms = nf.MODEL_TRANSFORMS[model_name]
 
-dataset = datasets.ImageDataset('Datasets/Flickr500K/0', transforms=transforms)
+dataset = datasets.FlickrDataset(transforms=transforms)
 
-dataloader = DataLoader(dataset, batch_size=1024, shuffle=False, drop_last=True)
+dataloader = DataLoader(dataset, batch_size=1024, shuffle=False, drop_last=True,
+                        num_workers=4, pin_memory=True)
 
 print(f'Before : ram {psutil.virtual_memory().used/1e9:.2f} Gb')
 
