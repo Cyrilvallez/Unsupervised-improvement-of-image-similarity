@@ -300,8 +300,7 @@ def extract_and_save_features(model, dataset, filename, batch_size=256):
     # Get device of model
     device = next(model.parameters()).device
     
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
-                            num_workers=3, pin_memory=True)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
     
     file = open(filename, 'w+')
     
