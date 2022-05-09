@@ -12,17 +12,17 @@ from Extract_features import datasets
 from tqdm import tqdm
 import psutil
 
-# model_name = 'SimCLR v2 ResNet50 2x'
+model_name = 'SimCLR v2 ResNet50 2x'
 
-# model = nf.MODEL_LOADER[model_name](device='cuda')
-# transforms = nf.MODEL_TRANSFORMS[model_name]
+model = nf.MODEL_LOADER[model_name](device='cuda')
+transforms = nf.MODEL_TRANSFORMS[model_name]
 
-# dataset = datasets.FlickrDataset(transforms=transforms)
+dataset = datasets.FlickrDataset(transforms=transforms)
 
-# nf.extract_features(model, dataset, batch_size=1024)
+nf.extract_features(model, dataset, batch_size=1024)
 
 #%%
-
+"""
 from Extract_features import neural_features as nf
 from Extract_features import datasets
 from torch.utils.data import DataLoader
@@ -44,7 +44,7 @@ i = 0
 for images, names in tqdm(dataloader):
     i += 1
     print(f'Iter {i} ram : {psutil.virtual_memory().used/1e9:.2f} Gb')
-        
+"""     
     
 
 

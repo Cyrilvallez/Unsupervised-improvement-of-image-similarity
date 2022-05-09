@@ -14,6 +14,7 @@ import torchvision.transforms as T
 import torchvision.models as models
 import numpy as np
 from tqdm import tqdm
+import psutil
 
 from Extract_features.SimCLRv1 import resnet_wider as SIMv1
 from Extract_features.SimCLRv2 import resnet as SIMv2
@@ -274,7 +275,13 @@ def extract_features(model, dataset, batch_size=256, workers=4):
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
                             num_workers=workers, pin_memory=True)
     
+    print(f'Before : ram {psutil.virtual_memory().used/1e9:.2f} Gb')
+    
+    i = 0
     for images, names in tqdm(dataloader):
+        
+        i += 1
+        print(f'Iter {i} ram : {psutil.virtual_memory().used/1e9:.2f} Gb')
         
         images = images.to(device)
         
