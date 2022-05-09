@@ -28,6 +28,7 @@ from Extract_features import datasets
 from torch.utils.data import DataLoader
 
 import psutil
+from tqdm import tqdm
 
 model_name = 'SimCLR v2 ResNet50 2x'
 transforms = nf.MODEL_TRANSFORMS[model_name]
@@ -40,7 +41,7 @@ dataloader = DataLoader(dataset, batch_size=1024, shuffle=False, drop_last=True,
 print(f'Before : ram {psutil.virtual_memory().used/1e9:.2f} Gb')
 
 i = 0
-for images, names in dataloader:
+for images, names in tqdm(dataloader):
     i += 1
     print(f'Iter {i} ram : {psutil.virtual_memory().used/1e9:.2f} Gb')
         
