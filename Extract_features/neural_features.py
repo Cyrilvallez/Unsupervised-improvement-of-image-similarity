@@ -271,8 +271,7 @@ def extract_features(model, dataset, batch_size=256):
     # Get device of model
     device = next(model.parameters()).device
     
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
-                            num_workers=4, pin_memory=True)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
     
     for images, names in tqdm(dataloader):
         
