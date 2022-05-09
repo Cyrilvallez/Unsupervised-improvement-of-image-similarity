@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=test
+#SBATCH --job-name=test_hypothesis
 #SBATCH --output=%x-%j.out
 #SBATCH --error=%x-%j.err
 #SBATCH --time=10-00:00:00

@@ -347,3 +347,36 @@ def extract_and_save_features(model, dataset, filename, batch_size=256, workers=
             
     file.close()
     
+    
+def extract_features_bad(model, dataset, batch_size=256):
+    
+    # Get device of model
+    device = next(model.parameters()).device
+    
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+    
+    print(f'Before : ram {psutil.virtual_memory().used/1e9:.2f} Gb', flush=True)
+
+    i = 0
+    for images, names in tqdm(dataloader):
+        
+        print(f'Iter {i} ram : {psutil.virtual_memory().used/1e9:.2f} Gb', flush=True)
+        i += 1
+        
+        images = images.to(device)
+        
+        with torch.no_grad():
+            feats = model(images).cpu().numpy()
+            
+        names = np.expand_dims(np.array(names), axis=1)
+
+        # First column is the identifier of the image
+        feats = np.concatenate((names,feats), axis=1)
+        
+        try:
+            features = np.vstack((features, feats))
+        # It is not defined in 1st iteration
+        except NameError:
+            features = feats
+            
+    return features
