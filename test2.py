@@ -16,7 +16,7 @@ transforms = nf.MODEL_TRANSFORMS[model_name]
 
 dataset = datasets.FlickrDataset(transforms=transforms)
 
-nf.extract_features(model, dataset, batch_size=2048)
+nf.extract_features(model, dataset, batch_size=1024)
 
 
 
