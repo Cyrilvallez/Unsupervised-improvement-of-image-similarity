@@ -18,5 +18,3 @@ dataset = datasets.FlickrDataset(transforms=transforms)
 
 nf.extract_features(model, dataset, batch_size=1024)
 
-
-

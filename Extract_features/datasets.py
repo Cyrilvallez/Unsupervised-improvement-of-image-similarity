@@ -31,11 +31,16 @@ class ImageDataset(Dataset):
             if dataset_path[-1] != '/':
                 dataset_path += '/'
             # Take files in folder without hidden files (e.g .DS_Store)
-            self.images = [dataset_path + file for file in os.listdir(dataset_path) \
-                          if not file.startswith('.')]
+            images = [dataset_path + file for file in os.listdir(dataset_path) \
+                      if not file.startswith('.')]
+                
+            # Conversion to numpy byte array is very IMPORTANT when using different
+            # workers in Dataloader to avoid memory problems (see issue 
+            # https://github.com/pytorch/pytorch/issues/13246#issuecomment-905703662)
+            self.images = np.array(images).astype(np.string_)
             
         elif type(dataset_path) == list:
-            self.images = dataset_path
+            self.images = np.array(dataset_path).astype(np.string_)
         
         self.transforms = transforms
 
@@ -43,14 +48,16 @@ class ImageDataset(Dataset):
         return len(self.images)
     
     def __getitem__(self, index):
-        image = Image.open(self.images[index]).convert('RGB')
+        # Decode the binary string to normal string
+        image_path = self.images[index].decode()
+        image = Image.open(image_path).convert('RGB')
         if self.transforms is not None:
             image = self.transforms(image)
         
         try:
-            name = self.images[index].rsplit('/', 1)[1]
+            name = image_path.rsplit('/', 1)[1]
         except IndexError:
-            name = self.images[index]
+            name = image_path
             
         # Removes the extension (name.jpg -> name)
         name = name.rsplit('.', 1)[0]
@@ -83,21 +90,26 @@ class FlickrDataset(Dataset):
         # Sort the images according the their number in the name
         imgs.sort(key=lambda x: int(x.rsplit('/', 1)[1].split('.', 1)[0]))
         
-        self.images = imgs
+        # Conversion to numpy byte array is very IMPORTANT when using different
+        # workers in Dataloader to avoid memory problems (see issue 
+        # https://github.com/pytorch/pytorch/issues/13246#issuecomment-905703662)
+        self.images = np.array(imgs).astype(np.string_)
         self.transforms = transforms
 
     def __len__(self):
         return len(self.images)
     
     def __getitem__(self, index):
-        image = Image.open(self.images[index]).convert('RGB')
+        # Decode the binary string to normal string
+        image_path = self.images[index].decode()
+        image = Image.open(image_path).convert('RGB')
         if self.transforms is not None:
             image = self.transforms(image)
         
         try:
-            name = self.images[index].rsplit('/', 1)[1]
+            name = image_path.rsplit('/', 1)[1]
         except IndexError:
-            name = self.images[index]
+            name = image_path
             
         # Removes the extension (name.jpg -> name)
         name = name.rsplit('.', 1)[0]
@@ -126,9 +138,16 @@ class ImageWithDistractorDataset(FlickrDataset):
             if dataset_path[-1] != '/':
                 dataset_path += '/'
             # Take files in folder without hidden files (e.g .DS_Store)
-            self.images += [dataset_path + file for file in os.listdir(dataset_path) \
+            new_images = [dataset_path + file for file in os.listdir(dataset_path) \
                           if not file.startswith('.')]
+                
+            # Conversion to numpy byte array is very IMPORTANT when using different
+            # workers in Dataloader to avoid memory problems (see issue 
+            # https://github.com/pytorch/pytorch/issues/13246#issuecomment-905703662)
+            new_images = np.array(new_images).astype(np.string_)
+            self.images = np.concatenate((self.images, new_images))
             
         elif type(dataset_path) == list:
-            self.images += dataset_path
+            dataset_path = np.array(dataset_path).astype(np.string_)
+            self.images = np.concatenate((self.images, dataset_path))
         

@@ -266,12 +266,13 @@ MODEL_TRANSFORMS = {
     
     }
 
-def extract_features(model, dataset, batch_size=256):
+def extract_features(model, dataset, batch_size=256, workers=4):
     
     # Get device of model
     device = next(model.parameters()).device
     
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
+                            num_workers=workers, pin_memory=True)
     
     for images, names in tqdm(dataloader):
         
@@ -294,12 +295,13 @@ def extract_features(model, dataset, batch_size=256):
     return features
            
 
-def extract_and_save_features(model, dataset, filename, batch_size=256):
+def extract_and_save_features(model, dataset, filename, batch_size=256, workers=4):
     
     # Get device of model
     device = next(model.parameters()).device
     
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
+                            num_workers=workers, pin_memory=True)
     
     file = open(filename, 'w+')
     
