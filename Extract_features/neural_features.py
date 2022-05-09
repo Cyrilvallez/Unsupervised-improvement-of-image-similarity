@@ -279,27 +279,39 @@ def extract_features(model, dataset, batch_size=256, workers=4):
     
     features = None
     
+    start = 0
     i = 0
     for images, names in tqdm(dataloader):
         
-        i += 1
         print(f'Iter {i} ram : {psutil.virtual_memory().used/1e9:.2f} Gb', flush=True)
+        i += 1
         
         images = images.to(device)
         
         with torch.no_grad():
             feats = model(images).cpu().numpy()
+        
+        if start==0:
+            features = np.empty((len(dataset), len(feats[0]) + 1))
             
-        names = np.expand_dims(np.array(names), axis=1)
+        N = len(names)
+            
+        # names = np.expand_dims(np.array(names), axis=1)
 
         # First column is the identifier of the image
-        feats = np.concatenate((names,feats), axis=1)
+        # feats = np.concatenate((names,feats), axis=1)
         
-        try:
-            features = np.vstack((features, feats))
+        # try:
+            # features = np.vstack((features, feats))
         # It is not defined in 1st iteration
-        except ValueError:
-            features = feats
+        # except ValueError:
+            # features = feats
+            
+        # First column is the identifier of the image
+        features[start:start+N, 1:] = feats
+        features[start:start+N, 0] = names
+        
+        start += N
     
     return features
            
