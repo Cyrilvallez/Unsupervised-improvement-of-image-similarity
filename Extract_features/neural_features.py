@@ -275,13 +275,13 @@ def extract_features(model, dataset, batch_size=256, workers=4):
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
                             num_workers=workers, pin_memory=True)
     
-    print(f'Before : ram {psutil.virtual_memory().used/1e9:.2f} Gb')
+    print(f'Before : ram {psutil.virtual_memory().available/1e9:.2f} Gb', flush=True)
     
     i = 0
     for images, names in tqdm(dataloader):
         
         i += 1
-        print(f'Iter {i} ram : {psutil.virtual_memory().used/1e9:.2f} Gb')
+        print(f'Iter {i} ram : {psutil.virtual_memory().available/1e9:.2f} Gb', flush=True)
         
         images = images.to(device)
         
