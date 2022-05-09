@@ -288,18 +288,18 @@ def extract_features(model, dataset, batch_size=256, workers=4):
         with torch.no_grad():
             feats = model(images).cpu().numpy()
             
-        names = np.expand_dims(np.array(names), axis=1)
+        # names = np.expand_dims(np.array(names), axis=1)
 
         # First column is the identifier of the image
-        feats = np.concatenate((names,feats), axis=1)
+        # feats = np.concatenate((names,feats), axis=1)
         
-        try:
-            features = np.vstack((features, feats))
+        # try:
+            # features = np.vstack((features, feats))
         # It is not defined in 1st iteration
-        except NameError:
-            features = feats
+        # except NameError:
+            # features = feats
     
-    return features
+    # return features
            
 
 def extract_and_save_features(model, dataset, filename, batch_size=256, workers=4):
