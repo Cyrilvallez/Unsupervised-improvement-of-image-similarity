@@ -272,8 +272,11 @@ def extract_features(model, dataset, batch_size=256, workers=4):
     # Get device of model
     device = next(model.parameters()).device
     
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
-                            num_workers=workers, pin_memory=True)
+    # dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
+                            # num_workers=workers, pin_memory=True)
+                            
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, 
+                            pin_memory=True)
     
     print(f'Before : ram {psutil.virtual_memory().used/1e9:.2f} Gb', flush=True)
     
