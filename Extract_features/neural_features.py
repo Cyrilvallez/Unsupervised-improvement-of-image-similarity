@@ -9,11 +9,10 @@ Created on Fri May  6 10:54:08 2022
 import os
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 import torchvision.transforms as T
 import torchvision.models as models
 import numpy as np
-from PIL import Image
 from tqdm import tqdm
 
 from Extract_features.SimCLRv1 import resnet_wider as SIMv1
@@ -21,41 +20,6 @@ from Extract_features.SimCLRv2 import resnet as SIMv2
 
 path = os.path.abspath(__file__)
 current_folder = os.path.dirname(path)
-
-class ImageDataset(Dataset):
-    """
-    Class representing a dataset of images.
-    """
-    
-    def __init__(self, path_to_imgs, transforms):
-        
-        if (type(path_to_imgs) == str or type(path_to_imgs) == np.str_):
-            # Take files in folder without hidden files (e.g .DS_Store)
-            imgs = [file for file in os.listdir(path_to_imgs) if not file.startswith('.')]
-            imgs.sort(key=lambda x: int(x.split('.', 1)[0]))
-            self.img_paths = [path_to_imgs + name for name in imgs]
-        elif type(path_to_imgs) == list:
-            self.img_paths = path_to_imgs
-        
-        self.transforms = transforms
-
-    def __len__(self):
-        return len(self.img_paths)
-    
-    def __getitem__(self, index):
-        image = Image.open(self.img_paths[index]).convert('RGB')
-        image = self.transforms(image)
-        
-        try:
-            name = self.img_paths[index].rsplit('/', 1)[1]
-        except IndexError:
-            name = self.img_paths[index]
-            
-        # Removes the extension (name.jpg -> name)
-        name = name.rsplit('.', 1)[0]
-            
-        return (image, name)
-    
     
 def load_inception_v3(device='cuda'):
     """
