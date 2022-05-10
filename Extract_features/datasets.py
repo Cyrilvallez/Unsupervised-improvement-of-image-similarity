@@ -102,7 +102,10 @@ class FlickrDataset(Dataset):
     def __getitem__(self, index):
         # Decode the binary string to normal string
         image_path = self.images[index].decode()
-        image = Image.open(image_path).convert('RGB')
+        try:
+            image = Image.open(image_path).convert('RGB')
+        except OSError:
+            print(f'Bad index {index}', flush=True)
         if self.transforms is not None:
             image = self.transforms(image)
         
