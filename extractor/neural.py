@@ -12,8 +12,8 @@ import torch.nn as nn
 import torchvision.transforms as T
 import torchvision.models as models
 
-from extract_features.SimCLRv1 import resnet_wider as SIMv1
-from extract_features.SimCLRv2 import resnet as SIMv2
+from extractor.SimCLRv1 import resnet_wider as SIMv1
+from extractor.SimCLRv2 import resnet as SIMv2
 
 path = os.path.abspath(__file__)
 current_folder = os.path.dirname(path)
