@@ -9,7 +9,15 @@ Created on Mon May  9 10:41:22 2022
 from torch.utils.data import Dataset
 import numpy as np
 import os
-from PIL import Image
+from PIL import Image, ImageFile
+
+# We set this to True because 4 images in the Flickr500K dataset are corrupted 
+# (this does not come from the download --> this was tested with different browsers
+# multiple times). They are numbers 59898, 104442, 107349 and 108460. One is almost 
+# completely lost (most image is grey), two are about half lost, and one has little
+# damage. We still keep them by loading the image parts we can.
+ImageFile.LOAD_TRUNCATED_IMAGES=True
+
 
 class ImageDataset(Dataset):
     """
@@ -59,9 +67,6 @@ class ImageDataset(Dataset):
         except IndexError:
             name = image_path
             
-        # Removes the extension (name.jpg -> name)
-        name = name.rsplit('.', 1)[0]
-            
         return (image, name)
     
 
@@ -102,10 +107,7 @@ class FlickrDataset(Dataset):
     def __getitem__(self, index):
         # Decode the binary string to normal string
         image_path = self.images[index].decode()
-        try:
-            image = Image.open(image_path).convert('RGB')
-        except OSError:
-            print(f'Bad index {index}', flush=True)
+        image = Image.open(image_path).convert('RGB')
         if self.transforms is not None:
             image = self.transforms(image)
         
@@ -113,9 +115,6 @@ class FlickrDataset(Dataset):
             name = image_path.rsplit('/', 1)[1]
         except IndexError:
             name = image_path
-            
-        # Removes the extension (name.jpg -> name)
-        name = name.rsplit('.', 1)[0]
             
         return (image, name)
     
@@ -153,14 +152,10 @@ class ImageWithDistractorDataset(FlickrDataset):
         elif type(dataset_path) == list:
             dataset_path = np.array(dataset_path).astype(np.string_)
             self.images = np.concatenate((self.images, dataset_path))
-        
-        
-        
-        
-        
-        
-        
-        
+            
+            
+            
+
 class FlickrDatasetBAD(Dataset):
     """
     Class representing the Flickr500K dataset of images.
@@ -186,6 +181,7 @@ class FlickrDatasetBAD(Dataset):
         # Sort the images according the their number in the name
         imgs.sort(key=lambda x: int(x.rsplit('/', 1)[1].split('.', 1)[0]))
         
+        
         self.images = imgs
         self.transforms = transforms
 
@@ -195,10 +191,7 @@ class FlickrDatasetBAD(Dataset):
     def __getitem__(self, index):
         # Decode the binary string to normal string
         image_path = self.images[index]
-        try:
-            image = Image.open(image_path).convert('RGB')
-        except OSError:
-            print(f'Bad index {index}', flush=True)
+        image = Image.open(image_path).convert('RGB')
         if self.transforms is not None:
             image = self.transforms(image)
         
@@ -206,8 +199,5 @@ class FlickrDatasetBAD(Dataset):
             name = image_path.rsplit('/', 1)[1]
         except IndexError:
             name = image_path
-            
-        # Removes the extension (name.jpg -> name)
-        name = name.rsplit('.', 1)[0]
             
         return (image, name)

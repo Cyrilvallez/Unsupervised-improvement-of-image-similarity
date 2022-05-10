@@ -292,13 +292,14 @@ def extract_features(model, dataset, batch_size=256, workers=4):
             feats = model(images).cpu().numpy()
         
         if start==0:
-            features = np.empty((len(dataset), len(feats[0]) + 1))
+            features = np.empty((len(dataset), len(feats[0])))
+            indices_to_names = np.empty(len(dataset), dtype=object)
             
         N = len(names)
             
         # First column is the identifier of the image
-        features[start:start+N, 1:] = feats
-        features[start:start+N, 0] = names
+        features[start:start+N, :] = feats
+        indices_to_names[start:start+N] = names
         
         start += N
     
