@@ -296,22 +296,22 @@ def extract_features(model, dataset, batch_size=256, workers=4, pin=True):
             
         N = len(names)
             
-        # names = np.expand_dims(np.array(names), axis=1)
+        names = np.expand_dims(np.array(names), axis=1)
 
         # First column is the identifier of the image
-        # feats = np.concatenate((names,feats), axis=1)
+        feats = np.concatenate((names,feats), axis=1)
         
-        # try:
-            # features = np.vstack((features, feats))
+        try:
+            features = np.vstack((features, feats))
         # It is not defined in 1st iteration
-        # except ValueError:
-            # features = feats
+        except ValueError:
+            features = feats
             
         # First column is the identifier of the image
-        features[start:start+N, 1:] = feats
-        features[start:start+N, 0] = names
+        # features[start:start+N, 1:] = feats
+        # features[start:start+N, 0] = names
         
-        start += N
+        # start += N
     
     return features
            
