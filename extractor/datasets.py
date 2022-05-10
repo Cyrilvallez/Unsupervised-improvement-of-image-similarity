@@ -154,4 +154,25 @@ class ImageWithDistractorDataset(FlickrDataset):
             self.images = np.concatenate((self.images, dataset_path))
             
             
-            
+def collate(batch):
+    """
+    Custom collate function to use with PyTorch dataloader
+
+    Parameters
+    ----------
+    batch : List of tuples 
+        Corresponds to a batch of examples from a dataset.
+
+    Returns
+    -------
+    Tuple
+        Tuple representing a full batch containing a tuple of PIL images and
+        other tuples of names.
+
+    """
+    
+    imgs, names = zip(*batch)
+    return (imgs, names)
+    
+    
+    

@@ -13,6 +13,7 @@ from tqdm import tqdm
 
 import extractor.neural as neural
 import extractor.perceptual as perceptual
+from extractor.perceptual import collate
 
 def extract_and_save_neural(model_name, dataset, dataset_and_model_name, batch_size=256,
                               workers=4, device='cuda'):
@@ -78,7 +79,7 @@ def extract_and_save_neural(model_name, dataset, dataset_and_model_name, batch_s
     
     
 def extract_and_save_perceptual(algorithm, dataset, dataset_and_algo_name,
-                                hash_size=8):
+                                hash_size=8, batch_size=2048, workers=8):
     """
     Compute and save hashes of a perceptual algorithm to file.
 
@@ -91,8 +92,12 @@ def extract_and_save_perceptual(algorithm, dataset, dataset_and_algo_name,
     dataset_and_algo_name : string
         Name of the dataset and algorithm used (for the filenames).
     hash_size : int
-    The hash size to use for the algorithm. Note that this is squared, thus giving
-    8 is equivalent to a hash length of 8**2=64. The default is 8.
+        The hash size to use for the algorithm. Note that this is squared, thus
+        giving 8 is equivalent to a hash length of 8**2=64. The default is 8.
+    batch_size : float, optional
+        The batch size for the dataloader. The default is 2048.
+    workers : int, optional
+        The number of workers for data loading. The default is 8.
     
     Returns
     -------
@@ -108,10 +113,17 @@ def extract_and_save_perceptual(algorithm, dataset, dataset_and_algo_name,
     features = np.empty((len(dataset), hash_size**2))
     indices_to_names = np.empty(len(dataset), dtype=object)
     
-    for i in tqdm(range(len(dataset))):
-        image, name = dataset[i]
-        features[i,:] = algorithm(image, hash_size=hash_size)
-        indices_to_names[i] = name
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
+                            num_workers=workers, collate_fn=collate)
+    
+    index = 0
+    
+    for images, names in tqdm(dataloader):
+    
+        for image, name in zip(images, names):
+            features[index,:] = algorithm(image, hash_size=hash_size)
+            indices_to_names[index] = name
+            index += 1
     
     np.save(dataset_and_algo_name + '_features.npy', features)
     np.save(dataset_and_algo_name + '_map_to_names.npy', indices_to_names)
