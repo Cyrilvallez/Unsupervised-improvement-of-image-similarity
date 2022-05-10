@@ -9,14 +9,11 @@ Created on Fri May  6 10:54:08 2022
 import os
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
 import torchvision.transforms as T
 import torchvision.models as models
-import numpy as np
-from tqdm import tqdm
 
-from Extract_features.SimCLRv1 import resnet_wider as SIMv1
-from Extract_features.SimCLRv2 import resnet as SIMv2
+from extract_features.SimCLRv1 import resnet_wider as SIMv1
+from extract_features.SimCLRv2 import resnet as SIMv2
 
 path = os.path.abspath(__file__)
 current_folder = os.path.dirname(path)
@@ -266,40 +263,4 @@ MODEL_TRANSFORMS = {
     
     }
 
-def extract_and_save_features(model, dataset, model_dataset_name, batch_size=256, workers=4):
-    
-    # Get device of model
-    device = next(model.parameters()).device
-    
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
-                            num_workers=workers, pin_memory=True)
-    
-    features = None
-    
-    start = 0
-
-    for images, names in tqdm(dataloader):
-        
-        images = images.to(device)
-        
-        with torch.no_grad():
-            feats = model(images).cpu().numpy()
-        
-        if start==0:
-            features = np.empty((len(dataset), len(feats[0])))
-            indices_to_names = np.empty(len(dataset), dtype=object)
-            
-        N = len(names)
-            
-        # First column is the identifier of the image
-        features[start:start+N, :] = feats
-        indices_to_names[start:start+N] = names
-        
-        start += N
-    
-    np.save(model_dataset_name + '_features.npy', features)
-    np.save(model_dataset_name + '_map_to_names.npy', indices_to_names)
            
-
-
-    

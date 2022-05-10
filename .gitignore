@@ -1,5 +1,5 @@
 **/.DS_Store
 **/__pycache__
-Extract_features/SimCLRv1
-Extract_features/SimCLRv2
+extractor/SimCLRv1
+extractor/SimCLRv2
 Datasets
