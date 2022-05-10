@@ -267,13 +267,13 @@ MODEL_TRANSFORMS = {
     
     }
 
-def extract_features(model, dataset, batch_size=256, workers=4, pin=True):
+def extract_features(model, dataset, batch_size=256, workers=4):
     
     # Get device of model
     device = next(model.parameters()).device
     
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
-                            num_workers=workers, pin_memory=pin)
+                            num_workers=workers, pin_memory=True)
     
     print(f'Before : ram {psutil.virtual_memory().used/1e9:.2f} Gb', flush=True)
     
@@ -296,22 +296,11 @@ def extract_features(model, dataset, batch_size=256, workers=4, pin=True):
             
         N = len(names)
             
-        names = np.expand_dims(np.array(names), axis=1)
-
         # First column is the identifier of the image
-        feats = np.concatenate((names,feats), axis=1)
+        features[start:start+N, 1:] = feats
+        features[start:start+N, 0] = names
         
-        try:
-            features = np.vstack((features, feats))
-        # It is not defined in 1st iteration
-        except ValueError:
-            features = feats
-            
-        # First column is the identifier of the image
-        # features[start:start+N, 1:] = feats
-        # features[start:start+N, 0] = names
-        
-        # start += N
+        start += N
     
     return features
            
