@@ -34,7 +34,7 @@ class ImageDataset(Dataset):
             images = [dataset_path + file for file in os.listdir(dataset_path) \
                       if not file.startswith('.')]
                 
-            # Conversion to numpy byte array is very IMPORTANT when using different
+            # Conversion to numpy byte array is important when using different
             # workers in Dataloader to avoid memory problems (see issue 
             # https://github.com/pytorch/pytorch/issues/13246#issuecomment-905703662)
             self.images = np.array(images).astype(np.string_)
@@ -90,7 +90,7 @@ class FlickrDataset(Dataset):
         # Sort the images according the their number in the name
         imgs.sort(key=lambda x: int(x.rsplit('/', 1)[1].split('.', 1)[0]))
         
-        # Conversion to numpy byte array is very IMPORTANT when using different
+        # Conversion to numpy byte array is important when using different
         # workers in Dataloader to avoid memory problems (see issue 
         # https://github.com/pytorch/pytorch/issues/13246#issuecomment-905703662)
         self.images = np.array(imgs).astype(np.string_)
@@ -141,7 +141,7 @@ class ImageWithDistractorDataset(FlickrDataset):
             new_images = [dataset_path + file for file in os.listdir(dataset_path) \
                           if not file.startswith('.')]
                 
-            # Conversion to numpy byte array is very IMPORTANT when using different
+            # Conversion to numpy byte array is important when using different
             # workers in Dataloader to avoid memory problems (see issue 
             # https://github.com/pytorch/pytorch/issues/13246#issuecomment-905703662)
             new_images = np.array(new_images).astype(np.string_)
