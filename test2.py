@@ -17,7 +17,7 @@ model_name = 'SimCLR v2 ResNet50 2x'
 model = nf.MODEL_LOADER[model_name](device='cuda')
 transforms = nf.MODEL_TRANSFORMS[model_name]
 
-dataset = datasets.FlickrDataset(transforms=transforms)
+dataset = datasets.FlickrDatasetBAD(transforms=transforms)
 
 nf.extract_features(model, dataset, batch_size=1024, workers=8)
 
