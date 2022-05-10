@@ -108,7 +108,7 @@ def extract_and_save_perceptual(algorithm, dataset, dataset_and_algo_name,
     features = np.empty((len(dataset), hash_size**2))
     indices_to_names = np.empty(len(dataset), dtype=object)
     
-    for i in range(len(dataset)):
+    for i in tqdm(range(len(dataset))):
         image, name = dataset[i]
         features[i,:] = algorithm(image, hash_size=hash_size)
         indices_to_names[i] = name
