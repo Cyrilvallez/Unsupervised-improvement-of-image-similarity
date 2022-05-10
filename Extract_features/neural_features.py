@@ -14,7 +14,6 @@ import torchvision.transforms as T
 import torchvision.models as models
 import numpy as np
 from tqdm import tqdm
-import psutil
 
 from Extract_features.SimCLRv1 import resnet_wider as SIMv1
 from Extract_features.SimCLRv2 import resnet as SIMv2
@@ -267,7 +266,7 @@ MODEL_TRANSFORMS = {
     
     }
 
-def extract_features(model, dataset, batch_size=256, workers=4):
+def extract_and_save_features(model, dataset, model_dataset_name, batch_size=256, workers=4):
     
     # Get device of model
     device = next(model.parameters()).device
@@ -275,16 +274,11 @@ def extract_features(model, dataset, batch_size=256, workers=4):
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
                             num_workers=workers, pin_memory=True)
     
-    print(f'Before : ram {psutil.virtual_memory().used/1e9:.2f} Gb', flush=True)
-    
     features = None
     
     start = 0
-    i = 0
+
     for images, names in tqdm(dataloader):
-        
-        print(f'Iter {i} ram : {psutil.virtual_memory().used/1e9:.2f} Gb', flush=True)
-        i += 1
         
         images = images.to(device)
         
@@ -303,37 +297,9 @@ def extract_features(model, dataset, batch_size=256, workers=4):
         
         start += N
     
-    return features
+    np.save(model_dataset_name + '_features.npy', features)
+    np.save(model_dataset_name + '_map_to_names.npy', indices_to_names)
            
 
-def extract_and_save_features(model, dataset, filename, batch_size=256, workers=4):
-    
-    # Get device of model
-    device = next(model.parameters()).device
-    
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
-                            num_workers=workers, pin_memory=True)
-    
-    file = open(filename, 'w+')
-    
-    for images, names in tqdm(dataloader):
-        
-        images = images.to(device)
-        
-        with torch.no_grad():
-            features = model(images).cpu().numpy()
-        M = len(features)
-        N = len(features[0])
-        
-        for i in range(M):
-            
-            file.write(f'{names[i]} ')
-            
-            for j in range(N):
-                
-                file.write(f'{features[i,j]:.18e} ')
-                
-            file.write(' \n')
-            
-    file.close()
+
     
