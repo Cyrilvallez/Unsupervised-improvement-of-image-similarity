@@ -13,7 +13,7 @@ from tqdm import tqdm
 
 import extractor.neural as neural
 import extractor.perceptual as perceptual
-from extractor.perceptual import collate
+from extractor.datasets import collate
 
 def extract_and_save_neural(model_name, dataset, dataset_and_model_name, batch_size=256,
                               workers=4, device='cuda'):
