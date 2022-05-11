@@ -105,9 +105,37 @@ def combine_features(method_name, dataset_name, other_dataset_name='Flickr500K')
     return features, mapping
 
 
-def mapping(neighbors, db_mapping, search_mapping):
+def recall(neighbors, db_mapping, search_mapping):
+    """
+    Compute the recall from the results of the search.
+
+    Parameters
+    ----------
+    neighbors : Numpy array
+        Array containing indices of closest match for each query image.
+    db_mapping : Numpy array
+        The mapping from indices to image name in the database.
+    search_mapping : Numpy array
+        The mapping from indices to image name in the queries.
+
+    Returns
+    -------
+    recall : Float
+        The recall value for the search.
+    correct : Numpy array
+        Array of correct/incorrect search for each query.
+
+    """
+    
+    search_identifiers = np.array([name.split('_', 1)[0] for name in search_mapping])
+    db_identifiers = np.array([name.rsplit('.', 1)[0] for name in db_mapping])
     
     shape = neighbors.shape
-    names = db_mapping[neighbors.flatten()].reshape(shape)
+    names = db_identifiers[neighbors.flatten()].reshape(shape)
     
+    search_identifiers = np.expand_dims(search_identifiers, axis=1)
     
+    correct = (names == search_mapping).sum(axis=1)
+    recall = correct.sum()/len(correct)
+    
+    return recall, correct
