@@ -111,8 +111,8 @@ def extract_and_save_neural(model_name, dataset, batch_size=256,
     
     dataset_and_model_name = dataset.name + '-' + '_'.join(model_name.split(' '))
     
-    np.save(dataset_and_model_name + '_features.npy', features)
-    np.save(dataset_and_model_name + '_map_to_names.npy', indices_to_names)
+    np.save('Features/' + dataset_and_model_name + '_features.npy', features)
+    np.save('Features/' + dataset_and_model_name + '_map_to_names.npy', indices_to_names)
     
     
     
@@ -203,7 +203,7 @@ def extract_and_save_perceptual(algorithm, dataset, dataset_and_algo_name,
     
     dataset_and_algo_name = dataset.name + '-' + '_'.join(algorithm.split(' '))
     
-    np.save(dataset_and_algo_name + '_features.npy', features)
-    np.save(dataset_and_algo_name + '_map_to_names.npy', indices_to_names)
+    np.save('Features/' + dataset_and_algo_name + '_features.npy', features)
+    np.save('Features/' + dataset_and_algo_name + '_map_to_names.npy', indices_to_names)
     
     

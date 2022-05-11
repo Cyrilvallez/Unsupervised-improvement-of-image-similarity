@@ -8,9 +8,10 @@ Created on Tue May 10 17:28:03 2022
 
 import faiss
 import numpy as np
+from helpers import utils
 
-features_path = 'Features/Flickr500K-SimCLR_v2_ResNet50_2x_features.npy'
-map_path = 'Features/Flickr500K-SimCLR_v2_ResNet50_2x_map_to_names.npy'
+method = 'SimCLR v2 ResNet50 2x'
+dataset = 'Kaggle_templates'
+dataset_retrieval = 'Kaggle_memes'
 
-features = np.load(features_path)
-mapping = np.load(map_path, allow_pickle=True)
+features, mapping = utils.combine_features(method, dataset)

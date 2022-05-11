@@ -50,3 +50,4 @@ x = np.dot(x0, R).astype('float32')
 xc = x - x.mean(0)
 cov = np.dot(xc.T, xc) / xc.shape[0]
 _ = pyplot.imshow(cov)
+

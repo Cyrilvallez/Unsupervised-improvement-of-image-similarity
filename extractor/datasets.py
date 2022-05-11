@@ -184,7 +184,24 @@ def collate(batch):
     
     imgs, names = zip(*batch)
     return (imgs, names)
+
     
+VALID_DATASET_NAMES = [
+    'Kaggle_templates',
+    'Kaggle_memes',
+    'BSDS500_original',
+    'BSDS500_attacks',
+    'Flickr500K',
+    ]
+
+DATASET_DIMS = {
+    'Kaggle_templates': 250,
+    'Kaggle_memes' : 43660,
+    'BSDS500_original' : 500,
+    'BSDS500_attacks' : 11600,
+    'Flickr500K': 500000,
+    }
+
     
 def create_dataset(dataset_name, transforms):
     """
@@ -209,12 +226,10 @@ def create_dataset(dataset_name, transforms):
         The desired dataset of images.
 
     """
+
     
-    VALID_NAMES = ['Kaggle_templates', 'Kaggle_memes', 'BSDS500_original',
-                   'BSDS500_attacks']
-    
-    if dataset_name not in VALID_NAMES:
-        raise ValueError('The dataset name must be one of {VALID_NAMES}.')
+    if dataset_name not in VALID_DATASET_NAMES:
+        raise ValueError('The dataset name must be one of {VALID_DATASET_NAMES}.')
     
     if dataset_name == 'Kaggle_templates':
         path1 = 'Datasets/Kaggle_memes/Templates_experimental/'
@@ -228,6 +243,8 @@ def create_dataset(dataset_name, transforms):
     elif dataset_name == 'BSDS500_attacks':
         path1 = 'Datasets/BSDS500/Experimental_attacks/'
         path2 = 'Datasets/BSDS500/Control_attacks/'
+    elif dataset_name == 'Flickr500K':
+        return FlickrDataset(transforms)
         
     imgs = [path1 + file for file in os.listdir(path1) if not file.startswith('.')]
     imgs += [path2 + file for file in os.listdir(path2) if not file.startswith('.')]
