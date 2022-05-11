@@ -28,11 +28,11 @@ index.add(features)
 
 t1 = time.time()
 
-print(f'Time for adding to index : {t0 - t1:.2f} s', flush=True)
+print(f'Time for adding to index : {t1 - t0:.2f} s', flush=True)
 
 k = 1
 D, I = index.search(features_search, k)
 
-dt = time.time() - t1
+t2 = time.time() 
 
-print(f'Time for search : {dt - t1:.2f} s', flush=True)
+print(f'Time for search : {t2 - t1:.2f} s', flush=True)
