@@ -107,4 +107,5 @@ def combine_features(method_name, dataset_name, other_dataset_name='Flickr500K')
 
 def mapping(neighbors, db_mapping, search_mapping):
     
-    
+    shape = neighbors.shape
+    names = db_mapping[neighbors.flatten()].reshape(shape)
