@@ -25,7 +25,8 @@ print(f'Time for loading data : {t1 - t0:.2f} s', flush=True)
 
 # res = faiss.StandardGpuResources()  # use a single GPU
 
-index = faiss.IndexFlat(features.shape[1], metric=faiss.METRIC_JensenShannon)
+index = faiss.IndexFlat(features.shape[1])
+index.metric = faiss.METRIC_JensenShannon
 # index = faiss.IndexFlatL2(features.shape[1])
 # index = faiss.index_cpu_to_gpu(res, 0, index)
 
