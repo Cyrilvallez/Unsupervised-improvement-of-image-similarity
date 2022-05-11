@@ -103,3 +103,8 @@ def combine_features(method_name, dataset_name, other_dataset_name='Flickr500K')
     features[N1:, :], mapping[N1:] = load_features(method_name, other_dataset_name)
     
     return features, mapping
+
+
+def mapping(neighbors, db_mapping, search_mapping):
+    
+    
