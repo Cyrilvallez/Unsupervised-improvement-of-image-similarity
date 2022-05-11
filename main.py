@@ -23,10 +23,11 @@ t1 = time.time()
 
 print(f'Time for loading data : {t1 - t0:.2f} s', flush=True)
 
-res = faiss.StandardGpuResources()  # use a single GPU
+# res = faiss.StandardGpuResources()  # use a single GPU
 
+# index = faiss.IndexFlat(features.shape[1], metric=faiss.METRIC_JensenShannon)
 index = faiss.IndexFlatL2(features.shape[1])
-index = faiss.index_cpu_to_gpu(res, 0, index)
+# index = faiss.index_cpu_to_gpu(res, 0, index)
 
 t2 = time.time()
 
@@ -44,3 +45,5 @@ D, I = index.search(features_search, k)
 t4 = time.time() 
 
 print(f'Time for search : {t4 - t3:.2f} s', flush=True)
+
+print(f'\nTotal time : {t4-t0:.2f} s')
