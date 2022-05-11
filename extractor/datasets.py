@@ -27,12 +27,14 @@ class ImageDataset(Dataset):
     ----------
     dataset_path : Str or list of str
         Path to find the images or list of such paths, representing the images.
+    name : str
+        A name for the dataset, detailing the images.
     transforms : Torch transforms
         Transforms to apply to each image. If not specified, transforms are
         not applied, and raw PIL image will be returned. The default is None.
     """
     
-    def __init__(self, dataset_path, transforms=None):
+    def __init__(self, dataset_path, name, transforms=None):
         
         if (type(dataset_path) == str or type(dataset_path) == np.str_):
             # Append last `/` if not present
@@ -50,6 +52,7 @@ class ImageDataset(Dataset):
         elif type(dataset_path) == list:
             self.images = np.array(dataset_path).astype(np.string_)
         
+        self.name = name
         self.transforms = transforms
 
     def __len__(self):
@@ -99,6 +102,7 @@ class FlickrDataset(Dataset):
         # workers in Dataloader to avoid memory problems (see issue 
         # https://github.com/pytorch/pytorch/issues/13246#issuecomment-905703662)
         self.images = np.array(imgs).astype(np.string_)
+        self.name = 'Flickr500K'
         self.transforms = transforms
 
     def __len__(self):
@@ -126,12 +130,17 @@ class ImageWithDistractorDataset(FlickrDataset):
     
     Parameters
     ----------
+    dataset_path : Str or list of str
+        Path to find the images or list of such paths, representing the images 
+        completing the Flickr dataset.
+    name : str
+        A name for the dataset completing the 500K flickr images.
     transforms : Torch transforms
         Transforms to apply to each image. If not specified, transforms are
         not applied, and raw PIL image will be returned. The default is None.
     """
     
-    def __init__(self, dataset_path, transforms=None):
+    def __init__(self, dataset_path, name, transforms=None):
         
         super().__init__(transforms)
         
@@ -152,6 +161,8 @@ class ImageWithDistractorDataset(FlickrDataset):
         elif type(dataset_path) == list:
             dataset_path = np.array(dataset_path).astype(np.string_)
             self.images = np.concatenate((self.images, dataset_path))
+            
+        self.name = name + '+500K'
             
             
 def collate(batch):
@@ -175,4 +186,50 @@ def collate(batch):
     return (imgs, names)
     
     
+def create_dataset(dataset_name, transforms):
+    """
+    Create a dataset from certain given string for easy access.
+
+    Parameters
+    ----------
+    dataset_name : string
+        Identifier of the dataset.
+    transforms : Torch transforms
+        Transforms to apply to each image. If not specified, transforms are
+        not applied, and raw PIL image will be returned. 
+
+    Raises
+    ------
+    ValueError
+        If `dataset_name` is invalid.
+
+    Returns
+    -------
+    ImageDataset
+        The desired dataset of images.
+
+    """
     
+    VALID_NAMES = ['Kaggle_templates', 'Kaggle_memes', 'BSDS500_original',
+                   'BSDS500_attacks']
+    
+    if dataset_name not in VALID_NAMES:
+        raise ValueError('The dataset name must be one of {VALID_NAMES}.')
+    
+    if dataset_name == 'Kaggle_templates':
+        path1 = 'Datasets/Kaggle_memes/Templates_experimental/'
+        path2 = 'Datasets/Kaggle_memes/Templates_control/'
+    elif dataset_name == 'Kaggle_memes':
+        path1 = 'Datasets/Kaggle_memes/Experimental/'
+        path2 = 'Datasets/Kaggle_memes/Control/'
+    elif dataset_name == 'BSDS500_original':
+        path1 = 'Datasets/BSDS500/Experimental/'
+        path2 = 'Datasets/BSDS500/Control/'
+    elif dataset_name == 'BSDS500_attacks':
+        path1 = 'Datasets/BSDS500/Experimental_attacks/'
+        path2 = 'Datasets/BSDS500/Control_attacks/'
+        
+    imgs = [path1 + file for file in os.listdir(path1) if not file.startswith('.')]
+    imgs += [path2 + file for file in os.listdir(path2) if not file.startswith('.')]
+    
+    return ImageDataset(imgs, dataset_name, transforms=transforms)
