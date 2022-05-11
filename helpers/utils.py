@@ -53,7 +53,7 @@ def load_features(method_name, dataset_name):
         
     path = 'Features/' + dataset_name + '-' + '_'.join(method_name.split(' '))
 
-    features = np.load(path + '_features.npy')
+    features = np.load(path + '_features.npy').astype('float32')
     mapping = np.load(path + '_map_to_names.npy', allow_pickle=True)
     
     return features, mapping
@@ -91,15 +91,15 @@ def combine_features(method_name, dataset_name, other_dataset_name='Flickr500K')
     
     # Initialize the big array to ensure to load directly data into it to avoid
     # very memory consuming copies
-    features = np.empty((N1 + N2, M))
+    features = np.empty((N1 + N2, M), dtype='float32')
     mapping = np.empty((N1 + N2), dtype=object)
     
     features[0:N1, :] = features1
-    mapping[0:N1, :] = mapping1
+    mapping[0:N1] = mapping1
     
     # In case it takes a lot of memory already at this point
     del features1, mapping1
     
-    features[N1:, :], mapping[N1:, :] = load_features(method_name, other_dataset_name)
+    features[N1:, :], mapping[N1:] = load_features(method_name, other_dataset_name)
     
     return features, mapping
