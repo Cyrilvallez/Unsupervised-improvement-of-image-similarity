@@ -127,6 +127,7 @@ def recall(neighbors, db_mapping, search_mapping):
 
     """
     
+    # Extract portions of names that should be similar in image names
     search_identifiers = np.array([name.split('_', 1)[0] for name in search_mapping])
     db_identifiers = np.array([name.rsplit('.', 1)[0] for name in db_mapping])
     

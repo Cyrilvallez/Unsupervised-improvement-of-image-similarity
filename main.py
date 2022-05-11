@@ -19,6 +19,9 @@ t0 = time.time()
 features_db, mapping_db = utils.combine_features(method, dataset)
 features_query, mapping_query = utils.load_features(method, dataset_retrieval)
 
+features_db = features_db[0:2000]
+mapping_query = mapping_query[0:2000]
+
 t1 = time.time()
 
 print(f'Time for loading data : {t1 - t0:.2f} s', flush=True)
