@@ -26,18 +26,18 @@ names = []
 
 res = faiss.StandardGpuResources()  # use a single GPU
 
-# index = faiss.IndexFlat(d)
-# index.metric_type = faiss.METRIC_JensenShannon
-# indices.append(faiss.index_cpu_to_gpu(res, 0, index))
-# names.append('JS') 
+index = faiss.IndexFlat(d)
+index.metric_type = faiss.METRIC_JensenShannon
+indices.append(faiss.index_cpu_to_gpu(res, 0, index))
+names.append('JS Flat') 
 indices.append(faiss.index_cpu_to_gpu(res, 0, faiss.IndexFlatIP(d)))
-names.append('cosine')
+names.append('cosine Flat')
 indices.append(faiss.index_cpu_to_gpu(res, 0, faiss.IndexFlatL2(d)))
-names.append('L2')
+names.append('L2 Flat')
 index = faiss.IndexFlat(d)
 index.metric_type = faiss.METRIC_L1
 indices.append(faiss.index_cpu_to_gpu(res, 0, index))
-names.append('L1')
+names.append('L1 Flat')
 
 recalls = []
 times = []

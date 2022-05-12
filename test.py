@@ -30,6 +30,8 @@ nlist = int(10*np.sqrt(features_db.shape[0]))
 index = faiss.IndexIVFFlat(coarse, d, nlist)
 index = faiss.index_cpu_to_gpu(res, 0, index)
 
+index.setNumProbes(100)
+
 t0 = time.time()
 
 index.train(features_db)
