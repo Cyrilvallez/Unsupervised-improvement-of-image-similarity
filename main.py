@@ -68,7 +68,7 @@ for i in tqdm(range(len(indices))):
     recall, _ = utils.recall(I, mapping_db, mapping_query)
     recalls.append(recall)
     
-    # Free memory
+    # Free memory while keeping list length consant
     indices[i] = 0
     del index
 
