@@ -71,13 +71,13 @@ for i in tqdm(range(len(indices))):
 plt.figure()
 for i in range(len(names)):
     if 'JS' in names[i]:
-        plt.scatter(recalls[i], times[i], color='red', marker='*', s=100)
+        plt.scatter(recalls[i], times[i], color='r', marker='*', s=100)
     elif 'cosine' in names[i]:
-        plt.scatter(recalls[i], times[i], color='blue', marker='o', s=100)
+        plt.scatter(recalls[i], times[i], color='b', marker='o', s=100)
     elif 'L2' in names[i]:
-        plt.scatter(recalls[i], times[i], color='green', marker='x', s=100)
+        plt.scatter(recalls[i], times[i], color='g', marker='x', s=100)
     elif 'L1' in names[i]:
-        plt.scatter(recalls[i], times[i], color='magenta', marker='s', s=100)
+        plt.scatter(recalls[i], times[i], color='m', marker='s', s=100)
 
 plt.xlabel('Recall@1')
 plt.ylabel('Search time [s]')

@@ -23,8 +23,7 @@ d = features_db.shape[1]
 
 res = faiss.StandardGpuResources()  
 
-index = faiss.IndexFlat(d)
-index.metric_type = faiss.METRIC_L1
+index = faiss.IndexFlatL2(d)
 coarse = faiss.index_cpu_to_gpu(res, 0, index)
 
 nlist = int(10*np.sqrt(features_db.shape[0]))
@@ -48,3 +47,5 @@ print(f'Searching time : {t2 - t1:.2f} s', flush=True)
 recall, _ = utils.recall(I, mapping_db, mapping_query)
 
 print(f'Recall : {recall:.2f}')
+
+
