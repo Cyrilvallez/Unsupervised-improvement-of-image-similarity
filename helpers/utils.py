@@ -140,3 +140,27 @@ def recall(neighbors, mapping_db, mapping_query):
     recall = correct.sum()/len(correct)
     
     return recall, correct
+
+
+def normalize(x, order=2):
+    """
+    Normalize each row of a matrix.
+
+    Parameters
+    ----------
+    x : Numpy array
+        The matrix to normalize.
+    order : float, optional
+        Order for normalization. The default is 2.
+
+    Returns
+    -------
+    The normalized vector.
+
+    """
+    
+    norm = np.linalg.norm(x, axis=1, ord=order)
+    # avoid division by 0
+    norm[norm == 0] = 1
+    
+    return x/np.expand_dims(norm, axis=1)

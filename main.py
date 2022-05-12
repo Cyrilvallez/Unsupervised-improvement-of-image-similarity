@@ -10,6 +10,7 @@ import faiss
 from helpers import utils
 import time
 import matplotlib.pyplot as plt
+import numpy as np
 
 method = 'SimCLR v2 ResNet50 2x'
 dataset = 'Kaggle_templates'
@@ -55,8 +56,8 @@ for i in range(len(indices)):
     t0 = time.time()
     
     if 'cosine' in names[i]:
-        features1 = faiss.normalize_L2(features_db)
-        features2 = faiss.normalize_L2(features_query)
+        features1 = utils.normalize(features_db)
+        features2 = utils.normalize(features_query)
         index.add(features1)
         D, I = index.search(features2, k)
     
