@@ -9,47 +9,103 @@ Created on Tue May 10 17:28:03 2022
 import faiss
 from helpers import utils
 import time
+import matplotlib.pyplot as plt
 
 method = 'SimCLR v2 ResNet50 2x'
 dataset = 'Kaggle_templates'
 dataset_retrieval = 'Kaggle_memes'
 
-t0 = time.time()
-
 features_db, mapping_db = utils.combine_features(method, dataset)
 features_query, mapping_query = utils.load_features(method, dataset_retrieval)
 
-t1 = time.time()
+d = features_db.shape[1]
 
-print(f'Time for loading data : {t1 - t0:.2f} s', flush=True)
+indices = []
+names = []
 
-# res = faiss.StandardGpuResources()  # use a single GPU
+res = faiss.StandardGpuResources()  # use a single GPU
 
-index = faiss.IndexFlat(features_db.shape[1])
+index = faiss.IndexFlat(d)
 index.metric = faiss.METRIC_JensenShannon
-# index = faiss.IndexFlatL2(features_db.shape[1])
-# index = faiss.index_cpu_to_gpu(res, 0, index)
 
-t2 = time.time()
+indices.append(index)
+names.append('JS (CPU)') 
+indices.append(faiss.IndexFlatIP(d))
+names.append('cosine (CPU)')
+indices.append(faiss.IndexFlatL2(d))
+names.append('L2 (CPU)')
+index = faiss.IndexFlatIP(d)
+index = faiss.index_cpu_to_gpu(res, 0, index)
+indices.append(index)
+names.append('cosine (GPU)')
+index = faiss.IndexFlatL2(d)
+index = faiss.index_cpu_to_gpu(res, 0, index)
+indices.append(index)
+names.append('L2 (GPU)')
 
-print(f'Time for creating index: {t2 - t1:.2f} s', flush=True)
-
-index.add(features_db)
-
-t3 = time.time()
-
-print(f'Time for adding to index : {t3 - t2:.2f} s', flush=True)
+recalls = []
+times = []
 
 k = 1
-D, I = index.search(features_query, k)
 
-t4 = time.time() 
+for i in range(len(indices)):
+    
+    index = indices[i]
+    
+    t0 = time.time()
+    
+    if 'cosine' in names[i]:
+        features1 = faiss.normalize_L2(features_db)
+        features2 = faiss.normalize_L2(features_query)
+        index.add(features1)
+        D, I = index.search(features2, k)
+    
+    else:
+        index.add(features_db)
+        D, I = index.search(features_query, k)
+        
+    times.append(time.time() - t0)
 
-print(f'Time for search : {t4 - t3:.2f} s', flush=True)
+    recall, _ = utils.recall(I, mapping_db, mapping_query)
+    recalls.append(recall)
 
-print(f'\nTotal time : {t4-t0:.2f} s')
+plt.figure()
+for i in range(len(names)):
+    if 'JS' in names[i]:
+        plt.scatter(recalls[i], times[i], color='red', marker='*', s=25)
+        plt.text(recalls[i]+.03, times[i]+.03, names[i].split(' ')[1], fontsize=14)
+    elif 'cosine' in names[i]:
+        plt.scatter(recalls[i], times[i], color='blue', marker='.', s=25)
+        plt.text(recalls[i]+.03, times[i]+.03, names[i].split(' ')[1], fontsize=14)
+    elif 'L2' in names[i]:
+        plt.scatter(recalls[i], times[i], color='green', marker='X', s=25)
+        plt.text(recalls[i]+.03, times[i]+.03, names[i].split(' ')[1], fontsize=14)
+        
+plt.xlabel('Recall')
+plt.ylabel('Search time [s]')
+        
+plt.savefig('test.pdf', bbox_inches='tight')
+plt.show()
 
-recall, _ = utils.recall(I, mapping_db, mapping_query)
+plt.figure()
+for i in range(len(names)):
+    if 'JS' in names[i]:
+        plt.scatter(recalls[i], times[i], color='red', marker='*', s=25)
+        plt.text(recalls[i]+.03, times[i]+.03, names[i].split(' ')[1], fontsize=14)
+    elif 'cosine' in names[i]:
+        plt.scatter(recalls[i], times[i], color='blue', marker='.', s=25)
+        plt.text(recalls[i]+.03, times[i]+.03, names[i].split(' ')[1], fontsize=14)
+    elif 'L2' in names[i]:
+        plt.scatter(recalls[i], times[i], color='green', marker='X', s=25)
+        plt.text(recalls[i]+.03, times[i]+.03, names[i].split(' ')[1], fontsize=14)
+        
+plt.xlabel('Recall')
+plt.ylabel('Search time [s]')
+plt.legend(['J-S', 'cosine', 'L2'])
+        
+plt.savefig('test2.pdf', bbox_inches='tight')
+plt.show()
+        
 
 
-print(f'Recall for this : {recall:.2f}')
+
