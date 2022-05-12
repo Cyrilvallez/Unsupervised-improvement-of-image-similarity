@@ -39,7 +39,7 @@ t1 = time.time()
 
 print(f'Training time : {t1 - t0:.2f} s', flush=True)
 
-D,I = index.search(features_query)
+D,I = index.search(features_query, 1)
 
 t2 = time.time()
 
