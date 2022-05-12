@@ -56,10 +56,8 @@ for i in tqdm(range(len(indices))):
     t0 = time.time()
     
     if 'cosine' in names[i]:
-        features1 = utils.normalize(features_db)
-        features2 = utils.normalize(features_query)
-        index.add(features1)
-        D, I = index.search(features2, k)
+        index.add(utils.normalize(features_db))
+        D, I = index.search(utils.normalize(features_query), k)
     
     else:
         index.add(features_db)
@@ -69,6 +67,10 @@ for i in tqdm(range(len(indices))):
 
     recall, _ = utils.recall(I, mapping_db, mapping_query)
     recalls.append(recall)
+    
+    # Free memory
+    indices[i] = 0
+    del index
 
 plt.figure()
 for i in range(len(names)):
