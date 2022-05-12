@@ -6,6 +6,7 @@ Created on Wed May 11 12:02:28 2022
 @author: cyrilvallez
 """
 import numpy as np
+import faiss
 
 import extractor.datasets as datasets
 from extractor.neural import MODEL_LOADER
@@ -164,3 +165,34 @@ def normalize(x, order=2):
     norm[norm == 0] = 1
     
     return x/np.expand_dims(norm, axis=1)
+
+
+METRICS = {
+    'JS': faiss.METRIC_JensenShannon,
+    'L2': faiss.METRIC_L2,
+    'L1': faiss.METRIC_L1,
+    'cosine': faiss.METRIC_INNER_PRODUCT,
+    }
+
+
+def create_flat_index(ressource, d, metric='L2'):
+    
+    if (metric not in METRICS):
+        raise ValueError('Metric name must be one of {METRICS}.')
+        
+    index = faiss.IndexFlat(d)
+    index.metric_type = METRICS[metric]
+    index = faiss.index_cpu_to_gpu(ressource, 0, index)
+    
+    return index
+
+def create_IVFFlat_index(ressource, d, nlist, metric='L2'):
+    
+    if (metric not in METRICS):
+        raise ValueError('Metric name must be one of {METRICS}.')
+        
+    quantizer = create_flat_index(ressource, d, metric)
+    index = faiss.IndexIVFFlat(quantizer, d, nlist)
+    index = faiss.index_cpu_to_gpu(ressource, 0, index)
+
+    return index
