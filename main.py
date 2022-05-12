@@ -26,10 +26,10 @@ names = []
 
 res = faiss.StandardGpuResources()  # use a single GPU
 
-index = faiss.IndexFlat(d)
-index.metric_type = faiss.METRIC_JensenShannon
-indices.append(faiss.index_cpu_to_gpu(res, 0, index))
-names.append('JS') 
+# index = faiss.IndexFlat(d)
+# index.metric_type = faiss.METRIC_JensenShannon
+# indices.append(faiss.index_cpu_to_gpu(res, 0, index))
+# names.append('JS') 
 indices.append(faiss.index_cpu_to_gpu(res, 0, faiss.IndexFlatIP(d)))
 names.append('cosine')
 indices.append(faiss.index_cpu_to_gpu(res, 0, faiss.IndexFlatL2(d)))
@@ -76,10 +76,12 @@ for i in range(len(names)):
         plt.scatter(recalls[i], times[i], color='blue', marker='o', s=100)
     elif 'L2' in names[i]:
         plt.scatter(recalls[i], times[i], color='green', marker='x', s=100)
+    elif 'L1' in names[i]:
+        plt.scatter(recalls[i], times[i], color='magenta', marker='s', s=100)
 
 plt.xlabel('Recall@1')
 plt.ylabel('Search time [s]')
-plt.legend(['J-S', 'cosine', 'L2'])
+plt.legend(names)
         
 plt.savefig('test.pdf', bbox_inches='tight')
 plt.show()
