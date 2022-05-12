@@ -53,7 +53,7 @@ times = []
 
 k = 1
 
-for i in tqdm(len(indices)):
+for i in tqdm(range(len(indices))):
     
     index = indices[i]
     
