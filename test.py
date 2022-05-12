@@ -23,7 +23,7 @@ print(faiss.GpuIndexFlat.__init__.__code__.co_argcount)
 print('\n')
 print(faiss.GpuIndexFlat.__init__.__code__.co_varnames)
 print('\n')
-print(faiss.GpuIndexFlat.__init__.defaults)
+print(faiss.GpuIndexFlat.__init__.__defaults__)
 # print(index.metric_type)
 # index.add(a)                  
 
