@@ -8,6 +8,7 @@ Created on Wed May  4 16:49:11 2022
 
 import numpy as np
 import faiss
+import inspect
 
 d = 4096                         # dimension
 nb = 100000                      # database size
@@ -31,6 +32,7 @@ print(faiss.GpuIndexFlat.__init__.__defaults__)
 # D, I = index.search(b, k)
 
 # print('Done !')     
-
-
+#%%
+source_file = inspect.getsourcefile(faiss.GpuIndexFlat)
+print(source_file)
 
