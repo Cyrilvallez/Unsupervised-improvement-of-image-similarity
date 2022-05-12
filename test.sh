@@ -5,7 +5,7 @@
 #SBATCH --error=%x-%j.err
 #SBATCH --time=10-00:00:00
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=64000
+#SBATCH --mem=32000
 #SBATCH --partition=nodes
 #SBATCH --gres=gpu:a100:1
 #SBATCH --chdir=/cluster/raid/home/cyril.vallez/Project2
@@ -25,6 +25,6 @@ eval "$(conda shell.bash hook)"
 # Activate (local) env
 conda activate faiss
 
-python3 test2.py
+python3 test.py
 
 conda deactivate
