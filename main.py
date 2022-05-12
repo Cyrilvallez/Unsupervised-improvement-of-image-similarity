@@ -10,7 +10,7 @@ import faiss
 from helpers import utils
 import time
 import matplotlib.pyplot as plt
-import numpy as np
+from tqdm import tqdm
 
 method = 'SimCLR v2 ResNet50 2x'
 dataset = 'Kaggle_templates'
@@ -49,7 +49,7 @@ times = []
 
 k = 1
 
-for i in range(len(indices)):
+for i in tqdm(range(len(indices))):
     
     index = indices[i]
     
