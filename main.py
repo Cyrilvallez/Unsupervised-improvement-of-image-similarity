@@ -57,7 +57,7 @@ for i in tqdm(range(len(indices))):
     
     index = indices[i]
     
-    if 'Flat' in names[i]:
+    if ' Flat' in names[i]:
         
         t0 = time.time()
     
@@ -74,7 +74,7 @@ for i in tqdm(range(len(indices))):
         recall, _ = utils.recall(I, mapping_db, mapping_query)
         recalls.append(recall)
         
-    elif 'IVFFlat' in names[i]:
+    elif ' IVFFlat' in names[i]:
         
         if 'cosine' in names[i]:
             index.train(features_db_normalized)
