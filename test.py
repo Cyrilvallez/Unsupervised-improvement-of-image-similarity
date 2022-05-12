@@ -16,8 +16,11 @@ nq = 10000                       # nb of queries
 a = np.random.rand(nb, d).astype('float32')
 b = np.random.rand(nq, d).astype('float32')
 
-index = faiss.GpuIndexFlat(d)  # build the index
-index.add(a)                  # add vectors to the index
+res = faiss.StandardGpuResources()  
+
+index = faiss.GpuIndexFlat(res, dims=d, metric=faiss.METRIC_JensenShannon)  
+print(index.metric_type)
+index.add(a)                  
 
 k = 4                          
 D, I = index.search(b, k)
