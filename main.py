@@ -96,20 +96,5 @@ plt.legend(['J-S', 'cosine', 'L2'])
 plt.savefig('test.pdf', bbox_inches='tight')
 plt.show()
         
-#%%
-"""
-import numpy as np
 
-t0 = time.time()
 
-a = np.random.rand(100000, 4096).astype('float32')
-b = np.random.rand(1000, 4096).astype('float32')
-
-index = faiss.IndexFlat(a.shape[1])
-index.metric_type = faiss.METRIC_JensenShannon
-index.add(a)
-
-D, I = index.search(b, 1)
-
-print(f'Time needed : {time.time() - t0:.2f} s')
-"""
