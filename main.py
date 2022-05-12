@@ -11,7 +11,6 @@ from helpers import utils
 import time
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from helpers import configs_plot
 
 method = 'SimCLR v2 ResNet50 2x'
 dataset = 'Kaggle_templates'
@@ -29,22 +28,16 @@ res = faiss.StandardGpuResources()  # use a single GPU
 
 index = faiss.IndexFlat(d)
 index.metric_type = faiss.METRIC_JensenShannon
-index = faiss.index_cpu_to_gpu(res, 0, index)
-
-# indices.append(index)
-# names.append('JS (CPU)') 
-indices.append(faiss.IndexFlatIP(d))
-names.append('cosine (CPU)')
-indices.append(faiss.IndexFlatL2(d))
-names.append('L2 (CPU)')
-index = faiss.IndexFlatIP(d)
-index = faiss.index_cpu_to_gpu(res, 0, index)
-indices.append(index)
-names.append('cosine (GPU)')
-index = faiss.IndexFlatL2(d)
-index = faiss.index_cpu_to_gpu(res, 0, index)
-indices.append(index)
-names.append('L2 (GPU)')
+indices.append(faiss.index_cpu_to_gpu(res, 0, index))
+names.append('JS') 
+indices.append(faiss.index_cpu_to_gpu(res, 0, faiss.IndexFlatIP(d)))
+names.append('cosine')
+indices.append(faiss.index_cpu_to_gpu(res, 0, faiss.IndexFlatL2(d)))
+names.append('L2')
+index = faiss.IndexFlat(d)
+index.metric_type = faiss.METRIC_L1
+indices.append(faiss.index_cpu_to_gpu(res, 0, index))
+names.append('L1')
 
 recalls = []
 times = []
@@ -83,11 +76,6 @@ for i in range(len(names)):
         plt.scatter(recalls[i], times[i], color='blue', marker='o', s=100)
     elif 'L2' in names[i]:
         plt.scatter(recalls[i], times[i], color='green', marker='x', s=100)
-        
-lims = plt.gca().get_xlim()
-space = (lims[1] - lims[0])/40
-for i in range(len(names)):
-    plt.annotate(names[i].split(' ')[1], (recalls[i] + space, times[i] + space), fontsize=16)
 
 plt.xlabel('Recall@1')
 plt.ylabel('Search time [s]')

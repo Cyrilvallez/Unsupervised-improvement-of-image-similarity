@@ -8,31 +8,43 @@ Created on Wed May  4 16:49:11 2022
 
 import numpy as np
 import faiss
-import inspect
+from helpers import utils
+import time
 
-d = 4096                         # dimension
-nb = 100000                      # database size
-nq = 10000                       # nb of queries
+method = 'SimCLR v2 ResNet50 2x'
+dataset = 'Kaggle_templates'
+dataset_retrieval = 'Kaggle_memes'
 
-a = np.random.rand(nb, d).astype('float32')
-b = np.random.rand(nq, d).astype('float32')
+features_db, mapping_db = utils.combine_features(method, dataset)
+features_query, mapping_query = utils.load_features(method, dataset_retrieval)
+
+d = features_db.shape[1]
+
 
 res = faiss.StandardGpuResources()  
 
-# index = faiss.GpuIndexFlat(res, dims=d, metric=faiss.METRIC_JensenShannon)  
-print(faiss.GpuIndexFlat.__init__.__code__.co_argcount)
-print('\n')
-print(faiss.GpuIndexFlat.__init__.__code__.co_varnames)
-print('\n')
-print(faiss.GpuIndexFlat.__init__.__defaults__)
-# print(index.metric_type)
-# index.add(a)                  
+index = faiss.IndexFlat(d)
+index.metric_type = faiss.METRIC_L1
+coarse = faiss.index_cpu_to_gpu(res, 0, index)
 
-# k = 4                          
-# D, I = index.search(b, k)
+nlist = int(10*np.sqrt(features_db.shape[0]))
+index = faiss.IndexIVFFlat(coarse, d, nlist)
+index = faiss.index_cpu_to_gpu(res, 0, index)
 
-# print('Done !')     
-#%%
-source_file = inspect.getsourcefile(faiss._swigfaiss_avx2.GpuIndexFlat_swiginit)
-print(source_file)
+t0 = time.time()
 
+index.train(features_db)
+
+t1 = time.time()
+
+print(f'Training time : {t1 - t0:.2f} s', flush=True)
+
+D,I = index.search(features_query)
+
+t2 = time.time()
+
+print(f'Searching time : {t2 - t1:.2f} s', flush=True)
+
+recall, _ = utils.recall(I, mapping_db, mapping_query)
+
+print(f'Recall : {recall:.2f}')
