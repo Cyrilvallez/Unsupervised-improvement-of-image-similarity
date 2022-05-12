@@ -33,6 +33,6 @@ print(faiss.GpuIndexFlat.__init__.__defaults__)
 
 # print('Done !')     
 #%%
-source_file = inspect.getsourcefile(faiss.GpuIndexFlat)
+source_file = inspect.getsourcefile(faiss._swigfaiss_avx2.GpuIndexFlat_swiginit)
 print(source_file)
 
