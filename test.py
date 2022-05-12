@@ -18,14 +18,19 @@ b = np.random.rand(nq, d).astype('float32')
 
 res = faiss.StandardGpuResources()  
 
-index = faiss.GpuIndexFlat(res, dims=d, metric=faiss.METRIC_JensenShannon)  
-print(index.metric_type)
-index.add(a)                  
+# index = faiss.GpuIndexFlat(res, dims=d, metric=faiss.METRIC_JensenShannon)  
+print(faiss.GpuIndexFlat.__init__.__code__.co_argcount)
+print('\n')
+print(faiss.GpuIndexFlat.__init__.__code__.co_varnames)
+print('\n')
+print(faiss.GpuIndexFlat.__init__.defaults)
+# print(index.metric_type)
+# index.add(a)                  
 
-k = 4                          
-D, I = index.search(b, k)
+# k = 4                          
+# D, I = index.search(b, k)
 
-print('Done !')     
+# print('Done !')     
 
 
 
