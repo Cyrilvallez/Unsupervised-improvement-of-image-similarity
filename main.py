@@ -11,6 +11,7 @@ from helpers import utils
 import time
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from helpers import configs_plot
 
 method = 'SimCLR v2 ResNet50 2x'
 dataset = 'Kaggle_templates'
@@ -27,7 +28,7 @@ names = []
 res = faiss.StandardGpuResources()  # use a single GPU
 
 index = faiss.IndexFlat(d)
-index.metric = faiss.METRIC_JensenShannon
+index.metric_type = faiss.METRIC_JensenShannon
 
 indices.append(index)
 names.append('JS (CPU)') 
@@ -71,48 +72,27 @@ for i in tqdm(range(len(indices))):
     # Free memory while keeping list length consant
     indices[i] = 0
     del index
-    
-print(times)
-print('\n \n')
-print(recalls)
+
 
 plt.figure()
 for i in range(len(names)):
     if 'JS' in names[i]:
-        plt.scatter(recalls[i], times[i], color='red', marker='*', s=25)
-        plt.text(recalls[i]+.03, times[i]+.03, names[i].split(' ')[1], fontsize=14)
+        plt.scatter(recalls[i], times[i], color='red', marker='*', s=100)
     elif 'cosine' in names[i]:
-        plt.scatter(recalls[i], times[i], color='blue', marker='.', s=25)
-        plt.text(recalls[i]+.03, times[i]+.03, names[i].split(' ')[1], fontsize=14)
+        plt.scatter(recalls[i], times[i], color='blue', marker='o', s=100)
     elif 'L2' in names[i]:
-        plt.scatter(recalls[i], times[i], color='green', marker='X', s=25)
-        plt.text(recalls[i]+.03, times[i]+.03, names[i].split(' ')[1], fontsize=14)
+        plt.scatter(recalls[i], times[i], color='green', marker='x', s=100)
         
-plt.xlabel('Recall')
-plt.ylabel('Search time [s]')
-        
-plt.savefig('test.pdf', bbox_inches='tight')
-plt.show()
-
-plt.figure()
+lims = plt.gca().get_xlim()
+space = (lims[1] - lims[0])/40
 for i in range(len(names)):
-    if 'JS' in names[i]:
-        plt.scatter(recalls[i], times[i], color='red', marker='*', s=25)
-        plt.text(recalls[i]+.03, times[i]+.03, names[i].split(' ')[1], fontsize=14)
-    elif 'cosine' in names[i]:
-        plt.scatter(recalls[i], times[i], color='blue', marker='.', s=25)
-        plt.text(recalls[i]+.03, times[i]+.03, names[i].split(' ')[1], fontsize=14)
-    elif 'L2' in names[i]:
-        plt.scatter(recalls[i], times[i], color='green', marker='X', s=25)
-        plt.text(recalls[i]+.03, times[i]+.03, names[i].split(' ')[1], fontsize=14)
-        
-plt.xlabel('Recall')
+    plt.annotate(names[i].split(' ')[1], (recalls[i] + space, times[i] + space), fontsize=16)
+
+plt.xlabel('Recall@1')
 plt.ylabel('Search time [s]')
 plt.legend(['J-S', 'cosine', 'L2'])
         
-plt.savefig('test2.pdf', bbox_inches='tight')
+plt.savefig('test.pdf', bbox_inches='tight')
 plt.show()
         
-
-
 
