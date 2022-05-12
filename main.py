@@ -71,6 +71,10 @@ for i in tqdm(range(len(indices))):
     # Free memory while keeping list length consant
     indices[i] = 0
     del index
+    
+print(times)
+print('\n \n')
+print(recalls)
 
 plt.figure()
 for i in range(len(names)):
