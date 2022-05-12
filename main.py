@@ -31,8 +31,8 @@ index = faiss.IndexFlat(d)
 index.metric_type = faiss.METRIC_JensenShannon
 index = faiss.index_cpu_to_gpu(res, 0, index)
 
-indices.append(index)
-names.append('JS (CPU)') 
+# indices.append(index)
+# names.append('JS (CPU)') 
 indices.append(faiss.IndexFlatIP(d))
 names.append('cosine (CPU)')
 indices.append(faiss.IndexFlatL2(d))
