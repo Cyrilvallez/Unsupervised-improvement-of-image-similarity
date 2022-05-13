@@ -182,7 +182,7 @@ def create_flat_index(ressource, d, metric='L2'):
         
     index = faiss.IndexFlat(d)
     index.metric_type = METRICS[metric]
-    index = faiss.index_cpu_to_gpu(ressource, 0, index)
+    # index = faiss.index_cpu_to_gpu(ressource, 0, index)
     
     return index
 
