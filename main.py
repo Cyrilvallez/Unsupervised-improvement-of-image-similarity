@@ -15,8 +15,8 @@ import numpy as np
 import pickle
 
 method = 'SimCLR v2 ResNet50 2x'
-dataset = 'Kaggle_templates'
-dataset_retrieval = 'Kaggle_memes'
+dataset = 'BSDS500_original'
+dataset_retrieval = 'BSDS500_attacks'
 
 features_db, mapping_db = utils.combine_features(method, dataset)
 features_query, mapping_query = utils.load_features(method, dataset_retrieval)
@@ -28,24 +28,20 @@ res = faiss.StandardGpuResources()  # use a single GPU
 nlist = int(10*np.sqrt(features_db.shape[0]))
 
 indices = [
-    utils.create_flat_index(res, d, 'JS'),
     utils.create_flat_index(res, d, 'cosine'),
     utils.create_flat_index(res, d, 'L2'),
-    utils.create_flat_index(res, d, 'L1'),
-    utils.create_IVFFlat_index(res, d, nlist, 'JS'),
     utils.create_IVFFlat_index(res, d, nlist, 'cosine'),
     utils.create_IVFFlat_index(res, d, nlist, 'L2'),
-    utils.create_IVFFlat_index(res, d, nlist, 'L1'),
     ]
 names = [
-    'JS Flat',
+    # 'JS Flat',
     'cosine Flat',
     'L2 Flat',
-    'L1 Flat',
-    'JS IVFFlat',
+    # 'L1 Flat',
+    # 'JS IVFFlat',
     'cosine IVFFlat',
     'L2 IVFFlat',
-    'L1 IVFFlat',
+    # 'L1 IVFFlat',
     ]
 
 recalls = []
@@ -109,12 +105,13 @@ for i in tqdm(range(len(indices))):
     indices[i] = 0
     del index
     
-with open('recall.pickle', "wb") as fp:   #Pickling
+with open('recall_BSDS500.pickle', "wb") as fp:   #Pickling
     pickle.dump(recalls, fp)
     
-with open('time.pickle', "wb") as fp:   #Pickling
+with open('time_BSDS500.pickle', "wb") as fp:   #Pickling
     pickle.dump(times, fp)
 
+"""
 plt.figure()
 for i in range(len(names)):
     if names[i] == 'JS Flat':
@@ -140,4 +137,4 @@ plt.legend(names)
         
 plt.savefig('benchmark.pdf', bbox_inches='tight')
 plt.show()
-        
+"""
