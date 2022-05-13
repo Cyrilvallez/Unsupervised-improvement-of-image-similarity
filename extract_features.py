@@ -12,7 +12,7 @@ import extractor
 # Neural
 model_name = 'SimCLR v2 ResNet50 2x'
 transforms = extractor.MODEL_TRANSFORMS[model_name]
-dataset = extractor.create_dataset('BSDS_attacks', transforms)
+dataset = extractor.create_dataset('BSDS500_attacks', transforms)
 extractor.extract_and_save_neural(model_name, dataset, batch_size=1024, workers=8)
 
 
