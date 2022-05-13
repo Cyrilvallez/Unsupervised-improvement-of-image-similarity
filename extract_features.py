@@ -19,6 +19,6 @@ extractor.extract_and_save_neural(model_name, dataset, batch_size=1024, workers=
 
 # Perceptual
 algo_name = 'Dhash'
-dataset = extractor.create_dataset('BSDS500_original', None)
+dataset = extractor.create_dataset('BSDS500_attacks', None)
 
 extractor.extract_and_save_perceptual(algo_name, dataset, hash_size=8)
