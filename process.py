@@ -15,21 +15,21 @@ import numpy as np
 import pickle
 from helpers import configs_plot
 
-with open("recall.pickle", "rb") as fp:
+with open("recall_BSDS500.pickle", "rb") as fp:
     recalls = pickle.load(fp)
     
-with open("time.pickle", "rb") as fp:
+with open("time_BSDS500.pickle", "rb") as fp:
     times = pickle.load(fp)
     
 names = [
-    'JS Flat',
+    # 'JS Flat',
     'cosine Flat',
     'L2 Flat',
-    'L1 Flat',
-    'JS IVFFlat',
+    # 'L1 Flat',
+    # 'JS IVFFlat',
     'cosine IVFFlat',
     'L2 IVFFlat',
-    'L1 IVFFlat',
+    # 'L1 IVFFlat',
     ]
 
 plt.figure()
@@ -44,16 +44,16 @@ for i in range(len(names)):
         # plt.scatter(recalls[i], times[i], color='m', marker='s', s=100, label=names[i])
     # if names[i] == 'JS IVFFlat':
         # plt.plot(recalls[i], times[i], color='g', label=names[i])
-    # if names[i] == 'cosine IVFFlat':
-        # plt.plot(recalls[i], times[i], color='b', label=names[i])
-    # if names[i] == 'L2 IVFFlat':
-        # plt.plot(recalls[i], times[i], color='r', label=names[i])
+    if names[i] == 'cosine IVFFlat':
+        plt.plot(recalls[i], times[i], color='b', label=names[i])
+    if names[i] == 'L2 IVFFlat':
+        plt.plot(recalls[i], times[i], color='r', label=names[i])
     # if names[i] == 'L1 IVFFlat':
         # plt.plot(recalls[i], times[i], color='m', label=names[i])
 
 plt.xlabel('Recall@1')
 plt.ylabel('Search time [s]')
 plt.legend()
-
-plt.savefig('Flat.pdf', bbox_inches='tight')
+6
+plt.savefig('IVF_BSDS500.pdf', bbox_inches='tight')
 plt.show()

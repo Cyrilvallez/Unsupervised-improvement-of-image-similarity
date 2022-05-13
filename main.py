@@ -14,11 +14,12 @@ from tqdm import tqdm
 import numpy as np
 import pickle
 
-method = 'SimCLR v2 ResNet50 2x'
+method = 'Dhash'
 dataset = 'BSDS500_original'
+distractor = 'Flickr500K'
 dataset_retrieval = 'BSDS500_attacks'
 
-features_db, mapping_db = utils.combine_features(method, dataset)
+features_db, mapping_db = utils.combine_features(method, dataset, distractor)
 features_query, mapping_query = utils.load_features(method, dataset_retrieval)
 features_db_normalized = utils.normalize(features_db)
 features_query_normalized = utils.normalize(features_query)

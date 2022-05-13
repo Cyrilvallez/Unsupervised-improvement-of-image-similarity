@@ -129,8 +129,8 @@ def recall(neighbors, mapping_db, mapping_query):
     """
     
     # Extract portions of names that should be similar in image names
-    search_identifiers = np.array([name.split('_', 1)[0] for name in mapping_query])
-    db_identifiers = np.array([name.rsplit('.', 1)[0] for name in mapping_db])
+    search_identifiers = np.array([name.rsplit('/', 1)[1].split('_', 1)[0] for name in mapping_query])
+    db_identifiers = np.array([name.rsplit('/', 1)[1].rsplit('.', 1)[0] for name in mapping_db])
     
     shape = neighbors.shape
     names = db_identifiers[neighbors.flatten()].reshape(shape)
@@ -193,6 +193,11 @@ def create_IVFFlat_index(ressource, d, nlist, metric='L2'):
         
     quantizer = create_flat_index(ressource, d, metric)
     index = faiss.IndexIVFFlat(quantizer, d, nlist)
+    # say the coarse quantizer is deallocated by index destructor
+    index.own_fields = True 
+    # tell Python not to try to deallocate the pointer when exiting 
+    # the function
+    quantizer.this.disown()
     index = faiss.index_cpu_to_gpu(ressource, 0, index)
 
     return index

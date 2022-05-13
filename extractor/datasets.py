@@ -64,13 +64,8 @@ class ImageDataset(Dataset):
         image = Image.open(image_path).convert('RGB')
         if self.transforms is not None:
             image = self.transforms(image)
-        
-        try:
-            name = image_path.rsplit('/', 1)[1]
-        except IndexError:
-            name = image_path
             
-        return (image, name)
+        return (image, image_path)
     
 
 class FlickrDataset(Dataset):
@@ -114,13 +109,8 @@ class FlickrDataset(Dataset):
         image = Image.open(image_path).convert('RGB')
         if self.transforms is not None:
             image = self.transforms(image)
-        
-        try:
-            name = image_path.rsplit('/', 1)[1]
-        except IndexError:
-            name = image_path
             
-        return (image, name)
+        return (image, image_path)
     
 
 class ImageWithDistractorDataset(FlickrDataset):

@@ -8,17 +8,23 @@ Created on Fri May  6 14:44:42 2022
 
 import extractor
 
-"""
-# Neural
-model_name = 'SimCLR v2 ResNet50 2x'
-transforms = extractor.MODEL_TRANSFORMS[model_name]
-dataset = extractor.create_dataset('BSDS500_original', transforms)
-extractor.extract_and_save_neural(model_name, dataset, batch_size=1024, workers=8)
-"""
+method_name = 'SimCLR v2 ResNet50 2x'
+hash_size = 8
+batch_size = 1024
 
+
+datasets = extractor.VALID_DATASET_NAMES
 
 # Perceptual
-algo_name = 'Dhash'
-dataset = extractor.create_dataset('BSDS500_attacks', None)
+if 'hash' in method_name:
+    for dataset in datasets:
+        dataset = extractor.create_dataset(dataset, None)
+        extractor.extract_and_save_perceptual(method_name, dataset, hash_size=hash_size)
+       
+# Neural
+else:
+    for dataset in datasets:
+        transforms = extractor.MODEL_TRANSFORMS[method_name]
+        dataset = extractor.create_dataset(dataset, transforms)
+        extractor.extract_and_save_neural(method_name, dataset, batch_size=batch_size, workers=8)
 
-extractor.extract_and_save_perceptual(algo_name, dataset, hash_size=8)
