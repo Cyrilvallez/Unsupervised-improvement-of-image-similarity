@@ -29,7 +29,7 @@ res = faiss.StandardGpuResources()
 nlist = int(10*np.sqrt(features_db.shape[0]))
 # index1 = faiss.IndexIVFFlat(coarse, d, nlist)
 
-factory_string = f'IVF{nlist}, Flat'
+factory_string = f'IVF{nlist},Flat'
 index1 = faiss.index_factory(d, factory_string)
 index1 = faiss.index_cpu_to_gpu(res, 0, index1)
 
