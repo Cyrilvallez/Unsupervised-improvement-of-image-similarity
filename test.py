@@ -31,7 +31,7 @@ nlist = int(10*np.sqrt(features_db.shape[0]))
 
 factory_string = f'IVF{nlist}'
 index1 = faiss.index_factory(d, factory_string)
-index1 = faiss.index_cpu_to_gpu(res, 0, index)
+index1 = faiss.index_cpu_to_gpu(res, 0, index1)
 
 t0 = time.time()
 
@@ -60,7 +60,7 @@ index_ivf = faiss.extract_index_ivf(index2)
 clustering_index = faiss.index_cpu_to_all_gpus(faiss.IndexFlatL2(index_ivf.d))
 index_ivf.clustering_index = clustering_index
 
-index2 = faiss.index_cpu_to_all_gpus(index2)
+# index2 = faiss.index_cpu_to_all_gpus(index2)
 
 
 t3 = time.time()
