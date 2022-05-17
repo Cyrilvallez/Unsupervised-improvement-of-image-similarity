@@ -60,7 +60,7 @@ index_ivf = faiss.extract_index_ivf(index2)
 clustering_index = faiss.index_cpu_to_all_gpus(faiss.IndexFlatL2(index_ivf.d))
 index_ivf.clustering_index = clustering_index
 
-index2 = faiss.index_cpu_to_all_gpus(index2)
+# index2 = faiss.index_cpu_to_all_gpus(index2)
 
 
 t3 = time.time()
