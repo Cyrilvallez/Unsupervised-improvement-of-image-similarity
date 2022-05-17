@@ -20,18 +20,17 @@ features_query, mapping_query = utils.load_features(method, dataset_retrieval)
 
 d = features_db.shape[1]
 
-
 res = faiss.StandardGpuResources()  
 
-coarse = faiss.IndexFlatL2(d)
+coarse = faiss.IndexFlat(d)
 coarse.metric_type = faiss.METRIC_JensenShannon
 # coarse = faiss.index_cpu_to_gpu(res, 0, coarse)
 
-# nlist = int(10*np.sqrt(features_db.shape[0]))
-# index = faiss.IndexIVFFlat(coarse, d, nlist)
-index = faiss.index_cpu_to_gpu(res, 0, coarse)
+nlist = int(10*np.sqrt(features_db.shape[0]))
+index = faiss.IndexIVFFlat(coarse, d, nlist)
+index = faiss.index_cpu_to_gpu(res, 0, index)
 
-# index.setNumProbes(1)
+index.setNumProbes(1)
 
 t0 = time.time()
 
@@ -55,8 +54,27 @@ print(f'Recall : {recall:.2f}')
 
 #%%
 
-"""
-factory_str = 'Flat'
-index = faiss.index_factory(12, factory_str, faiss.METRIC_JensenShannon)
-print(index.metric_type)
-"""
+
+# factory_str = 'Flat'
+# index = faiss.index_factory(12, factory_str, faiss.METRIC_JensenShannon)
+# print(index.metric_type)
+
+
+from helpers import utils
+
+method = 'SimCLR v2 ResNet50 2x'
+dataset = 'Kaggle_templates'
+dataset_retrieval = 'Kaggle_memes'
+
+features_db, mapping_db = utils.combine_features(method, dataset)
+features_query, mapping_query = utils.load_features(method, dataset_retrieval)
+
+# d = features_db.shape[1]
+
+# coarse = faiss.IndexFlatL2(d)
+# nlist = 100
+# index = faiss.IndexIVFFlat(coarse, d, nlist)
+
+# index.train(features_db)
+
+
