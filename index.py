@@ -13,7 +13,7 @@ from helpers import utils
 class Experiment():
     
     def __init__(self, method, main_dataset, query_dataset, distractor_dataset='Flickr500K',
-                 metric='cosine'):
+                 k=1, metric='cosine'):
         
         if (metric not in METRICS):
             raise ValueError(f'Metric should be one of {METRICS.keys(),}')
@@ -27,6 +27,7 @@ class Experiment():
                                                                    distractor_dataset)
         self.features_query, self.mapping_query = utils.load_features(method, query_dataset)
         self.d = self.features_db.shape[1]
+        self.k = k
         self.metric = metric
         
         if self.metric == 'cosine':
