@@ -166,38 +166,3 @@ def normalize(x, order=2):
     
     return x/np.expand_dims(norm, axis=1)
 
-
-METRICS = {
-    'JS': faiss.METRIC_JensenShannon,
-    'L2': faiss.METRIC_L2,
-    'L1': faiss.METRIC_L1,
-    'cosine': faiss.METRIC_INNER_PRODUCT,
-    }
-
-
-def create_flat_index(ressource, d, metric='L2'):
-    
-    if (metric not in METRICS):
-        raise ValueError('Metric name must be one of {METRICS}.')
-        
-    index = faiss.IndexFlat(d)
-    index.metric_type = METRICS[metric]
-    # index = faiss.index_cpu_to_gpu(ressource, 0, index)
-    
-    return index
-
-def create_IVFFlat_index(ressource, d, nlist, metric='L2'):
-    
-    if (metric not in METRICS):
-        raise ValueError('Metric name must be one of {METRICS}.')
-        
-    quantizer = create_flat_index(ressource, d, metric)
-    index = faiss.IndexIVFFlat(quantizer, d, nlist)
-    # say the coarse quantizer is deallocated by index destructor
-    index.own_fields = True 
-    # tell Python not to try to deallocate the pointer when exiting 
-    # the function
-    quantizer.this.disown()
-    index = faiss.index_cpu_to_gpu(ressource, 0, index)
-
-    return index

@@ -15,9 +15,9 @@ import numpy as np
 import pickle
 
 method = 'Dhash'
-dataset = 'BSDS500_original'
-distractor = 'Flickr500K'
-dataset_retrieval = 'BSDS500_attacks'
+main_dataset = 'BSDS500_original'
+distractor_dataset = 'Flickr500K'
+query_dataset = 'BSDS500_attacks'
 
 features_db, mapping_db = utils.combine_features(method, dataset, distractor)
 features_query, mapping_query = utils.load_features(method, dataset_retrieval)
