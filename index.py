@@ -23,7 +23,7 @@ class Experiment():
                                                                    distractor_dataset)
         self.features_query, self.mapping_query = utils.load_features(method, query_dataset)
         
-        self.d = features_db.shape[1]
+        self.d = self.features_db.shape[1]
 
 
 METRICS = {
@@ -34,37 +34,29 @@ METRICS = {
     }
 
 
-def create_flat_index(d, metric='L2', ressource=None):
+def create_flat_index(d, metric='L2'):
     
     if (metric not in METRICS):
         raise ValueError('Metric name must be one of {METRICS}.')
         
-    if ressource is None:
-        ressource = faiss.StandardGpuResources()
-        
     index = faiss.IndexFlat(d)
     index.metric_type = METRICS[metric]
-    index = faiss.index_cpu_to_gpu(ressource, 0, index)
     
     return index
 
 
-def create_IVFFlat_index(d, nlist, metric='L2', ressource=None):
+def create_IVFFlat_index(d, nlist, metric='L2'):
     
     if (metric not in METRICS):
         raise ValueError('Metric name must be one of {METRICS}.')
         
-    if ressource is None:
-        ressource = faiss.StandardGpuResources()
-        
-    quantizer = create_flat_index(ressource, d, metric)
+    quantizer = create_flat_index(d, metric)
     index = faiss.IndexIVFFlat(quantizer, d, nlist)
     # say the coarse quantizer is deallocated by index destructor
     index.own_fields = True 
     # tell Python not to try to deallocate the pointer when exiting 
     # the function
     quantizer.this.disown()
-    index = faiss.index_cpu_to_gpu(ressource, 0, index)
 
     return index
 

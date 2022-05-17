@@ -24,13 +24,14 @@ d = features_db.shape[1]
 res = faiss.StandardGpuResources()  
 
 coarse = faiss.IndexFlatL2(d)
+coarse.metric_type = faiss.METRIC_JensenShannon
 # coarse = faiss.index_cpu_to_gpu(res, 0, coarse)
 
-nlist = int(10*np.sqrt(features_db.shape[0]))
-index = faiss.IndexIVFFlat(coarse, d, nlist)
-index = faiss.index_cpu_to_gpu(res, 0, index)
+# nlist = int(10*np.sqrt(features_db.shape[0]))
+# index = faiss.IndexIVFFlat(coarse, d, nlist)
+index = faiss.index_cpu_to_gpu(res, 0, coarse)
 
-index.setNumProbes(1)
+# index.setNumProbes(1)
 
 t0 = time.time()
 
@@ -52,3 +53,10 @@ recall, _ = utils.recall(I, mapping_db, mapping_query)
 print(f'Recall : {recall:.2f}')
 
 
+#%%
+
+"""
+factory_str = 'Flat'
+index = faiss.index_factory(12, factory_str, faiss.METRIC_JensenShannon)
+print(index.metric_type)
+"""
