@@ -378,7 +378,7 @@ def compare_metrics_Flat(metrics, algorithm, main_dataset, query_dataset,
     for metric in metrics[1:]:
         experiment.set_index(factory_str, metric=metric)
         # experiment.to_gpu()
-        result[experiment.experiment_name] = experiment.new_search()
+        result[experiment.experiment_name] = experiment.fit()
         
     utils.save_dictionary(result, filename)
     
