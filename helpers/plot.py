@@ -34,6 +34,7 @@ def time_recall_plot(results, save=False, filename=None):
         
         for subkey in results[key].keys():
             if 'recall' in subkey:
+                xlabel = subkey
                 recall.append(results[key][subkey])
     
     plt.figure()

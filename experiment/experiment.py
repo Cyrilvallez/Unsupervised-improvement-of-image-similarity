@@ -234,6 +234,7 @@ class Experiment():
             f'recall@{self.k}': recall,
             'training_time': self.time_training,
             'searching_time': self.time_searching,
+            'k': self.k,
                   }
         
         # Add the nprobe value to the result if the given index has it
@@ -271,9 +272,10 @@ class Experiment():
         recall = self.recall()
         
         result = {
-            f'recall@{self.k}': recall,
+            f'recall': recall,
             'training_time': self.time_training,
             'searching_time': self.time_searching,
+            'k': self.k,
                   }
         
         # Add the nprobe value to the result if the given index has it
@@ -363,12 +365,12 @@ def compare_metrics_Flat(metrics, algorithm, main_dataset, query_dataset,
 
     result = {}
 
-    experiment.to_gpu()
+    # experiment.to_gpu()
     result[experiment.experiment_name] = experiment.fit()
     
     for metric in metrics[1:]:
         experiment.set_index(factory_str, metric=metric)
-        experiment.to_gpu()
+        # experiment.to_gpu()
         result[experiment.experiment_name] = experiment.new_search()
         
     utils.save_dictionary(result, filename)
