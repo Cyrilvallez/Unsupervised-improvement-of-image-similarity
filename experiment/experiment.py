@@ -74,6 +74,7 @@ class Experiment():
         """
         self.index = faiss.index_cpu_to_all_gpus(self.index)
         
+        
     def set_index(self, factory_str, metric='cosine'):
         """
         Change the current index to a new one. Allows not to reload data but still
@@ -95,6 +96,7 @@ class Experiment():
         self.metric = metric
         self.experiment_name = factory_str + '--' + metric
         self.index = faiss.index_factory(self.d, factory_str, METRICS[metric])
+        
         
     def train(self):
         """
@@ -118,6 +120,7 @@ class Experiment():
         self.index.add(features)
         
         self.time_training = time.time() - t0
+        
         
     def search(self, k=None, probe=None):
         """
@@ -158,6 +161,7 @@ class Experiment():
         
         self.time_searching = time.time() - t0
         
+        
     def recall(self):
         """
         Compute the recall (can only be called after search has been performed 
@@ -181,6 +185,7 @@ class Experiment():
             raise AttributeError('Please call `search` before asking for recall')
             
         return recall
+    
             
     def get_neighbors_of_query(self, query_index):
         """
@@ -204,6 +209,7 @@ class Experiment():
             neighbors.append(Image.open(self.mapping_query[image_index]))
             
         return neighbors
+    
     
     def fit(self, k=None, probe=None):
         """
@@ -245,6 +251,7 @@ class Experiment():
         
         
         return result
+    
     
     def new_search(self, k=None, probe=None):
         """

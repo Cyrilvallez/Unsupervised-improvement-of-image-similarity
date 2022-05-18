@@ -60,6 +60,9 @@ features_db, mapping_db = utils.combine_features(algorithm, main_dataset,
                                                            distractor_dataset)
 features_query, mapping_query = utils.load_features(algorithm, query_dataset)
 
+features_db = utils.normalize(features_db)
+features_query = utils.normalize(features_query)
+
 index = faiss.IndexFlatIP(features_db.shape[1])
 index = faiss.index_cpu_to_all_gpus(index)
 
