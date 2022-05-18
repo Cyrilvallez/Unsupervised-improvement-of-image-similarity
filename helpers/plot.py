@@ -6,6 +6,7 @@ Created on Wed May 18 15:54:40 2022
 @author: cyrilvallez
 """
 import matplotlib.pyplot as plt
+import numpy as np
 
 from helpers import plot_config
 
@@ -26,16 +27,16 @@ def time_recall_plot(results, save=False, filename=None):
     recall = []
     searching_time = []
     metric = []
+    k = []
     
     for key in results.keys():
         metric.append(key.rsplit('--', 1)[1])
-        # recall.append(results[key])
+        recall.append(results[key]['recall'])
+        k.append(results[key]['k'])
         searching_time.append(results[key]['searching_time'])
         
-        for subkey in results[key].keys():
-            if 'recall' in subkey:
-                xlabel = subkey
-                recall.append(results[key][subkey])
+    assert(np.array_equal(k == len(k)*[k[0]]))
+        
     
     plt.figure()
     for i in range(len(names)):
