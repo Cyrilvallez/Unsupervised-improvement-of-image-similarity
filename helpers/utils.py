@@ -6,19 +6,13 @@ Created on Wed May 11 12:02:28 2022
 @author: cyrilvallez
 """
 import numpy as np
-import faiss
+import json
+import argparse
+import os
 
 import extractor.datasets as datasets
 from extractor.neural import MODEL_LOADER
 from extractor.perceptual import NAME_TO_ALGO
-
-DATASET_DIMS = {
-    'Kaggle_templates': 250,
-    'Kaggle_memes' : 43660,
-    'BSDS500_original' : 500,
-    'BSDS500_attacks' : 11600,
-    'Flickr500K': 500000,
-    }
 
 
 def load_features(method_name, dataset_name):
@@ -166,3 +160,90 @@ def normalize(x, order=2):
     
     return x/np.expand_dims(norm, axis=1)
 
+
+def save_dictionary(dictionary, filename):
+    """
+    Save a dictionary to disk as json file.
+
+    Parameters
+    ----------
+    dictionary : Dictionary
+        The dictionary to save.
+    filename : str
+        Filename to save the file.
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    # Make sure the path exists, and creates it if this is not the case
+    dirname = os.path.dirname(filename)
+    exist = os.path.exists(dirname)
+    
+    if not exist:
+        os.makedirs(dirname)
+    
+    with open(filename, 'w') as fp:
+        json.dump(dictionary, fp, indent='\t')
+        
+        
+def load_dictionary(filename):
+    """
+    Load a json file and return a dictionary.
+
+    Parameters
+    ----------
+    filename : str
+        Filename to load.
+
+    Returns
+    -------
+    data : Dictionary
+        The dictionary representing the file.
+
+    """
+    
+    file = open(filename)
+    data = json.load(file)
+    return data
+
+
+def parse_input():
+    """
+    Create a parser for command line arguments in order to get the experiment
+    folder. Also check that this folder is valid, in the sense that it is not 
+    already being used.
+    
+    Raises
+    ------
+    ValueError
+        If the experiment name is already taken or not valid.
+
+    Returns
+    -------
+    save_folder : str
+        The path to the folder for saving the experiment.
+
+    """
+    # Force the use of a user input at run-time to specify the path 
+    # so that we do not mistakenly reuse the path from previous experiments
+    parser = argparse.ArgumentParser(description='Experiment')
+    parser.add_argument('experiment_folder', type=str, help='A name for the experiment')
+    args = parser.parse_args()
+    experiment_folder = args.experiment_folder
+
+    if '/' in experiment_folder:
+        raise ValueError('The experiment name must not be a path. Please provide a name without any \'/\'.')
+
+    results_folder = 'Results/'
+    save_folder = results_folder + experiment_folder 
+
+    # Check that it does not already exist and contain results
+    if experiment_folder in os.listdir(results_folder):
+        for file in os.listdir(save_folder):
+            if '.json' in file:
+                raise ValueError('This experiment name is already taken. Choose another one.')
+            
+    return save_folder + '/'
