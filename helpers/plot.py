@@ -22,7 +22,7 @@ MARKERS = {
     'L1': 'x',
     }
 
-def time_recall_plot(results, save=False, filename=None):
+def time_recall_plot_flat(results, save=False, filename=None):
     
     recall = []
     searching_time = []
