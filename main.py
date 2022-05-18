@@ -60,6 +60,16 @@ features_db, mapping_db = utils.combine_features(algorithm, main_dataset,
                                                            distractor_dataset)
 features_query, mapping_query = utils.load_features(algorithm, query_dataset)
 
+index = faiss.IndexFlat(features_db.shape[1])
+
+index.add(features_db)
+
+D, I = index.search(features_query, 1)
+
+recall, _ = utils.recall(I, mapping_db, mapping_query)
+
+print(recall)
+
 search_identifiers = np.array([name.rsplit('/', 1)[1].split('_', 1)[0] for name in mapping_query])
 db_identifiers = np.array([name.rsplit('/', 1)[1].rsplit('.', 1)[0] for name in mapping_db])
 
