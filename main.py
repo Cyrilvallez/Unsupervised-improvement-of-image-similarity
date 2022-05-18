@@ -48,6 +48,9 @@ import numpy as np
 from helpers import utils
 import experiment as ex
 
+
+save_folder = utils.parse_input()
+
 algorithm = 'SimCLR v2 ResNet50 2x'
 main_dataset = 'BSDS500_original'
 distractor_dataset = 'Flickr500K'
