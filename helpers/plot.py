@@ -39,27 +39,13 @@ def time_recall_plot_flat(results, save=False, filename=None):
         
     
     plt.figure()
-    for i in range(len(names)):
-        if names[i] == 'JS Flat':
-            plt.scatter(recalls[i], times[i], color='r', marker='*', s=100)
-        if names[i] == 'cosine Flat':
-            plt.scatter(recalls[i], times[i], color='b', marker='o', s=100)
-        if names[i] == 'L2 Flat':
-            plt.scatter(recalls[i], times[i], color='g', marker='x', s=100)
-        if names[i] == 'L1 Flat':
-            plt.scatter(recalls[i], times[i], color='m', marker='s', s=100)
-        if names[i] == 'JS IVFFlat':
-            plt.plot(recalls[i], times[i], color='r')
-        if names[i] == 'cosine IVFFlat':
-            plt.plot(recalls[i], times[i], color='b')
-        if names[i] == 'L2 IVFFlat':
-            plt.plot(recalls[i], times[i], color='g')
-        if names[i] == 'L1 IVFFlat':
-            plt.plot(recalls[i], times[i], color='m')
+    for i in range(len(recall)):
+        plt.scatter(recall[i], searching_time[i], color=COLORS[metric[i]], 
+                    marker=MARKERS[metric[i]], label=metric[i])
 
-    plt.xlabel('Recall@1')
+    plt.xlabel(f'Recall@{k[0]}')
     plt.ylabel('Search time [s]')
-    plt.legend(names)
-        
-    plt.savefig('benchmark.pdf', bbox_inches='tight')
+    plt.legend()
+    if save:
+        plt.savefig(filename, bbox_inches='tight')
     plt.show()
