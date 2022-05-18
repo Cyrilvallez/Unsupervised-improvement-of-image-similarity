@@ -9,8 +9,28 @@ import matplotlib.pyplot as plt
 
 from helpers import plot_config
 
+COLORS = {
+    'cosine': 'b',
+    'L2': 'r',
+    'L1': 'g',
+    }
+
+MARKERS = {
+    'cosine': '*',
+    'L2': 'o',
+    'L1': 'x',
+    }
 
 def time_recall_plot(results, save=False, filename=None):
+    
+    recall = []
+    searching_time = []
+    metric = []
+    
+    for key in results.keys():
+        metric.append(key.rsplit('--', 1)[1])
+        recall.append(results[key])
+        searching_time.append(results[key]['searching_time'])
     
     plt.figure()
     for i in range(len(names)):
