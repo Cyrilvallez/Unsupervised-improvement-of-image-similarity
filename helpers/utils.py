@@ -41,10 +41,10 @@ def load_features(method_name, dataset_name):
     """
     
     if (method_name not in MODEL_LOADER.keys() and method_name not in NAME_TO_ALGO.keys()):
-        raise ValueError('Method name must be one of {MODEL_LOADER.keys()} or {NAME_TO_ALGO.keys()}.')
+        raise ValueError(f'Method name must be one of {MODEL_LOADER.keys(),} or {NAME_TO_ALGO.keys(),}.')
     
     if dataset_name not in datasets.VALID_DATASET_NAMES:
-        raise ValueError('The dataset name must be one of {VALID_DATASET_NAMES}.')
+        raise ValueError(f'The dataset name must be one of {datasets.VALID_DATASET_NAMES,}.')
         
     path = 'Features/' + dataset_name + '-' + '_'.join(method_name.split(' '))
 

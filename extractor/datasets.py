@@ -219,7 +219,7 @@ def create_dataset(dataset_name, transforms):
 
     
     if dataset_name not in VALID_DATASET_NAMES:
-        raise ValueError('The dataset name must be one of {VALID_DATASET_NAMES}.')
+        raise ValueError(f'The dataset name must be one of {VALID_DATASET_NAMES,}.')
     
     if dataset_name == 'Kaggle_templates':
         path1 = 'Datasets/Kaggle_memes/Templates_experimental/'

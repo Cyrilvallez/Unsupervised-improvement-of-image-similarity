@@ -19,7 +19,7 @@ import experiment as ex
 # so that we do not mistakenly reuse the path from previous experiments
 save_folder = utils.parse_input()
 
-algorithm = 'SimCLRv2 ResNet50 2x'
+algorithm = 'SimCLR v2 ResNet50 2x'
 main_dataset = 'BSDS500_original'
 distractor_dataset = 'Flickr500K'
 query_dataset = 'BSDS500_attacks'

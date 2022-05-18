@@ -29,8 +29,12 @@ def time_recall_plot(results, save=False, filename=None):
     
     for key in results.keys():
         metric.append(key.rsplit('--', 1)[1])
-        recall.append(results[key])
+        # recall.append(results[key])
         searching_time.append(results[key]['searching_time'])
+        
+        for subkey in results[key].keys():
+            if 'recall' in subkey:
+                recall.append(results[key][subkey])
     
     plt.figure()
     for i in range(len(names)):

@@ -47,7 +47,7 @@ def extract_neural(model_name, dataset, batch_size=256, workers=8, device='cuda'
     """
     
     if (model_name not in neural.MODEL_LOADER.keys()):
-        raise ValueError(f'Model must be one of {neural.MODEL_LOADER.keys()}.')
+        raise ValueError(f'Model must be one of {neural.MODEL_LOADER.keys(),}.')
         
     if (device != 'cuda' and device != 'cpu'):
         raise ValueError('Device must be either `cuda` or `cpu`.')
@@ -150,7 +150,7 @@ def extract_perceptual(algorithm, dataset, hash_size=8, batch_size=2048,
     """
     
     if (algorithm not in perceptual.NAME_TO_ALGO.keys()):
-        raise ValueError(f'Algorithm must be one of {perceptual.NAME_TO_ALGO.keys()}.')
+        raise ValueError(f'Algorithm must be one of {perceptual.NAME_TO_ALGO.keys(),}.')
     
     algorithm = perceptual.NAME_TO_ALGO[algorithm]
     
