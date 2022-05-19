@@ -25,11 +25,6 @@ features_query, mapping_query = utils.load_features(algorithm, query_dataset)
 
 d = features_db.shape[1]
 
-device = torch.device('cuda')
-
-features_db = torch.tensor(features_db).to(device)
-features_query = torch.tensor(features_query).to(device)
-
 
 nlist = int(10*np.sqrt(features_db.shape[0]))
 
@@ -47,7 +42,7 @@ t1 = time.time()
 
 print(f'Training time : {t1 - t0:.2f} s', flush=True)
 
-D1,I1 = index.search(features_query, 1)
+D,I = index.search(features_query, 1)
 
 t2 = time.time()
 

@@ -10,6 +10,7 @@ import faiss
 import time
 from PIL import Image, ImageFile
 from tqdm import tqdm
+import gc
 ImageFile.LOAD_TRUNCATED_IMAGES=True
 
 from helpers import utils
@@ -76,6 +77,7 @@ class Experiment():
         
         try:
             del self.index
+            gc.collect()
         except AttributeError:
             pass
         
