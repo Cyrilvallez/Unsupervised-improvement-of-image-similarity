@@ -20,9 +20,9 @@ import experiment as ex
 save_folder = utils.parse_input()
 
 algorithm = 'SimCLR v2 ResNet50 2x'
-main_dataset = 'Kaggle_templates'
+main_dataset = 'BSDS500_original'
 distractor_dataset = 'Flickr500K'
-query_dataset = 'Kaggle_memes'
+query_dataset = 'BSDS500_attacks'
 
 # factory_str = 'Flat'
 metrics = ['L2', 'L1', 'cosine']
