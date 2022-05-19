@@ -7,7 +7,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=32000
 #SBATCH --partition=nodes
-#SBATCH --gres=gpu:v100:1
+#SBATCH --gres=gpu:a100:1
 #SBATCH --chdir=/cluster/raid/home/cyril.vallez/Project2
 
 # Verify working directory

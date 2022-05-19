@@ -361,10 +361,31 @@ def compare_metrics_Flat(metrics, algorithm, main_dataset, query_dataset,
 
     """
     
-    if filename is None:
-        filename = 'Results/'
-    
     factory_str = 'Flat'
+
+    experiment = Experiment(factory_str, algorithm, main_dataset, query_dataset,
+                            distractor_dataset=distractor_dataset, metric=metrics[0],
+                            k=k)
+
+    result = {}
+
+    # experiment.to_gpu()
+    result[experiment.experiment_name] = experiment.fit()
+    
+    for metric in metrics[1:]:
+        experiment.set_index(factory_str, metric=metric)
+        # experiment.to_gpu()
+        result[experiment.experiment_name] = experiment.fit()
+        
+    utils.save_dictionary(result, filename)
+    
+    
+def compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
+                         distractor_dataset, filename, k=1):
+    
+    assert(nprobes[-1] <= nlist)
+    
+    factory_str = f'IVF{nlist},Flat'
 
     experiment = Experiment(factory_str, algorithm, main_dataset, query_dataset,
                             distractor_dataset=distractor_dataset, metric=metrics[0],
