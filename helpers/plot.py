@@ -35,7 +35,7 @@ def time_recall_plot_flat(results, save=False, filename=None):
         k.append(results[key]['k'])
         searching_time.append(results[key]['searching_time'])
         
-    assert(np.array_equal(k == len(k)*[k[0]]))
+    assert(np.array_equal(k, len(k)*[k[0]]))
         
     
     plt.figure()
@@ -51,7 +51,7 @@ def time_recall_plot_flat(results, save=False, filename=None):
     plt.show()
     
     
-def time_recall_plot_IVF(results, save=False, filename=None):
+def time_recall_plot_IVF(results, ylog=False, save=False, filename=None):
     
     recall = []
     searching_time = []
@@ -60,29 +60,29 @@ def time_recall_plot_IVF(results, save=False, filename=None):
     method = []
     
     for key in results.keys():
-        method_ = key.split('--', 1)[0]
-        method.append(method_)
-        
-        if 'IVF' in method_:
-            metric.append(key.split('--', 1)[1])
-        else:
-            metric.append(key.split('--', 1)[1])
-            
+        method.append(key.split('--', 1)[0])
+        metric.append(key.split('--', 1)[1])
         recall.append(results[key]['recall'])
         k.append(results[key]['k'])
         searching_time.append(results[key]['searching_time'])
         
-    assert(np.array_equal(k == len(k)*[k[0]]))
+    assert(np.array_equal(k, len(k)*[k[0]]))
         
     
     plt.figure()
     for i in range(len(recall)):
-        plt.scatter(recall[i], searching_time[i], color=COLORS[metric[i]], 
-                    marker=MARKERS[metric[i]], label=metric[i])
+        if 'IVF' in method[i]:
+            plt.plot(recall[i], searching_time[i], color=COLORS[metric[i]], 
+                     label=method[i] + '-' + metric[i])
+        else:
+            plt.scatter(recall[i], searching_time[i], color=COLORS[metric[i]], 
+                        marker=MARKERS[metric[i]], label=method[i] + '-' + metric[i])
 
     plt.xlabel(f'Recall@{k[0]}')
     plt.ylabel('Search time [s]')
     plt.legend()
+    if ylog:
+        plt.yscale('log')
     if save:
         plt.savefig(filename, bbox_inches='tight')
     plt.show()
