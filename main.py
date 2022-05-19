@@ -33,7 +33,7 @@ factory_str = f'IVF{nlist},Flat'
 nprobes = [1, 5, 10, 20, 50, 100, 200, 300, 400]
 
 filename = save_folder + 'results.json'
-ex.compare_metrics_Flat(metrics, algorithm, main_dataset, query_dataset,
-                        distractor_dataset, filename)
-# ex.compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
-                        # distractor_dataset, filename, k=1)
+# ex.compare_metrics_Flat(metrics, algorithm, main_dataset, query_dataset,
+                        # distractor_dataset, filename)
+ex.compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
+                        distractor_dataset, filename, k=1)
