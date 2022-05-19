@@ -381,6 +381,35 @@ def compare_metrics_Flat(metrics, algorithm, main_dataset, query_dataset,
     
 def compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
                          distractor_dataset, filename, k=1):
+    """
+    Compare the performaces of IVF vs Flat for cosine and L2 metrics, for
+    different nprobes.
+
+    Parameters
+    ----------
+    nlist : int
+        The number of inverted lists.
+    nprobes : list
+        The different nprobes.
+    algorithm : string
+        The name of the algorithm used to extract the features.
+    main_dataset : string
+        Name of the main dataset from which the features were extracted.
+    query_dataset : string
+        Name of the dataset from which the query features were extracted.
+    distractor_dataset : string, optional
+        Name of the dataset used as distractor features (images) for the 
+        database.
+    filename : string
+        Filename to save the results.
+    k : int, optional
+        Number of nearest neighbors for the search.
+
+    Returns
+    -------
+    None.
+
+    """
     
     assert(nprobes[-1] <= nlist)
     
@@ -396,10 +425,19 @@ def compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
     experiment.to_gpu()
     result[experiment.experiment_name] = experiment.fit()
     
-    for metric in metrics[1:]:
-        experiment.set_index(factory_str, metric=metric)
-        # experiment.to_gpu()
-        result[experiment.experiment_name] = experiment.fit()
+    experiment.set_index(factory_str[0], metric=metrics[1])
+    experiment.to_gpu()
+    result[experiment.experiment_name] = experiment.fit()
+    
+    for metric in metrics:
+        experiment.set_index(factory_str[1], metric=metric)
+        experiment.to_gpu()
+        result[experiment.experiment_name + '--nprobe{nprobes[0]}'] = \
+            experiment.fit(k=k, probe=nprobes[0])
         
+        for probe in nprobes[1:]:
+            result[experiment.experiment_name + '--nprobe{probe}'] = \
+                experiment.new_search(k=k, probe=nprobes[0])
+            
     utils.save_dictionary(result, filename)
     
