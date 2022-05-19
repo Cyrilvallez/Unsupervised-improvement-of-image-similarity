@@ -54,7 +54,9 @@ factory_str = f'IVF{nlist},Flat'
                         # distractor_dataset, filename, k=1)
                         
 index = faiss.index_factory(features_db.shape[1], factory_str)
-index = faiss.index_cpu_to_all_gpus(index)
+res = faiss.StandardGpuResources()
+# index = faiss.index_cpu_to_all_gpus(index)
+index = faiss.index_cpu_to_gpu(res, 0, index)
 
 index.train(features_db)
 index.add(features_db)
