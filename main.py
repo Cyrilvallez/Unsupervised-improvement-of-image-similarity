@@ -9,6 +9,7 @@ Created on Tue May 10 17:28:03 2022
 
 import numpy as np
 import faiss
+import torch
 
 from helpers import utils
 import experiment as ex
@@ -30,6 +31,15 @@ query_dataset = 'BSDS500_attacks'
 features_db, mapping_db = utils.combine_features(algorithm, main_dataset,
                                                            distractor_dataset)
 features_query, mapping_query = utils.load_features(algorithm, query_dataset)
+
+
+device = torch.device('cuda')
+
+features_db = torch.tensor(features_db).to(device)
+features_query = torch.tensor(features_query).to(device)
+
+mapping_db = torch.tensor(mapping_db).to(device)
+mapping_query = torch.tensor(mapping_query).to(device)
 
 
 nlist = int(10*np.sqrt(500000))
