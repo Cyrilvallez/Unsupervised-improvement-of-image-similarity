@@ -9,6 +9,7 @@ Created on Fri May 13 11:15:56 2022
 import faiss
 import time
 from PIL import Image, ImageFile
+from tqdm import tqdm
 ImageFile.LOAD_TRUNCATED_IMAGES=True
 
 from helpers import utils
@@ -386,12 +387,12 @@ def compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
 
     result = {}
     
-    for metric in metrics:
+    for metric in tqdm(metrics):
         experiment.set_index(factory_str[0], metric=metric)
         experiment.to_gpu()
         result[experiment.experiment_name] = experiment.fit(k=k)
         
-    for metric in metrics:
+    for metric in tqdm(metrics):
         experiment.set_index(factory_str[1], metric=metric)
         experiment.to_gpu()
         result[experiment.experiment_name] = experiment.fit(k=k, probe=nprobes)
