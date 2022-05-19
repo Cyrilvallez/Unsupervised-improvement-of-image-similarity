@@ -79,6 +79,7 @@ class Experiment():
         try:
             # This is needed to free the memory of current index and
             # not crach the process
+            self.index.reset()
             del self.index
         except AttributeError:
             pass
