@@ -54,6 +54,7 @@ class Experiment():
                                                                    distractor_dataset)
         self.features_query, self.mapping_query = utils.load_features(algorithm, query_dataset)
         self.d = self.features_db.shape[1]
+        self.resource = faiss.StandardGpuResources()
         
         
     def set_index(self, factory_str, metric='cosine'):
@@ -76,10 +77,9 @@ class Experiment():
         """
         
         try:
-            # This is needed to immediately free the memory of current index and
+            # This is needed to free the memory of current index and
             # not crach the process
             del self.index
-            gc.collect()
         except AttributeError:
             pass
         
@@ -101,7 +101,7 @@ class Experiment():
         None.
 
         """
-        self.index = faiss.index_cpu_to_all_gpus(self.index)
+        self.index = faiss.index_cpu_to_gpu(self.resource, 0, self.index)
         
         
     def train(self):
