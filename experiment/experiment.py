@@ -76,6 +76,8 @@ class Experiment():
         """
         
         try:
+            # This is needed to immediately free the memory of current index and
+            # not crach the process
             del self.index
             gc.collect()
         except AttributeError:
