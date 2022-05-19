@@ -9,10 +9,11 @@ Created on Tue May 10 17:28:03 2022
 
 import numpy as np
 import faiss
-
+import torch
 from helpers import utils
 import experiment as ex
 
+torch.cuda.init()
 # Force the use of a user input at run-time to specify the path 
 # so that we do not mistakenly reuse the path from previous experiments
 save_folder = utils.parse_input()
