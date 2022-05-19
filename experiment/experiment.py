@@ -28,8 +28,6 @@ class Experiment():
 
     Parameters
     ----------
-    factory_str : string
-        The factory string for the new index.
     algorithm : string
         The name of the algorithm used to extract the features.
     main_dataset : string
@@ -39,22 +37,12 @@ class Experiment():
     distractor_dataset : string, optional
         Name of the dataset used as distractor features (images) for the 
         database.
-    metric : string, optional
-        String identifier of the metric to be used for the index. The default
-        is 'cosine'.
-    k : int, optional
-        Number of nearest neighbors for the search.
-
 
     """
     
-    def __init__(self, factory_str, algorithm, main_dataset, query_dataset,
-                 distractor_dataset='Flickr500K', metric='cosine', k=1):
+    def __init__(self, algorithm, main_dataset, query_dataset,
+                 distractor_dataset='Flickr500K'):
         
-        if (metric not in METRICS):
-            raise ValueError(f'Metric should be one of {METRICS.keys(),}')
-        
-        self.factory_str = factory_str
         self.algorithm = algorithm
         self.main_dataset = main_dataset
         self.query_dataset = query_dataset
@@ -64,29 +52,13 @@ class Experiment():
                                                                    distractor_dataset)
         self.features_query, self.mapping_query = utils.load_features(algorithm, query_dataset)
         self.d = self.features_db.shape[1]
-        self.k = k
-        self.metric = metric
-        self.experiment_name = factory_str + '--' + metric
-            
-        self.index = faiss.index_factory(self.d, factory_str, METRICS[metric])
-        
-        
-    def to_gpu(self):
-        """
-        Put the index on GPU.
-
-        Returns
-        -------
-        None.
-
-        """
-        self.index = faiss.index_cpu_to_all_gpus(self.index)
         
         
     def set_index(self, factory_str, metric='cosine'):
         """
-        Change the current index to a new one. Allows not to reload data but still
-        performing new experiments.
+        Set the current index to a new one. Allows not to reload data but still
+        performing new experiments. This is not set in the contructor because
+        we usually change it inside loops.
 
         Parameters
         ----------
@@ -100,10 +72,31 @@ class Experiment():
         None.
 
         """
+        
+        try:
+            del self.index
+        except AttributeError:
+            pass
+        
+        if (metric not in METRICS):
+            raise ValueError(f'Metric should be one of {METRICS.keys(),}')
+            
         self.factory_str = factory_str
         self.metric = metric
         self.experiment_name = factory_str + '--' + metric
         self.index = faiss.index_factory(self.d, factory_str, METRICS[metric])
+        
+        
+    def to_gpu(self):
+        """
+        Put the index on GPU.
+
+        Returns
+        -------
+        None.
+
+        """
+        self.index = faiss.index_cpu_to_all_gpus(self.index)
         
         
     def train(self):
@@ -219,16 +212,14 @@ class Experiment():
         return neighbors
     
     
-    def fit(self, k=None, probe=None):
+    def fit(self, k, probe=None):
         """
         Combine train, search and recall in one handy function.
 
         Parameters
         ----------
-        k : int, optional
-            The number of nearest neighbors. If omitted, will default to the 
-            actual value of the class which is 1 at construction time. 
-            The default is None.
+        k : int or list
+            The number of nearest neighbors.
         probe : int, optional
             The number of clusters to visit for IVF indices. If omitted, will default to the 
             actual value of the index which is 1 at construction time. The default is None.
@@ -239,69 +230,47 @@ class Experiment():
             Contains recall and times for the experiment.
 
         """
-        
-        self.train()
-        self.search(k=k, probe=probe)
-        recall = self.recall()
-        
-        result = {
-            f'recall@{self.k}': recall,
-            'training_time': self.time_training,
-            'searching_time': self.time_searching,
-            'k': self.k,
-                  }
-        
-        # Add the nprobe value to the result if the given index has it
-        try:
-            result['nprobe'] = self.index.nprobe
-        except AttributeError:
-            pass
-        
-        
-        return result
-    
-    
-    def new_search(self, k=None, probe=None):
-        """
-        Combine search and recall in one function (thus new search is performed
-        without retraining the index).
-
-        Parameters
-        ----------
-        k : int, optional
-            The number of nearest neighbors. If omitted, will default to the 
-            actual value of the class which is 1 at construction time. 
-            The default is None.
-        probe : int, optional
-            The number of clusters to visit for IVF indices. If omitted, will default to the 
-            actual value of the index which is 1 at construction time. The default is None.
-
-        Returns
-        -------
-        result : dictionary
-            Contains recall and times for the experiment.
-
-        """
-        
-        self.search(k=k, probe=probe)
-        recall = self.recall()
-        
-        result = {
-            f'recall': recall,
-            'training_time': self.time_training,
-            'searching_time': self.time_searching,
-            'k': self.k,
-                  }
-        
-        # Add the nprobe value to the result if the given index has it
-        try:
-            result['nprobe'] = self.index.nprobe
-        except AttributeError:
-            pass
             
-        return result
+        self.train()
         
-
+        if type(k) == list and type(probe==list):
+            raise ValueError('Cannot set both k and probe to lists.')
+        
+        elif type(k) == list:
+            recall = []
+            searching_time = []
+            for k_ in k:
+                self.search(k=k_, probe=probe)
+                recall.append(self.recall())
+                searching_time.append(self.time_searching)
+        
+        elif type(probe) == list:
+            recall = []
+            searching_time = []
+            for probe_ in probe:
+                self.search(k=k, probe=probe_)
+                recall.append(self.recall())
+                searching_time.append(self.time_searching)
+                
+        else:
+            self.search(k=k, probe=probe)
+            recall = self.recall()
+            searching_time = self.time_searching
+        
+        result = {
+            'recall': recall,
+            'training_time': self.time_training,
+            'searching_time': searching_time,
+            'k': k,
+                  }
+        
+        if probe is not None:
+            result['nprobe'] = probe
+        
+        return result
+    
+    
+    
 
 def create_flat_index(d, metric='cosine'):
     
@@ -362,19 +331,15 @@ def compare_metrics_Flat(metrics, algorithm, main_dataset, query_dataset,
     
     factory_str = 'Flat'
 
-    experiment = Experiment(factory_str, algorithm, main_dataset, query_dataset,
-                            distractor_dataset=distractor_dataset, metric=metrics[0],
-                            k=k)
+    experiment = Experiment(algorithm, main_dataset, query_dataset,
+                            distractor_dataset=distractor_dataset)
 
     result = {}
-
-    experiment.to_gpu()
-    result[experiment.experiment_name] = experiment.fit()
     
-    for metric in metrics[1:]:
+    for metric in metrics:
         experiment.set_index(factory_str, metric=metric)
         experiment.to_gpu()
-        result[experiment.experiment_name] = experiment.fit()
+        result[experiment.experiment_name] = experiment.fit(k=k)
         
     utils.save_dictionary(result, filename)
     
@@ -416,28 +381,20 @@ def compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
     factory_str = ['Flat', f'IVF{nlist},Flat']
     metrics = ['cosine', 'L2']
 
-    experiment = Experiment(factory_str[0], algorithm, main_dataset, query_dataset,
-                            distractor_dataset=distractor_dataset, metric=metrics[0],
-                            k=k)
+    experiment = Experiment(algorithm, main_dataset, query_dataset,
+                            distractor_dataset=distractor_dataset)
 
     result = {}
-
-    experiment.to_gpu()
-    result[experiment.experiment_name] = experiment.fit()
     
-    experiment.set_index(factory_str[0], metric=metrics[1])
-    experiment.to_gpu()
-    result[experiment.experiment_name] = experiment.fit()
-    
+    for metric in metrics:
+        experiment.set_index(factory_str[0], metric=metric)
+        experiment.to_gpu()
+        result[experiment.experiment_name] = experiment.fit(k=k)
+        
     for metric in metrics:
         experiment.set_index(factory_str[1], metric=metric)
         experiment.to_gpu()
-        result[experiment.experiment_name + '--nprobe{nprobes[0]}'] = \
-            experiment.fit(k=k, probe=nprobes[0])
-        
-        for probe in nprobes[1:]:
-            result[experiment.experiment_name + '--nprobe{probe}'] = \
-                experiment.new_search(k=k, probe=nprobes[0])
+        result[experiment.experiment_name] = experiment.fit(k=k, probe=nprobes)
             
     utils.save_dictionary(result, filename)
     

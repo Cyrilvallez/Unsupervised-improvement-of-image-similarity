@@ -49,3 +49,40 @@ def time_recall_plot_flat(results, save=False, filename=None):
     if save:
         plt.savefig(filename, bbox_inches='tight')
     plt.show()
+    
+    
+def time_recall_plot_IVF(results, save=False, filename=None):
+    
+    recall = []
+    searching_time = []
+    metric = []
+    k = []
+    method = []
+    
+    for key in results.keys():
+        method_ = key.split('--', 1)[0]
+        method.append(method_)
+        
+        if 'IVF' in method_:
+            metric.append(key.split('--', 1)[1])
+        else:
+            metric.append(key.split('--', 1)[1])
+            
+        recall.append(results[key]['recall'])
+        k.append(results[key]['k'])
+        searching_time.append(results[key]['searching_time'])
+        
+    assert(np.array_equal(k == len(k)*[k[0]]))
+        
+    
+    plt.figure()
+    for i in range(len(recall)):
+        plt.scatter(recall[i], searching_time[i], color=COLORS[metric[i]], 
+                    marker=MARKERS[metric[i]], label=metric[i])
+
+    plt.xlabel(f'Recall@{k[0]}')
+    plt.ylabel('Search time [s]')
+    plt.legend()
+    if save:
+        plt.savefig(filename, bbox_inches='tight')
+    plt.show()
