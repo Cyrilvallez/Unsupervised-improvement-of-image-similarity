@@ -14,6 +14,14 @@ ImageFile.LOAD_TRUNCATED_IMAGES=True
 from helpers import utils
 
 
+METRICS = {
+    'JS': faiss.METRIC_JensenShannon,
+    'L2': faiss.METRIC_L2,
+    'L1': faiss.METRIC_L1,
+    'cosine': faiss.METRIC_INNER_PRODUCT,
+    }
+
+
 class Experiment():
     """
     Class representing data alongside index method for easier manipulation.
@@ -293,15 +301,6 @@ class Experiment():
             
         return result
         
-        
-
-
-METRICS = {
-    'JS': faiss.METRIC_JensenShannon,
-    'L2': faiss.METRIC_L2,
-    'L1': faiss.METRIC_L1,
-    'cosine': faiss.METRIC_INNER_PRODUCT,
-    }
 
 
 def create_flat_index(d, metric='cosine'):
