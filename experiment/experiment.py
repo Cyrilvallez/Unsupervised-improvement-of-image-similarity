@@ -368,12 +368,12 @@ def compare_metrics_Flat(metrics, algorithm, main_dataset, query_dataset,
 
     result = {}
 
-    # experiment.to_gpu()
+    experiment.to_gpu()
     result[experiment.experiment_name] = experiment.fit()
     
     for metric in metrics[1:]:
         experiment.set_index(factory_str, metric=metric)
-        # experiment.to_gpu()
+        experiment.to_gpu()
         result[experiment.experiment_name] = experiment.fit()
         
     utils.save_dictionary(result, filename)
@@ -384,15 +384,16 @@ def compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
     
     assert(nprobes[-1] <= nlist)
     
-    factory_str = f'IVF{nlist},Flat'
+    factory_str = ['Flat', f'IVF{nlist},Flat']
+    metrics = ['cosine', 'L2']
 
-    experiment = Experiment(factory_str, algorithm, main_dataset, query_dataset,
+    experiment = Experiment(factory_str[0], algorithm, main_dataset, query_dataset,
                             distractor_dataset=distractor_dataset, metric=metrics[0],
                             k=k)
 
     result = {}
 
-    # experiment.to_gpu()
+    experiment.to_gpu()
     result[experiment.experiment_name] = experiment.fit()
     
     for metric in metrics[1:]:
