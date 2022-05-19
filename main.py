@@ -33,7 +33,7 @@ features_query, mapping_query = utils.load_features(algorithm, query_dataset)
 
 
 nlist = int(10*np.sqrt(500000))
-factory_str = f'IndexIVF{nlist},Flat'
+factory_str = f'IVF{nlist},Flat'
 # nprobes = [1, 5, 10, 20, 50, 100, 200, 300, 400]
 
 # filename = save_folder + 'results.json'
