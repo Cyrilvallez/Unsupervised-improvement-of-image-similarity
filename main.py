@@ -39,9 +39,9 @@ features_query, mapping_query = utils.load_features(algorithm, query_dataset)
 device = torch.device('cuda')
 
 features_db = torch.tensor(features_db).to(device)
-# features_query = torch.tensor(features_query).to(device)
+features_query = torch.tensor(features_query).to(device)
 
-mapping_db = torch.tensor(mapping_db).to(device)
+# mapping_db = torch.tensor(mapping_db).to(device)
 # mapping_query = torch.tensor(mapping_query).to(device)
 
 
