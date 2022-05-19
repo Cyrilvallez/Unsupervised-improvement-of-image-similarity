@@ -1,20 +1,20 @@
 {
 	"Flat--L2": {
 		"recall@1": 0.9445689655172413,
-		"training_time": 6.0800487995147705,
-		"searching_time": 196.92488551139832,
+		"training_time": 1.0017619132995605,
+		"searching_time": 3.5264854431152344,
 		"k": 1
 	},
 	"Flat--L1": {
 		"recall@1": 0.9637931034482758,
-		"training_time": 6.13912558555603,
-		"searching_time": 2473.5212123394012,
+		"training_time": 1.1035900115966797,
+		"searching_time": 15.916961908340454,
 		"k": 1
 	},
 	"Flat--cosine": {
 		"recall@1": 0.9487931034482758,
-		"training_time": 6.111281633377075,
-		"searching_time": 194.6648199558258,
+		"training_time": 1.0112762451171875,
+		"searching_time": 3.475259304046631,
 		"k": 1
 	}
 }
