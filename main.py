@@ -9,6 +9,7 @@ Created on Tue May 10 17:28:03 2022
 
 import numpy as np
 import faiss
+import time
 import torch
 
 from helpers import utils
@@ -27,6 +28,8 @@ query_dataset = 'BSDS500_attacks'
 
 # factory_str = 'Flat'
 # metrics = ['L2', 'L1', 'cosine']
+
+t0 = time.time()
 
 features_db, mapping_db = utils.combine_features(algorithm, main_dataset,
                                                            distractor_dataset)
@@ -62,3 +65,4 @@ recall = utils.recall(I, mapping_db, mapping_query)
 
 print(f'Recall : {recall}')
 
+print(f'Time : {time.time() - t0}')
