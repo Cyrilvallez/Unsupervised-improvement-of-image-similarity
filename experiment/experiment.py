@@ -384,7 +384,7 @@ def compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
     assert(nprobes[-1] <= nlist)
     
     factory_str = ['Flat', f'IVF{nlist},Flat']
-    metrics = ['cosine', 'L2']
+    metrics = ['L2', 'cosine']
 
     experiment = Experiment(algorithm, main_dataset, query_dataset,
                             distractor_dataset=distractor_dataset)

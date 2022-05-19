@@ -13,6 +13,9 @@
 # Verify working directory
 echo $(pwd)
 
+# Pull last modifications
+git pull
+
 # Print gpu configuration for this job
 nvidia-smi
 
