@@ -25,7 +25,7 @@ distractor_dataset = 'Flickr500K'
 query_dataset = 'Kaggle_memes'
 
 # factory_str = 'Flat'
-# metrics = ['L2', 'L1', 'cosine']
+metrics = ['L2', 'L1', 'cosine']
 
 
 nlist = int(10*np.sqrt(500000))
@@ -33,5 +33,5 @@ nlist = int(10*np.sqrt(500000))
 nprobes = [1, 5, 10, 20, 50, 100, 200, 300, 400]
 
 filename = save_folder + 'results.json'
-ex.compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
+ex.compare_metrics_Flat(metrics, algorithm, main_dataset, query_dataset,
                         distractor_dataset, filename, k=1)
