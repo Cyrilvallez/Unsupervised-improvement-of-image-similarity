@@ -67,7 +67,7 @@ def extract_neural(model_name, dataset, batch_size=256, workers=8, device='cuda'
             feats = model(images).cpu().numpy()
         
         if start==0:
-            features = np.empty((len(dataset), len(feats[0])))
+            features = np.empty((len(dataset), len(feats[0])), dtype='float32')
             indices_to_names = np.empty(len(dataset), dtype=object)
             
         N = len(names)
@@ -154,7 +154,7 @@ def extract_perceptual(algorithm, dataset, hash_size=8, batch_size=2048,
     
     algorithm = perceptual.NAME_TO_ALGO[algorithm]
     
-    features = np.empty((len(dataset), hash_size**2))
+    features = np.empty((len(dataset), hash_size**2), dtype='float32')
     indices_to_names = np.empty(len(dataset), dtype=object)
     
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
