@@ -70,8 +70,7 @@ class Experiment(object):
     def set_index(self, factory_str, metric):
         
         try:
-            # This is needed to free the memory of current index and
-            # not crach the process
+            # Try to force deletion of previous index by all possible means
             self.index.reset()
             del self.index
             gc.collect()
@@ -82,7 +81,7 @@ class Experiment(object):
         
     def to_gpu(self):
         
-        self.index = faiss.index_cpu_to_gpu(self.resource, 0, self.index)
+        self.index = faiss.index_cpu_to_all_gpus(self.index)
         
     def fit(self):
         
