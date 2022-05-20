@@ -240,12 +240,7 @@ class Experiment(object):
 
         """
         
-        try:
-            recall, _ = utils.recall(self.I, self.mapping_db, self.mapping_query)
-        except AttributeError:
-            raise AttributeError('Please call `search` before asking for recall')
-            
-        return recall
+        return 0.5
     
             
     def get_neighbors_of_query(self, query_index):
