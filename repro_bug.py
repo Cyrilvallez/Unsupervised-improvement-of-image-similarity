@@ -85,7 +85,7 @@ class Data(object):
         else:
             return self.features_db
         
-    def get_features_dquery(self, metric):
+    def get_features_query(self, metric):
         
         if metric == 'cosine':
             return utils.normalize(self.features_query)
