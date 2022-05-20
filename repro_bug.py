@@ -19,7 +19,7 @@ factory_string = f'IVF{nlist},Flat'
 
 
 # Works fine
-"""
+
 indices = []
 indices.append(faiss.index_factory(d, factory_string, faiss.METRIC_L2))
 indices.append(faiss.index_factory(d, factory_string, faiss.METRIC_INNER_PRODUCT))
@@ -33,8 +33,8 @@ for i in tqdm(range(len(indices))):
     index.add(features_db)
     
     D, I = index.search(features_query, 1)
-"""
 
+"""
 # Memory issue
 index = faiss.index_factory(d, factory_string, faiss.METRIC_L2)
 index = faiss.index_cpu_to_all_gpus(index)
@@ -52,3 +52,4 @@ index.train(features_db)
 index.add(features_db)
 
 D, I = index.search(features_query, 1)
+"""
