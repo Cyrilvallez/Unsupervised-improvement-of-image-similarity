@@ -43,9 +43,11 @@ for i in tqdm(range(len(indices))):
     index.train(features_db)
     index.add(features_db)
     
-    D, I = index.search(features_query)
+    D, I = index.search(features_query, 1)
     recall.append(utils.recall(I, mapping_db, mapping_query))
 
+
+print(recall)
 """
 index = faiss.index_cpu_to_all_gpus(index)
 
