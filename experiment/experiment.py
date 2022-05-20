@@ -382,7 +382,7 @@ def compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
 
     """
     
-    assert(nprobes[-1] <= nlist)
+    assert(max(nprobes) <= nlist)
     
     factory_str = ['Flat', f'IVF{nlist},Flat']
     metrics = ['L2', 'cosine']
