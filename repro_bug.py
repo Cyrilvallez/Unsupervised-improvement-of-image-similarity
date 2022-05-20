@@ -336,7 +336,7 @@ class Experiment(object):
 t0 = time.time()
 nlist = int(10*np.sqrt(500000))
 factory_str = ['Flat', f'IVF{nlist},Flat']
-metrics = [faiss.METRIC_L2, faiss.METRIC_INNER_PRODUCT]
+metrics = ['L2', 'cosine']
 data = Data()
 experiment = Experiment(data)
 
