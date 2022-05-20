@@ -11,6 +11,7 @@ import faiss
 from helpers import utils
 import time
 import torch
+from tqdm import tqdm
 
 algorithm = 'SimCLR v2 ResNet50 2x'
 main_dataset = 'BSDS500_original'
@@ -29,7 +30,23 @@ d = features_db.shape[1]
 nlist = int(10*np.sqrt(features_db.shape[0]))
 
 factory_string = f'IVF{nlist},Flat'
-index = faiss.index_factory(d, factory_string)
+indices = []
+recall = []
+indices.append(faiss.index_factory(d, factory_string, faiss.METRIC_L2))
+indices.append(faiss.index_factory(d, factory_string, faiss.METRIC_INNER_PRODUCT))
+
+for i in tqdm(range(len(indices))):
+    
+    index = indices[i]
+    index = faiss.index_cpu_to_all_gpus(index)
+    
+    index.train(features_db)
+    index.add(features_db)
+    
+    D, I = index.search(features_query)
+    recall.append(utils.recall(I, mapping_db, mapping_query))
+
+"""
 index = faiss.index_cpu_to_all_gpus(index)
 
 
@@ -47,7 +64,7 @@ D,I = index.search(features_query, 1)
 t2 = time.time()
 
 print(f'Searching time : {t2 - t1:.2f} s', flush=True)
-
+"""
 
 
 
