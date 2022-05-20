@@ -157,14 +157,14 @@ class Experiment(object):
             self.index.nprobe = probe
         
         if self.metric == 'cosine':
-            features = utils.normalize(self.features_query)
+            features_query = utils.normalize(self.features_query)
         else:
-            features = self.features_query
+            features_query = self.features_query
             
         # Do not add normalization time
         t0 = time.time()
         
-        self.D, self.I = self.index.search(features, self.k)
+        self.D, self.I = self.index.search(features_query, self.k)
         
         self.time_searching = time.time() - t0
         
