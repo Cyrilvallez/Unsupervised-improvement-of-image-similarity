@@ -11,7 +11,7 @@ import faiss
 from tqdm import tqdm
 
 features_db = np.random.rand(500000, 4096)
-features_query = np.random.rand(500000, 4096)
+features_query = np.random.rand(40000, 4096)
 
 d = features_db.shape[1]
 nlist = int(10*np.sqrt(features_db.shape[0]))
