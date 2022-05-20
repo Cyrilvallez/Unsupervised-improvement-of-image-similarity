@@ -45,8 +45,8 @@ index.add(features_db)
 
 D, I = index.search(features_query, 1)
 
-index.reset()
-del index
+# index.reset()
+# del index
 
 index = faiss.index_factory(d, factory_string, faiss.METRIC_INNER_PRODUCT)
 index = faiss.index_cpu_to_all_gpus(index)
