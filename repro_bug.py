@@ -14,13 +14,14 @@ import time
 from helpers import utils
 from PIL import Image
 
+"""
 features_db = np.random.rand(500000, 4096).astype('float32')
 features_query = np.random.rand(40000, 4096).astype('float32')
 
 d = features_db.shape[1]
 nlist = int(10*np.sqrt(features_db.shape[0]))
 factory_string = f'IVF{nlist},Flat'
-
+"""
 
 # Works fine
 """
@@ -71,7 +72,7 @@ METRICS = {
 
 class Data(object):
     
-    def __init__(self, features_db, features_query):
+    def __init__(self, features_db=None, features_query=None):
         
         self.features_db = np.random.rand(500000, 4096).astype('float32')
         self.features_query = np.random.rand(40000, 4096).astype('float32')
@@ -333,7 +334,7 @@ class Experiment(object):
     
         
 t0 = time.time()
-        
+nlist = int(10*np.sqrt(500000))
 factory_str = ['Flat', f'IVF{nlist},Flat']
 metrics = [faiss.METRIC_L2, faiss.METRIC_INNER_PRODUCT]
 data = Data()
