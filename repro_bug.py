@@ -9,6 +9,7 @@ Created on Fri May 20 11:13:08 2022
 import numpy as np
 import faiss
 from tqdm import tqdm
+import gc
 
 features_db = np.random.rand(500000, 4096).astype('float32')
 features_query = np.random.rand(40000, 4096).astype('float32')
@@ -37,6 +38,7 @@ for i in tqdm(range(len(indices))):
     
 
 """
+"""
 # Memory issue
 index = faiss.index_factory(d, factory_string, faiss.METRIC_L2)
 index = faiss.index_cpu_to_all_gpus(index)
@@ -54,3 +56,46 @@ index.train(features_db)
 index.add(features_db)
 
 D, I = index.search(features_query, 1)
+"""
+#%%
+
+class Experiment(object):
+    
+    def __init__(self, features_db, features_query):
+        
+        self.features_db = features_db
+        self.features_query = features_query
+        self.d = self.features_db.shape[1]
+        
+    def set_index(self, factory_str, metric):
+        
+        try:
+            # This is needed to free the memory of current index and
+            # not crach the process
+            self.index.reset()
+            del self.index
+            gc.collect()
+        except AttributeError:
+            pass
+            
+        self.index = faiss.index_factory(self.d, factory_str, metric)
+        
+    def to_gpu(self):
+        
+        self.index = faiss.index_cpu_to_gpu(self.resource, 0, self.index)
+        
+    def fit(self):
+        
+        self.index.train(self.features_db)
+        self.index.add(self.features_db)
+        D, I = self.index.search(self.features_query, 1)
+        
+        
+        
+metrics = [faiss.METRIC_L2, faiss.METRIC_INNER_PRODUCT]
+experiment = Experiment(features_db, features_query)
+
+for metric in metrics:
+    experiment.set_index(factory_string, metric)
+    experiment.to_gpu()
+    experiment.fit()
