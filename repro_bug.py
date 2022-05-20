@@ -344,6 +344,6 @@ for string in factory_str:
     for metric in metrics:
         experiment.set_index(string, metric)
         experiment.to_gpu()
-        experiment.fit()
+        experiment.fit(1)
         
 print(f'Done in {time.time() - t0:.2f} s')      
