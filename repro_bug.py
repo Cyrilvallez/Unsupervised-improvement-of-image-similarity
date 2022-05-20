@@ -10,6 +10,7 @@ import numpy as np
 import faiss
 from tqdm import tqdm
 import gc
+import time
 
 features_db = np.random.rand(500000, 4096).astype('float32')
 features_query = np.random.rand(40000, 4096).astype('float32')
@@ -89,6 +90,7 @@ class Experiment(object):
         self.index.add(self.features_db)
         D, I = self.index.search(self.features_query, 1)
         
+t0 = time.time()
         
 factory_str = ['Flat', f'IVF{nlist},Flat']
 metrics = [faiss.METRIC_L2, faiss.METRIC_INNER_PRODUCT]
@@ -99,3 +101,5 @@ for string in factory_str:
         experiment.set_index(string, metric)
         experiment.to_gpu()
         experiment.fit()
+        
+print(f'Done in {time.time() - t0:.2f} s')      
