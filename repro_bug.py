@@ -90,11 +90,12 @@ class Experiment(object):
         D, I = self.index.search(self.features_query, 1)
         
         
-        
+factory_str = ['Flat', f'IVF{nlist},Flat']
 metrics = [faiss.METRIC_L2, faiss.METRIC_INNER_PRODUCT]
 experiment = Experiment(features_db, features_query)
 
-for metric in metrics:
-    experiment.set_index(factory_string, metric)
-    experiment.to_gpu()
-    experiment.fit()
+for string in factory_str:
+    for metric in metrics:
+        experiment.set_index(string, metric)
+        experiment.to_gpu()
+        experiment.fit()
