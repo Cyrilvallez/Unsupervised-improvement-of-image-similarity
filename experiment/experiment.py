@@ -15,7 +15,6 @@ ImageFile.LOAD_TRUNCATED_IMAGES=True
 
 from helpers import utils
 
-
 METRICS = {
     'JS': faiss.METRIC_JensenShannon,
     'L2': faiss.METRIC_L2,
@@ -24,7 +23,7 @@ METRICS = {
     }
 
 
-class Experiment():
+class Experiment(object):
     """
     Class representing data alongside index method for easier manipulation.
 
@@ -81,6 +80,7 @@ class Experiment():
             # not crach the process
             self.index.reset()
             del self.index
+            gc.collect()
         except AttributeError:
             pass
         
