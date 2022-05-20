@@ -8,3 +8,4 @@ Created on Fri May 20 13:57:32 2022
 
 from datetime import datetime
 
+print(f'Time during the execution of script : {datetime.now()}')
