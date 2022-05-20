@@ -63,8 +63,8 @@ class Experiment(object):
     
     def __init__(self, features_db, features_query):
         
-        self.features_db = features_db
-        self.features_query = features_query
+        self.features_db = np.random.rand(500000, 4096).astype('float32')
+        self.features_query = np.random.rand(40000, 4096).astype('float32')
         self.d = self.features_db.shape[1]
         
     def set_index(self, factory_str, metric):
