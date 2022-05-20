@@ -14,17 +14,17 @@ import time
 from helpers import utils
 from PIL import Image
 
-"""
+
 features_db = np.random.rand(500000, 4096).astype('float32')
 features_query = np.random.rand(40000, 4096).astype('float32')
 
 d = features_db.shape[1]
 nlist = int(10*np.sqrt(features_db.shape[0]))
 factory_string = f'IVF{nlist},Flat'
-"""
+
 
 # Works fine
-"""
+
 indices = []
 indices.append(faiss.index_factory(d, factory_string, faiss.METRIC_L2))
 indices.append(faiss.index_factory(d, factory_string, faiss.METRIC_INNER_PRODUCT))
@@ -41,7 +41,7 @@ for i in tqdm(range(len(indices))):
     
     
 
-"""
+
 """
 # Memory issue
 index = faiss.index_factory(d, factory_string, faiss.METRIC_L2)
@@ -327,7 +327,7 @@ class Experiment(object):
     
     
     
-        
+"""      
 t0 = time.time()
 nlist = int(10*np.sqrt(500000))
 factory_str = ['Flat', f'IVF{nlist},Flat']
@@ -342,3 +342,4 @@ for string in factory_str:
         experiment.fit(1)
         
 print(f'Done in {time.time() - t0:.2f} s')      
+"""
