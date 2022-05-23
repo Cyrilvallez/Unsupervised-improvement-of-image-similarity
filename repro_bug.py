@@ -349,7 +349,6 @@ class Experiment2(object):
         self.features_db = np.random.rand(500000, 4096).astype('float32')
         self.features_query = np.random.rand(40000, 4096).astype('float32')
         self.d = self.features_db.shape[1]
-        self.resource = faiss.StandardGpuResources()
         
         
     def set_index(self, factory_str, metric='cosine'):
@@ -376,7 +375,6 @@ class Experiment2(object):
             # not crach the process
             self.index.reset()
             del self.index
-            gc.collect()
         except AttributeError:
             pass
         
@@ -398,7 +396,7 @@ class Experiment2(object):
         None.
 
         """
-        self.index = faiss.index_cpu_to_gpu(self.resource, 0, self.index)
+        self.index = faiss.index_cpu_to_all_gpus(self.index)
         
         
     def train(self):
