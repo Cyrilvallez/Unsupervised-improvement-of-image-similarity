@@ -13,6 +13,7 @@ from tqdm import tqdm
 method_name = 'Dhash'
 hash_size = 8
 batch_size = 256
+workers = 3
 
 
 datasets = extractor.VALID_DATASET_NAMES
@@ -22,12 +23,13 @@ if 'hash' in method_name:
     for dataset in tqdm(datasets):
         dataset = extractor.create_dataset(dataset, None)
         extractor.extract_and_save_perceptual(method_name, dataset, hash_size=hash_size,
-                                              workers=3)
+                                              batch_size=batch_size, workers=workers)
        
 # Neural
 else:
     for dataset in tqdm(datasets):
         transforms = extractor.MODEL_TRANSFORMS[method_name]
         dataset = extractor.create_dataset(dataset, transforms)
-        extractor.extract_and_save_neural(method_name, dataset, batch_size=batch_size, workers=3)
+        extractor.extract_and_save_neural(method_name, dataset, batch_size=batch_size,
+                                          workers=workers)
 

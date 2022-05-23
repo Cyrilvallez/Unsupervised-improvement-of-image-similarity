@@ -257,5 +257,14 @@ def concatenate_images(ref_image, closest_images):
     closest_images = [image.resize((300,300), Image.BICUBIC) for image in closest_images]
     ref_image = ref_image.resize((300,300), Image.BICUBIC)
     
-    Nlines = len(closest_images)
+    Nlines = len(closest_images) // 3 + 1
+    if len(closest_images) % 3 != 0:
+        Nlines += 1
+        
+    Ncols = 3 if len(closest_images) >= 3 else len(closest_images)
+    
+    final_image = np.zeros((300*Nlines, 300*Ncols))
+    
+    start_ref = int((Ncols-1)*300/2)
+    final_image[0:300, start_ref:start_ref+300] = np.array(ref_image)
     
