@@ -1,9 +1,9 @@
 ---
-name : Compare_metrics_flat_memes_2
-date generated: Thursday 18/05/2022
+name : Compare_metrics_flat_BSDS500
+date generated: Wednesday 17/05/2022
 GPU(s): 1 a100
 CPUs: 4
-dataset used: Kaggle memes + Flickr500k as distractor
+dataset used: BSDS500 + Flickr500k as distractor
 function: compare_metrics_Flat(...) in experiment.py
 ---
 purpose: |
