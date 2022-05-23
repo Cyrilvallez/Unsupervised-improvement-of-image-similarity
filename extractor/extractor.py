@@ -154,7 +154,7 @@ def extract_perceptual(algorithm, dataset, hash_size=8, batch_size=2048,
     
     algorithm = perceptual.NAME_TO_ALGO[algorithm]
     
-    features = np.empty((len(dataset), hash_size**2), dtype='float32')
+    features = np.empty((len(dataset), hash_size**2), dtype='uint8')
     indices_to_names = np.empty(len(dataset), dtype=object)
     
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
