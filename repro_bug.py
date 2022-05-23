@@ -568,7 +568,7 @@ class Experiment2(object):
   
 t0 = time.time()
 nlist = int(10*np.sqrt(500000))
-nprobes = [1, 5, 10, 20, 50, 100]#, 200, 300, 400]
+nprobes = [1, 5, 10, 20, 50, 100, 200, 300, 400]
 factory_str = ['Flat', f'IVF{nlist},Flat']
 metrics = ['L2', 'cosine']
 # data = Data()
