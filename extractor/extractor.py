@@ -173,8 +173,8 @@ def extract_perceptual(algorithm, dataset, hash_size=8, batch_size=2048,
 
 
     
-def extract_and_save_perceptual(algorithm, dataset, dataset_and_algo_name,
-                                hash_size=8, batch_size=2048, workers=8):
+def extract_and_save_perceptual(algorithm, dataset, hash_size=8,
+                                batch_size=2048, workers=8):
     """
     Compute and save hashes of a perceptual algorithm to file.
 
@@ -197,6 +197,8 @@ def extract_and_save_perceptual(algorithm, dataset, dataset_and_algo_name,
     None.
 
     """
+    
+    dataset_and_algo_name = dataset.name + '-' + '_'.join(algorithm.split(' '))
     
     features, indices_to_names = extract_perceptual(algorithm, dataset, hash_size=hash_size,
                                                     batch_size=batch_size, workers=workers)
