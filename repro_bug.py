@@ -350,6 +350,9 @@ class Experiment2(object):
         self.features_query = np.random.rand(40000, 4096).astype('float32')
         self.d = self.features_db.shape[1]
         
+        self.features_db_normalized = utils.normalize(self.features_db)
+        self.features_query_normalized = utils.normalize(self.features_query)
+        
         
     def set_index(self, factory_str, metric='cosine'):
         """
@@ -408,17 +411,16 @@ class Experiment2(object):
         None.
 
         """
-        
-        if self.metric == 'cosine':
-            features = utils.normalize(self.features_db)
-        else:
-            features = self.features_db
             
         # Do not add normalization time
         t0 = time.time()
 
-        self.index.train(features)
-        self.index.add(features)
+        if self.metric == 'cosine':
+            self.index.train(self.features_db_normalized)
+            self.index.add(self.features_db_normalized)
+        else:
+            self.index.train(self.features_db)
+            self.index.add(self.features_db)
         
         self.time_training = time.time() - t0
         
@@ -449,16 +451,14 @@ class Experiment2(object):
         
         if probe is not None:
             self.index.nprobe = probe
-        
-        if self.metric == 'cosine':
-            features_query = utils.normalize(self.features_query)
-        else:
-            features_query = self.features_query
             
         # Do not add normalization time
         t0 = time.time()
         
-        self.D, self.I = self.index.search(features_query, self.k)
+        if self.metric == 'cosine':
+            self.D, self.I = self.index.search(self.features_query_normalized, self.k)
+        else:
+            self.D, self.I = self.index.search(self.features_query, self.k)
         
         self.time_searching = time.time() - t0
         
