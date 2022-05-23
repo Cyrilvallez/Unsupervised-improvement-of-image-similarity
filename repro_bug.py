@@ -22,7 +22,7 @@ d = features_db.shape[1]
 nlist = int(10*np.sqrt(features_db.shape[0]))
 factory_string = f'IVF{nlist},Flat'
 
-
+"""
 # Works fine
 
 indices = []
@@ -39,7 +39,17 @@ for i in tqdm(range(len(indices))):
     index.nprobe = 1000
     
     D, I = index.search(features_query, 1)
+"""
+
+index = faiss.index_factory(d, factory_string, faiss.METRIC_L2)
+
+index = faiss.index_cpu_to_all_gpus(index)
     
+index.train(features_db)
+index.add(features_db)
+index.nprobe = 1000
+    
+D, I = index.search(features_query, 1)
     
 
 
