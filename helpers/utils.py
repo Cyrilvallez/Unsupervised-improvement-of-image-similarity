@@ -9,6 +9,7 @@ import numpy as np
 import json
 import argparse
 import os
+from PIL import Image
 
 import extractor.datasets as datasets
 from extractor.neural import MODEL_LOADER
@@ -247,3 +248,14 @@ def parse_input():
                 raise ValueError('This experiment name is already taken. Choose another one.')
             
     return save_folder + '/'
+
+
+
+def concatenate_images(ref_image, closest_images):
+    
+    # Resize all images to 300x300
+    closest_images = [image.resize((300,300), Image.BICUBIC) for image in closest_images]
+    ref_image = ref_image.resize((300,300), Image.BICUBIC)
+    
+    Nlines = len(closest_images)
+    
