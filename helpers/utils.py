@@ -252,6 +252,23 @@ def parse_input():
 
 
 def concatenate_images(ref_image, closest_images):
+    """
+    Concatenate a reference image and the images with closest distance from this 
+    one in a single image for easy visual comparison.
+
+    Parameters
+    ----------
+    ref_image : PIL image
+        The reference image.
+    closest_images : list of PIL images
+        The closest images from the reference.
+
+    Returns
+    -------
+    PIL image
+        The concatenation (the ref is on the first line)
+
+    """
     
     # Resize all images to 300x300
     closest_images = [image.resize((300,300), Image.BICUBIC) for image in closest_images]
@@ -263,8 +280,17 @@ def concatenate_images(ref_image, closest_images):
         
     Ncols = 3 if len(closest_images) >= 3 else len(closest_images)
     
-    final_image = np.zeros((300*Nlines, 300*Ncols))
+    final_image = np.zeros((300*Nlines, 300*Ncols, 3), dtype='uint8')
     
     start_ref = int((Ncols-1)*300/2)
-    final_image[0:300, start_ref:start_ref+300] = np.array(ref_image)
+    final_image[0:300, start_ref:start_ref+300, :] = np.array(ref_image)
+    
+    index = 0
+    for i in range(1, Nlines):
+        for j in range(Ncols):
+            if index < len(closest_images):
+                final_image[300*i:300*(i+1), 300*j:300*(j+1), :] = np.array(closest_images[index])
+                index += 1
+            
+    return Image.fromarray(final_image)
     
