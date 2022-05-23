@@ -9,8 +9,8 @@ Created on Fri May  6 14:44:42 2022
 import extractor
 from tqdm import tqdm
 
-method_name = 'SimCLR v2 ResNet50 2x'
-# method_name = 'Dhash'
+# method_name = 'SimCLR v2 ResNet50 2x'
+method_name = 'Dhash'
 hash_size = 8
 batch_size = 1024
 
