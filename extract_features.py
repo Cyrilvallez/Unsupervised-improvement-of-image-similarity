@@ -12,7 +12,7 @@ from tqdm import tqdm
 method_name = 'SimCLR v2 ResNet50 2x'
 # method_name = 'Dhash'
 hash_size = 8
-batch_size = 256
+batch_size = 1024
 
 
 datasets = extractor.VALID_DATASET_NAMES
@@ -28,5 +28,5 @@ else:
     for dataset in tqdm(datasets):
         transforms = extractor.MODEL_TRANSFORMS[method_name]
         dataset = extractor.create_dataset(dataset, transforms)
-        extractor.extract_and_save_neural(method_name, dataset, batch_size=batch_size, workers=3)
+        extractor.extract_and_save_neural(method_name, dataset, batch_size=batch_size, workers=6)
 
