@@ -50,7 +50,8 @@ index = faiss.index_cpu_to_gpu(res, 0, index)
     
 index.train(features_db)
 index.add(features_db)
-index.nprobe = 200
+ivf = faiss.extract_index_ivf(index)
+ivf.nprobe = 100
     
 D, I = index.search(features_query, 1)
     
