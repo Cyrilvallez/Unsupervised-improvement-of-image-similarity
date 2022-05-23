@@ -46,7 +46,7 @@ index = faiss.index_cpu_to_all_gpus(index)
     
 index.train(features_db)
 index.add(features_db)
-# index.nprobe = 200
+index.nprobe = 1
     
 D, I = index.search(features_query, 1)
     
