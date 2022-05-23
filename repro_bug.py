@@ -43,7 +43,10 @@ for i in tqdm(range(len(indices))):
 
 index = faiss.index_factory(d, factory_string, faiss.METRIC_L2)
 
-index = faiss.index_cpu_to_all_gpus(index)
+res = faiss.StandardGpuResources()
+res.setTempMemory(3000 * 1024 * 1024)
+
+index = faiss.index_cpu_to_gpu(res, 0, index)
     
 index.train(features_db)
 index.add(features_db)
