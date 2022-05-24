@@ -14,7 +14,7 @@ import os
 from helpers import utils
 from helpers import plot
 
-EXPERIMENT_NAME = 'Compare_metrics_flat_BSDS500'
+EXPERIMENT_NAME = 'Flat_memes_sweep_k'
 
 
 
@@ -33,7 +33,8 @@ results = utils.load_dictionary(experiment_name)
 
 save = True
 
-plot.time_recall_plot_flat(results, save=save, filename=experiment_folder + 'time_recall.pdf')
+# plot.time_recall_plot_flat(results, save=save, filename=experiment_folder + 'time_recall.pdf')
+plot.time_recall_plot_flat_sweep_k(results, save=save, filename=experiment_folder + 'time_recall.pdf')
 
 
 
