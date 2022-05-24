@@ -1,0 +1,11 @@
+---
+name : Flat_sweep_k_BSDS500
+date generated: Tuesday 24/05/2022
+GPU(s): 1 a100
+CPUs: 8
+dataset used: BSDS500 + Flickr500k as distractor
+function: compare_k_Flat(...) in experiment.py
+ks : [1, 2, 3, 4, 5, 10, 20]
+---
+purpose: |
+Compare the searching time and recall when changing k for Flat indices (brute-force).

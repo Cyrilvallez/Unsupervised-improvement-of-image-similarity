@@ -62,7 +62,7 @@ def time_recall_plot_flat_sweep_k(results, save=False, filename=None):
         recall.append(results[key]['recall'])
         k.append(results[key]['k'])
         searching_time.append(results[key]['searching_time'])
-    """
+    
     plt.figure()
     for i in range(len(recall)):
         plt.scatter(recall[i], searching_time[i], color=COLORS[metric[i]], 
@@ -77,29 +77,7 @@ def time_recall_plot_flat_sweep_k(results, save=False, filename=None):
     if save:
         plt.savefig(filename, bbox_inches='tight')
     plt.show()
-    """
     
-    plt.figure()
-    for i in range(len(recall)):
-        plt.scatter(k[i], recall[i], color=COLORS[metric[i]], 
-                    marker=MARKERS[metric[i]], label=metric[i])
-    plt.xlabel('k')
-    plt.ylabel('Recall@k')
-    plt.legend()
-    if save:
-        plt.savefig(filename + 'recall.pdf', bbox_inches='tight')
-    plt.show()
-        
-    plt.figure()
-    for i in range(len(recall)):
-        plt.scatter(k[i], searching_time[i], color=COLORS[metric[i]], 
-                    marker=MARKERS[metric[i]], label=metric[i])
-    plt.xlabel('k')
-    plt.ylabel('Search time [s]')
-    plt.legend()
-    if save:
-        plt.savefig(filename + 'time.pdf', bbox_inches='tight')
-    plt.show()
     
 def time_recall_plot_IVF(results, ylog=False, save=False, filename=None):
     

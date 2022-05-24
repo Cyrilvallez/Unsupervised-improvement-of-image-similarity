@@ -212,7 +212,7 @@ class Experiment(object):
         neighbors = []
         
         for image_index in self.I[query_index, :]:
-            neighbors.append(Image.open(self.mapping_query[image_index]))
+            neighbors.append(Image.open(self.mapping_db[image_index]).convert('RGB'))
             
         return ref_image, neighbors
     
