@@ -14,7 +14,7 @@ import os
 from helpers import utils
 from helpers import plot
 
-EXPERIMENT_NAME = 'Compare_metrics_flat_memes'
+EXPERIMENT_NAME = 'Compare_metrics_flat_BSDS500'
 
 
 

@@ -8,7 +8,6 @@ Created on Tue May 10 17:28:03 2022
 
 
 import numpy as np
-import faiss
 from helpers import utils
 import experiment as ex
 
@@ -29,10 +28,12 @@ metrics = ['L2', 'L1', 'cosine']
 
 nlist = int(10*np.sqrt(500000))
 factory_str = f'IVF{nlist},Flat'
-nprobes = [1, 5, 10, 20, 50, 100, 200, 300, 400]
+nprobes = [1, 5, 10, 20, 30, 40, 50, 60, 70, 80]
+
+ks = [1, 2, 3, 4, 5, 10, 20]
 
 filename = save_folder + 'results.json'
-ex.compare_metrics_Flat(metrics, algorithm, main_dataset, query_dataset,
-                        distractor_dataset, filename, k=1)
+ex.compare_k_Flat(ks, algorithm, main_dataset, query_dataset,
+                        distractor_dataset, filename)
 # ex.compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
                         # distractor_dataset, filename, k=1)

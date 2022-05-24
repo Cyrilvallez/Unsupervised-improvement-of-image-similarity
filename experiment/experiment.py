@@ -10,7 +10,6 @@ import faiss
 import time
 from PIL import Image, ImageFile
 from tqdm import tqdm
-import gc
 ImageFile.LOAD_TRUNCATED_IMAGES=True
 
 from helpers import utils
@@ -52,8 +51,10 @@ class Experiment(object):
         self.features_db, self.mapping_db = utils.combine_features(algorithm, main_dataset,
                                                                    distractor_dataset)
         self.features_query, self.mapping_query = utils.load_features(algorithm, query_dataset)
+        
+        self.features_db_normalized = utils.normalize(self.features_db)
+        self.features_query_normalized = utils.normalize(self.features_query)
         self.d = self.features_db.shape[1]
-        self.resource = faiss.StandardGpuResources()
         
         
     def set_index(self, factory_str, metric='cosine'):
@@ -80,7 +81,6 @@ class Experiment(object):
             # not crach the process
             self.index.reset()
             del self.index
-            gc.collect()
         except AttributeError:
             pass
         
@@ -102,7 +102,7 @@ class Experiment(object):
         None.
 
         """
-        self.index = faiss.index_cpu_to_gpu(self.resource, 0, self.index)
+        self.index = faiss.index_cpu_to_all_gpus(self.index)
         
         
     def train(self):
@@ -114,17 +114,16 @@ class Experiment(object):
         None.
 
         """
-        
-        if self.metric == 'cosine':
-            features = utils.normalize(self.features_db)
-        else:
-            features = self.features_db
             
         # Do not add normalization time
         t0 = time.time()
 
-        self.index.train(features)
-        self.index.add(features)
+        if self.metric == 'cosine':
+            self.index.train(self.features_db_normalized)
+            self.index.add(self.features_db_normalized)
+        else:
+            self.index.train(self.features_db)
+            self.index.add(self.features_db)
         
         self.time_training = time.time() - t0
         
@@ -155,16 +154,13 @@ class Experiment(object):
         
         if probe is not None:
             self.index.nprobe = probe
-        
-        if self.metric == 'cosine':
-            features_query = utils.normalize(self.features_query)
-        else:
-            features_query = self.features_query
             
-        # Do not add normalization time
         t0 = time.time()
         
-        self.D, self.I = self.index.search(features_query, self.k)
+        if self.metric == 'cosine':
+            self.D, self.I = self.index.search(self.features_query_normalized, self.k)
+        else:
+            self.D, self.I = self.index.search(self.features_query, self.k)
         
         self.time_searching = time.time() - t0
         
@@ -205,17 +201,20 @@ class Experiment(object):
 
         Returns
         -------
+        ref_image : PIL image
+            Image corresponding to the index of the query.
         neighbors : list
             List of PIL images corresponding to nearest neighbors.
 
         """
         
+        ref_image = Image.open(self.mapping_query[query_index])
         neighbors = []
         
         for image_index in self.I[query_index, :]:
             neighbors.append(Image.open(self.mapping_query[image_index]))
             
-        return neighbors
+        return ref_image, neighbors
     
     
     def fit(self, k, probe=None):
@@ -346,6 +345,51 @@ def compare_metrics_Flat(metrics, algorithm, main_dataset, query_dataset,
         experiment.set_index(factory_str, metric=metric)
         experiment.to_gpu()
         result[experiment.experiment_name] = experiment.fit(k=k)
+        
+    utils.save_dictionary(result, filename)
+    
+    
+    
+def compare_k_Flat(ks, algorithm, main_dataset, query_dataset,
+                         distractor_dataset, filename):
+    """
+    Compare the performances of different k when using a Flat index
+    (brute-force).
+
+    Parameters
+    ----------
+    ks : list
+        The different k to be used.
+    algorithm : string
+        The name of the algorithm used to extract the features.
+    main_dataset : string
+        Name of the main dataset from which the features were extracted.
+    query_dataset : string
+        Name of the dataset from which the query features were extracted.
+    distractor_dataset : string, optional
+        Name of the dataset used as distractor features (images) for the 
+        database.
+    filename : string
+        Filename to save the results.
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    factory_str = 'Flat'
+    metrics = ['L2', 'cosine']
+
+    experiment = Experiment(algorithm, main_dataset, query_dataset,
+                            distractor_dataset=distractor_dataset)
+
+    result = {}
+    
+    for metric in metrics:
+        experiment.set_index(factory_str, metric=metric)
+        experiment.to_gpu()
+        result[experiment.experiment_name] = experiment.fit(k=ks)
         
     utils.save_dictionary(result, filename)
     
