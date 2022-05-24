@@ -238,7 +238,7 @@ class Experiment(object):
             
         self.train()
         
-        if type(k) == list and type(probe==list):
+        if (type(k) == list and type(probe) == list):
             raise ValueError('Cannot set both k and probe to lists.')
         
         elif type(k) == list:

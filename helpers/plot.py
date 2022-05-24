@@ -50,6 +50,33 @@ def time_recall_plot_flat(results, save=False, filename=None):
         plt.savefig(filename, bbox_inches='tight')
     plt.show()
     
+def time_recall_plot_flat_sweep_k(results, save=False, filename=None):
+    
+    recall = []
+    searching_time = []
+    metric = []
+    k = []
+    
+    for key in results.keys():
+        metric.append(key.rsplit('--', 1)[1])
+        recall.append(results[key]['recall'])
+        k.append(results[key]['k'])
+        searching_time.append(results[key]['searching_time'])
+    
+    plt.figure()
+    for i in range(len(recall)):
+        plt.scatter(recall[i], searching_time[i], color=COLORS[metric[i]], 
+                    marker=MARKERS[metric[i]], label=metric[i])
+        for j in range(len(recall[i])):
+            plt.annotate(f'k={k[i][j]}', recall[i][j], searching_time[i][j])
+
+    plt.xlabel(f'Recall@{k[0]}')
+    plt.ylabel('Search time [s]')
+    plt.legend()
+    if save:
+        plt.savefig(filename, bbox_inches='tight')
+    plt.show()
+    
     
 def time_recall_plot_IVF(results, ylog=False, save=False, filename=None):
     
