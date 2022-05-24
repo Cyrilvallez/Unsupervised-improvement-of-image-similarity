@@ -14,9 +14,11 @@ import os
 
 
 algorithm = 'SimCLR v2 ResNet50 2x'
-main_dataset = 'Kaggle_templates'
+main_dataset = 'BSDS500_original'
+# main_dataset = 'Kaggle_templates'
 distractor_dataset = 'Flickr500K'
-query_dataset = 'Kaggle_memes'
+query_dataset = 'BSDS500_attacks'
+# query_dataset = 'Kaggle_memes'
 
 factory_str = 'Flat'
 
@@ -28,7 +30,7 @@ experiment.fit(k=10)
 
 #%%
 
-save_folder = 'Results/Neighbors_memes_flat_cosine/'
+save_folder = 'Results/Neighbors_BSDS500_flat_cosine/'
 dirname = os.path.dirname(save_folder)
 exist = os.path.exists(dirname)
 if not exist:
