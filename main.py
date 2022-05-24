@@ -33,7 +33,7 @@ nprobes = [1, 5, 10, 20, 30, 40, 50, 60, 70, 80]
 ks = [1, 2, 3, 4, 5, 10, 20]
 
 filename = save_folder + 'results.json'
-ex.compare_k_Flat(ks, algorithm, main_dataset, query_dataset,
-                        distractor_dataset, filename)
-# ex.compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
-                        # distractor_dataset, filename, k=1)
+# ex.compare_k_Flat(ks, algorithm, main_dataset, query_dataset,
+                        # distractor_dataset, filename)
+ex.compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
+                        distractor_dataset, filename, k=1)
