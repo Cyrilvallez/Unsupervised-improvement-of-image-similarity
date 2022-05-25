@@ -14,11 +14,11 @@ import os
 
 
 algorithm = 'SimCLR v2 ResNet50 2x'
-main_dataset = 'BSDS500_original'
-# main_dataset = 'Kaggle_templates'
+# main_dataset = 'BSDS500_original'
+main_dataset = 'Kaggle_templates'
 distractor_dataset = 'Flickr500K'
-query_dataset = 'BSDS500_attacks'
-# query_dataset = 'Kaggle_memes'
+# query_dataset = 'BSDS500_attacks'
+query_dataset = 'Kaggle_memes'
 
 factory_str = 'Flat'
 
@@ -28,7 +28,7 @@ experiment = ex.Experiment(algorithm, main_dataset, query_dataset,
 experiment.set_index(factory_str, metric='cosine')
 experiment.fit(k=10)
 _, correct = experiment.recall()
-np.save('BSDS_500_test.npy', correct)
+np.save('memes_test.npy', correct)
 
 #%%
 """
@@ -47,3 +47,7 @@ for index in range(len(experiment.mapping_query)):
     neighbors.save(save_folder + f'{index}.png')
     
 """   
+
+#%%
+
+# foo = np.load('BSDS_500_test.npy')
