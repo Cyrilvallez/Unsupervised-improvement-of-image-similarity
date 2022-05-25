@@ -27,9 +27,11 @@ experiment = ex.Experiment(algorithm, main_dataset, query_dataset,
 
 experiment.set_index(factory_str, metric='cosine')
 experiment.fit(k=10)
+_, correct = experiment.recall()
+np.save('BSDS_500_test.npy', correct)
 
 #%%
-
+"""
 save_folder = 'Results/Neighbors_BSDS500_flat_cosine/'
 dirname = os.path.dirname(save_folder)
 exist = os.path.exists(dirname)
@@ -44,4 +46,4 @@ for index in range(len(experiment.mapping_query)):
     neighbors = utils.concatenate_images(ref, neighbors)
     neighbors.save(save_folder + f'{index}.png')
     
-    
+"""   

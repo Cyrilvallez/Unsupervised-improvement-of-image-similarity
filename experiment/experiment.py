@@ -183,11 +183,11 @@ class Experiment(object):
         """
         
         try:
-            recall, _ = utils.recall(self.I, self.mapping_db, self.mapping_query)
+            recall, correct = utils.recall(self.I, self.mapping_db, self.mapping_query)
         except AttributeError:
             raise AttributeError('Please call `search` before asking for recall')
             
-        return recall
+        return recall, correct
     
             
     def get_neighbors_of_query(self, query_index):
@@ -246,7 +246,7 @@ class Experiment(object):
             searching_time = []
             for k_ in k:
                 self.search(k=k_, probe=probe)
-                recall.append(self.recall())
+                recall.append(self.recall()[0])
                 searching_time.append(self.time_searching)
         
         elif type(probe) == list:
@@ -254,12 +254,12 @@ class Experiment(object):
             searching_time = []
             for probe_ in probe:
                 self.search(k=k, probe=probe_)
-                recall.append(self.recall())
+                recall.append(self.recall()[0])
                 searching_time.append(self.time_searching)
                 
         else:
             self.search(k=k, probe=probe)
-            recall = self.recall()
+            recall = self.recall()[0]
             searching_time = self.time_searching
         
         result = {
