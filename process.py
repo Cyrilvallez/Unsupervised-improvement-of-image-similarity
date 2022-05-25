@@ -14,7 +14,7 @@ import os
 from helpers import utils
 from helpers import plot
 
-EXPERIMENT_NAME = 'IVF_memes'
+EXPERIMENT_NAME = 'IVF_k_10_memes'
 
 
 

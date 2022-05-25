@@ -198,7 +198,8 @@ def extract_and_save_perceptual(algorithm, dataset, hash_size=8,
 
     """
     
-    dataset_and_algo_name = dataset.name + '-' + '_'.join(algorithm.split(' '))
+    dataset_and_algo_name = dataset.name + '-' + '_'.join(algorithm.split(' ')) \
+        + f'_{hash_size**2} bits'
     
     features, indices_to_names = extract_perceptual(algorithm, dataset, hash_size=hash_size,
                                                     batch_size=batch_size, workers=workers)

@@ -1,0 +1,13 @@
+---
+name : IVF_k_10_memes
+date generated: Tuesday 24/05/2022
+GPU(s): 1 a100
+CPUs: 8
+dataset used: Kaggle memes + Flickr500k as distractor
+function: compare_nprobe_IVF(...) in experiment.py
+nlist : int(10*np.sqrt(500000))
+nprobes : [1, 5, 10, 20, 30, 40, 50, 60, 70, 80]
+k : 10
+---
+purpose: |
+Compare the searching time and recall when changing nprobe at k=10 for IVF indices.
