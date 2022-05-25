@@ -39,8 +39,8 @@ os.makedirs(save_folder + 'Incorrect', exist_ok=True)
 
 for index, status in enumerate(correct):
 
-    ref, neighbors = experiment.get_neighbors_of_query(index)
-    neighbors = utils.concatenate_images(ref, neighbors)
+    images = experiment.get_neighbors_of_query(index)
+    neighbors = utils.concatenate_images(images)
     if status == 1:
         neighbors.save(save_folder + f'Correct/{index}.png')
     elif status == 0:
