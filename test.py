@@ -10,14 +10,13 @@ import numpy as np
 import shutil
 from PIL import Image
 from helpers import utils
+import torch
 
-path = 'Datasets/Flickr500K/0/'
+algorithm = 'SimCLR v2 ResNet50 2x'
+dataset = 'Kaggle_memes'
 
-ref = Image.open(path + f'{0}.jpg')
-target = Image.open(path + f'{123}.jpg')
-neighbors = [Image.open(path + f'{index}.jpg') for index in range(1, 2)]
+features = utils.load_features(algorithm, dataset)
+features = torch.tensor(features).to('cuda')
 
-images = (ref, neighbors, target)
-
-out = utils.concatenate_images(images)
-out.save('test.png')
+res = torch.cdist(features, features).cpu().numpy()
+np.save('distances.npy', res)

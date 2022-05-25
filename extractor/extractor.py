@@ -202,7 +202,7 @@ def extract_and_save_perceptual(algorithm, dataset, hash_size=8,
                                                     batch_size=batch_size, workers=workers)
     
     dataset_and_algo_name = dataset.name + '-' + '_'.join(algorithm.split(' ')) \
-        + f'_{hash_size**2} bits'
+        + f'_{hash_size**2}_bits'
     
     np.save('Features/' + dataset_and_algo_name + '_features.npy', features)
     np.save('Features/' + dataset_and_algo_name + '_map_to_names.npy', indices_to_names)
