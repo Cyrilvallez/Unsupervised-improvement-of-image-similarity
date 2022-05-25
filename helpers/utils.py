@@ -251,17 +251,17 @@ def parse_input():
 
 
 
-def concatenate_images(ref_image, closest_images):
+def concatenate_images(images, target=True):
     """
-    Concatenate a reference image and the images with closest distance from this 
-    one in a single image for easy visual comparison.
+    Concatenate a reference image, target image, and list of images (neighbors of
+    reference image) into one single image for easy visual comparison.
 
     Parameters
     ----------
-    ref_image : PIL image
-        The reference image.
-    closest_images : list of PIL images
-        The closest images from the reference.
+    images : tuple of PIL image
+        The images, as returned by Experiment.get_neighbors_of_query().
+    target : bool, optional
+        Whether to add the target image to the visualization. The default is True.
 
     Returns
     -------
@@ -271,26 +271,55 @@ def concatenate_images(ref_image, closest_images):
     """
     
     # Resize all images to 300x300
-    closest_images = [image.resize((300,300), Image.BICUBIC) for image in closest_images]
-    ref_image = ref_image.resize((300,300), Image.BICUBIC)
+    neighbor_images = [image.resize((300,300), Image.BICUBIC) for image in images[1]]
+    ref_image = images[0].resize((300,300), Image.BICUBIC)
+    if target:
+        target_image = images[2].resize((300,300), Image.BICUBIC)
     
-    Nlines = len(closest_images) // 3 + 1
-    if len(closest_images) % 3 != 0:
+    Nlines = len(neighbor_images) // 3 + 1
+    if len(neighbor_images) % 3 != 0:
         Nlines += 1
         
-    Ncols = 3 if len(closest_images) >= 3 else len(closest_images)
+    Ncols = 3 if len(neighbor_images) >= 3 else len(neighbor_images)
+    if target:
+        Ncols = Ncols if Ncols == 3 else 2
+        
+    big_offset = 40
+    small_offset = 10
     
-    final_image = np.zeros((300*Nlines, 300*Ncols, 3), dtype='uint8')
+    final_image = np.zeros((300*Nlines + big_offset + (Nlines-2)*small_offset,
+                            300*Ncols + (Ncols-1)*small_offset, 3), dtype='uint8')
     
-    start_ref = int((Ncols-1)*300/2)
-    final_image[0:300, start_ref:start_ref+300, :] = np.array(ref_image)
+    if target and Ncols == 2:
+        final_image = np.zeros((300*Nlines + big_offset + (Nlines-2)*small_offset,
+                                300*Ncols + big_offset, 3), dtype='uint8')
     
+    if target:
+        start = int((final_image.shape[1] - (600+big_offset))/2)
+        final_image[0:300, start:start+300, :] = np.array(ref_image)
+        start += 300 + big_offset
+        final_image[0:300, start:start+300, :] = np.array(target_image)
+    else:
+        start = int((final_image.shape[1] - 300)/2)
+        final_image[0:300, start:start+300, :] = np.array(ref_image)
+    
+    start_i = 300 + big_offset
+    if Ncols <= 2:
+        start_j = int((final_image.shape[1] - (len(neighbor_images)*(300+small_offset)-small_offset))/2)
+    else:
+        start_j = 0
     index = 0
     for i in range(1, Nlines):
         for j in range(Ncols):
-            if index < len(closest_images):
-                final_image[300*i:300*(i+1), 300*j:300*(j+1), :] = np.array(closest_images[index])
+            if index < len(neighbor_images):
+                final_image[start_i:start_i+300, start_j:start_j+300, :] = np.array(neighbor_images[index])
                 index += 1
+                start_j += 300 + small_offset
+        if Ncols <= 2:
+            start_j = int((final_image.shape[1] - (len(neighbor_images)*(300+small_offset)-small_offset))/2)
+        else:
+            start_j = 0
+        start_i += 300 + small_offset
             
     return Image.fromarray(final_image)
     

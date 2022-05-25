@@ -8,6 +8,7 @@ Created on Fri May 13 11:15:56 2022
 
 import faiss
 import time
+import numpy as np
 from PIL import Image, ImageFile
 from tqdm import tqdm
 ImageFile.LOAD_TRUNCATED_IMAGES=True
@@ -51,10 +52,14 @@ class Experiment(object):
         self.features_db, self.mapping_db = utils.combine_features(algorithm, main_dataset,
                                                                    distractor_dataset)
         self.features_query, self.mapping_query = utils.load_features(algorithm, query_dataset)
-        
         self.features_db_normalized = utils.normalize(self.features_db)
         self.features_query_normalized = utils.normalize(self.features_query)
         self.d = self.features_db.shape[1]
+        
+        self.identifiers_query = np.array([name.rsplit('/', 1)[1].split('_', 1)[0] \
+                                           for name in self.mapping_query])
+        self.identifiers_db = np.array([name.rsplit('/', 1)[1].rsplit('.', 1)[0] \
+                                        for name in self.mapping_db])
         
         
     def set_index(self, factory_str, metric='cosine'):
@@ -183,14 +188,21 @@ class Experiment(object):
         """
         
         try:
-            recall, correct = utils.recall(self.I, self.mapping_db, self.mapping_query)
+            shape = self.I.shape
+            names = self.identifiers_db[self.I.flatten()].reshape(shape)
+            
+            query_identifiers = np.expand_dims(self.identifiers_query, axis=1)
+            
+            correct = (names == query_identifiers).sum(axis=1)
+            recall = correct.sum()/len(correct)
+            
         except AttributeError:
             raise AttributeError('Please call `search` before asking for recall')
             
         return recall, correct
     
             
-    def get_neighbors_of_query(self, query_index):
+    def get_neighbors_of_query(self, query_index, target=True):
         """
         Find nearest neighbors of a given query index as PIL images.
 
@@ -198,6 +210,8 @@ class Experiment(object):
         ----------
         query_index : int
             Index of the query.
+        target : bool, optional
+            Whether to add the target image to the output. The default is True.
 
         Returns
         -------
@@ -205,16 +219,27 @@ class Experiment(object):
             Image corresponding to the index of the query.
         neighbors : list
             List of PIL images corresponding to nearest neighbors.
+        target_image : PIL image
+            The image supposed to correspond to the given query.
 
         """
         
         ref_image = Image.open(self.mapping_query[query_index]).convert('RGB')
+        if target: 
+            target_index = np.argwhere(self.identifiers_db == self.identifiers_query[query_index])
+            assert (target_index.shape == (1,1)), 'More than one target for this query'
+            target_index = target_index[0][0]
+            target_image = Image.open(self.mapping_db[target_index]).convert('RGB')
+            
         neighbors = []
         
         for image_index in self.I[query_index, :]:
             neighbors.append(Image.open(self.mapping_db[image_index]).convert('RGB'))
             
-        return ref_image, neighbors
+        if target:
+            return (ref_image, neighbors, target_image)
+        else:
+            return (ref_image, neighbors)
     
     
     def fit(self, k, probe=None):
