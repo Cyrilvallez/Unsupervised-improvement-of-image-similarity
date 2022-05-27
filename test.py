@@ -15,7 +15,7 @@ import torch
 algorithm = 'SimCLR v2 ResNet50 2x'
 dataset = 'Kaggle_memes'
 
-features = utils.load_features(algorithm, dataset)
+features, _ = utils.load_features(algorithm, dataset)
 features = torch.tensor(features).to('cuda')
 
 res = torch.cdist(features, features).cpu().numpy()
