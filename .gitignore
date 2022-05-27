@@ -6,3 +6,4 @@ Datasets
 Features
 Results/Neighbors_BSDS500_flat_cosine
 Results/Neighbors_memes_flat_cosine
+distances.npy
