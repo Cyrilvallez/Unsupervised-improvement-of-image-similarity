@@ -133,7 +133,7 @@ class Experiment(object):
         self.time_training = time.time() - t0
         
         
-    def search(self, k=None, probe=None):
+    def search(self, k=None, probe=None, batch_size=1000):
         """
         Perform a search given k-nearest neigbors and a probe for indices
         supporting it.
@@ -147,6 +147,9 @@ class Experiment(object):
         probe : int, optional
             The number of clusters to visit for IVF indices. If omitted, will default to the 
             actual value of the index which is 1 at construction time. The default is None.
+        batch_size : int, optional
+            The batch size in case we need to divide the query into batches to
+            avoir memory overflow. The default is 1000.
 
         Returns
         -------
@@ -162,12 +165,62 @@ class Experiment(object):
             
         t0 = time.time()
         
-        if self.metric == 'cosine':
-            self.D, self.I = self.index.search(self.features_query_normalized, self.k)
+        if 'IVF' in self.factory_str:
+            self.search_in_batch(batch_size)
         else:
-            self.D, self.I = self.index.search(self.features_query, self.k)
-        
+            if self.metric == 'cosine':
+                self.D, self.I = self.index.search(self.features_query_normalized, self.k)
+            else:
+                self.D, self.I = self.index.search(self.features_query, self.k)
+                
         self.time_searching = time.time() - t0
+        
+        
+    def search_in_batch(self, batch_size=1000):
+        """
+        Perform a search of the index in batch (to avoid possible memory overflows
+        while searching with an IVF index).
+
+        Parameters
+        ----------
+        batch_size : int, optional
+            The batch size. The default is 1000.
+
+        Returns
+        -------
+        None.
+
+        """
+        
+        length = len(self.features_query)
+        N_iter = length//batch_size
+        
+        self.D = np.zeros((length, self.k))
+        self.I = np.zeros((length, self.k))
+        
+        N = 0
+        for i in range(N_iter):
+            if self.metric == 'cosine':
+                D, I = self.index.search(
+                    self.features_query_normalized[N:N+batch_size, :], self.k)
+            else:
+                D, I = self.index.search(
+                    self.features_query[N:N+batch_size, :], self.k)
+                
+            self.D[N:N+batch_size, :] = D
+            self.I[N:N+batch_size, :] = I
+            N += batch_size
+            
+        # Last iteration (will usually not be of the same size as the others)
+        if self.metric == 'cosine':
+            D, I = self.index.search(
+                self.features_query_normalized[N:, :], self.k)
+        else:
+            D, I = self.index.search(
+                self.features_query[N:, :], self.k)
+            
+        self.D[N:, :] = D
+        self.I[N:, :] = I
         
         
     def recall(self):
@@ -299,8 +352,7 @@ class Experiment(object):
         
         return result
     
-    
-    
+         
 
 def create_flat_index(d, metric='cosine'):
     
