@@ -20,10 +20,11 @@ query_dataset = 'BSDS500_attacks'
 features_db, mapping_db = utils.combine_features(algorithm, main_dataset, distractor_dataset)
 features_query, mapping_query = utils.load_features(algorithm, query_dataset)
 
-index = faiss.IndexBinaryFlat(features_db.shape[1]*8)
-# index = faiss.index_cpu_to_all_gpus(index)
 res = faiss.StandardGpuResources()
-index = faiss.index_cpu_to_gpu(res, 0, index)
+
+index = faiss.GpuIndexBinaryFlat(res, features_db.shape[1]*8)
+# index = faiss.index_cpu_to_all_gpus(index)
+# index = faiss.index_cpu_to_gpu(res, 0, index)
 
 t0 = time.time()
 
