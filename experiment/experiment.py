@@ -404,7 +404,7 @@ def compare_metrics_Flat(metrics, algorithm, main_dataset, query_dataset,
     result = {}
     
     for metric in metrics:
-        experiment.set_index(factory_str, metric=metric)
+        experiment.set_index(factory_str, metric=metric, binary=binary)
         experiment.to_gpu()
         result[experiment.experiment_name] = experiment.fit(k=k)
         
@@ -455,7 +455,7 @@ def compare_k_Flat(ks, algorithm, main_dataset, query_dataset,
     result = {}
     
     for metric in metrics:
-        experiment.set_index(factory_str, metric=metric)
+        experiment.set_index(factory_str, metric=metric, binary=binary)
         experiment.to_gpu()
         result[experiment.experiment_name] = experiment.fit(k=ks)
         
@@ -512,12 +512,12 @@ def compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
     result = {}
     
     for metric in tqdm(metrics):
-        experiment.set_index(factory_str[0], metric=metric)
+        experiment.set_index(factory_str[0], metric=metric, binary=binary)
         experiment.to_gpu()
         result[experiment.experiment_name] = experiment.fit(k=k)
         
     for metric in tqdm(metrics):
-        experiment.set_index(factory_str[1], metric=metric)
+        experiment.set_index(factory_str[1], metric=metric, binary=binary)
         experiment.to_gpu()
         result[experiment.experiment_name] = experiment.fit(k=k, probe=nprobes)
             
