@@ -15,8 +15,8 @@ import experiment as ex
 # so that we do not mistakenly reuse the path from previous experiments
 save_folder = utils.parse_input()
 
-algorithm = 'SimCLR v2 ResNet50 2x'
-# algorithm = 'Dhash 64 bits'
+# algorithm = 'SimCLR v2 ResNet50 2x'
+algorithm = 'Dhash 64 bits'
 main_dataset = 'BSDS500_original'
 # main_dataset = 'Kaggle_templates'
 distractor_dataset = 'Flickr500K'
@@ -35,7 +35,7 @@ nprobes = [1, 5, 10, 20, 50, 100, 200]
 ks = [1, 2, 3, 4, 5, 10, 20]
 
 filename = save_folder + 'results.json'
-# ex.compare_k_Flat(ks, algorithm, main_dataset, query_dataset,
-                        # distractor_dataset, filename)
-ex.compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
-                        distractor_dataset, filename, k=10)
+ex.compare_k_Flat(ks, algorithm, main_dataset, query_dataset,
+                        distractor_dataset, filename, binary=True)
+# ex.compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
+                        # distractor_dataset, filename, k=10, binary=False)

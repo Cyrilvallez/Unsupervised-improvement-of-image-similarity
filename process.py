@@ -14,7 +14,7 @@ import os
 from helpers import utils
 from helpers import plot
 
-EXPERIMENT_NAME = 'IVF_k_10_BSDS500'
+EXPERIMENT_NAME = 'test'
 
 
 
