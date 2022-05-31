@@ -73,7 +73,8 @@ class Experiment(object):
         factory_str : string
             The factory string for the new index.
         metric : string, optional
-            String identifier of the metric to be used. The default is 'cosine'.
+            String identifier of the metric to be used. Ignored if `binary`
+            is set to True.The default is 'cosine'.
         binary : bool, optional
             Whether the index is used for binary data or not. The default is 
             False.
@@ -91,7 +92,7 @@ class Experiment(object):
         except AttributeError:
             pass
         
-        if (metric not in METRICS):
+        if (metric not in METRICS and not binary):
             raise ValueError(f'Metric should be one of {*METRICS.keys(),}')
             
         self.factory_str = factory_str
@@ -101,7 +102,7 @@ class Experiment(object):
         if not binary:
             self.index = faiss.index_factory(self.d, factory_str, METRICS[metric])
         else:
-            self.index = faiss.index_binary_factory(self.d, factory_str, METRICS[metric])
+            self.index = faiss.index_binary_factory(self.d, factory_str)
         
         
     def to_gpu(self):
@@ -369,7 +370,8 @@ def compare_metrics_Flat(metrics, algorithm, main_dataset, query_dataset,
     Parameters
     ----------
     metrics : list
-        String identifier of the metrics to be used.
+        String identifier of the metrics to be used. Ignored if `binary`
+        is set to True.
     algorithm : string
         The name of the algorithm used to extract the features.
     main_dataset : string
