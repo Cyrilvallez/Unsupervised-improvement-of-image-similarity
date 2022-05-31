@@ -45,6 +45,7 @@ class Experiment(object):
                  distractor_dataset='Flickr500K'):
         
         self.algorithm = algorithm
+        self.binary = True if 'bits' in self.algorithm else False
         self.main_dataset = main_dataset
         self.query_dataset = query_dataset
         self.distractor_dataset = distractor_dataset
@@ -54,15 +55,20 @@ class Experiment(object):
         self.features_query, self.mapping_query = utils.load_features(algorithm, query_dataset)
         self.features_db_normalized = utils.normalize(self.features_db)
         self.features_query_normalized = utils.normalize(self.features_query)
-        self.d = self.features_db.shape[1]
+        
+        # For binary indices, data is represented as array of bytes
+        if self.binary:
+            self.d = self.features_db.shape[1]*8
+        else:
+            self.d = self.features_db.shape[1]
         
         self.identifiers_query = np.array([name.rsplit('/', 1)[1].split('_', 1)[0] \
                                            for name in self.mapping_query])
         self.identifiers_db = np.array([name.rsplit('/', 1)[1].rsplit('.', 1)[0] \
                                         for name in self.mapping_db])
+            
         
-        
-    def set_index(self, factory_str, metric='cosine', binary=False):
+    def set_index(self, factory_str, metric='cosine'):
         """
         Set the current index to a new one. Allows not to reload data but still
         performing new experiments. This is not set in the contructor because
@@ -75,9 +81,6 @@ class Experiment(object):
         metric : string, optional
             String identifier of the metric to be used. Ignored if `binary`
             is set to True.The default is 'cosine'.
-        binary : bool, optional
-            Whether the index is used for binary data or not. The default is 
-            False.
 
         Returns
         -------
@@ -92,14 +95,13 @@ class Experiment(object):
         except AttributeError:
             pass
         
-        if (metric not in METRICS and not binary):
+        if (metric not in METRICS and not self.binary):
             raise ValueError(f'Metric should be one of {*METRICS.keys(),}')
             
         self.factory_str = factory_str
         self.metric = metric
         self.experiment_name = factory_str + '--' + metric
-        self.index_binary = binary
-        if not binary:
+        if not self.binary:
             self.index = faiss.index_factory(self.d, factory_str, METRICS[metric])
         else:
             self.index = faiss.index_binary_factory(self.d, factory_str)
@@ -362,7 +364,7 @@ class Experiment(object):
          
 
 def compare_metrics_Flat(metrics, algorithm, main_dataset, query_dataset,
-                         distractor_dataset, filename, k=1, binary=False):
+                         distractor_dataset, filename, k=1):
     """
     Compare the performances of different metrics when using a Flat index
     (brute-force).
@@ -385,28 +387,25 @@ def compare_metrics_Flat(metrics, algorithm, main_dataset, query_dataset,
         Filename to save the results.
     k : int, optional
         Number of nearest neighbors for the search.
-    binary : bool, optional
-        Whether the index is used for binary data or not. The default is 
-        False.
 
     Returns
     -------
     None.
 
     """
+
+    experiment = Experiment(algorithm, main_dataset, query_dataset,
+                            distractor_dataset=distractor_dataset)
     
-    if not binary:
+    if not experiment.binary:
         factory_str = 'Flat'
     else:
         factory_str = 'BFlat'
 
-    experiment = Experiment(algorithm, main_dataset, query_dataset,
-                            distractor_dataset=distractor_dataset)
-
     result = {}
     
     for metric in metrics:
-        experiment.set_index(factory_str, metric=metric, binary=binary)
+        experiment.set_index(factory_str, metric=metric)
         experiment.to_gpu()
         result[experiment.experiment_name] = experiment.fit(k=k)
         
@@ -415,7 +414,7 @@ def compare_metrics_Flat(metrics, algorithm, main_dataset, query_dataset,
     
     
 def compare_k_Flat(ks, algorithm, main_dataset, query_dataset,
-                         distractor_dataset, filename, binary=False):
+                         distractor_dataset, filename):
     """
     Compare the performances of different k when using a Flat index
     (brute-force).
@@ -435,29 +434,27 @@ def compare_k_Flat(ks, algorithm, main_dataset, query_dataset,
         database.
     filename : string
         Filename to save the results.
-    binary : bool, optional
-        Whether the index is used for binary data or not. The default is 
-        False.
 
     Returns
     -------
     None.
 
     """
-    
-    if not binary:
-        factory_str = 'Flat'
-    else:
-        factory_str = 'BFlat'
-    metrics = ['L2', 'cosine']
 
     experiment = Experiment(algorithm, main_dataset, query_dataset,
                             distractor_dataset=distractor_dataset)
+    
+    if not experiment.binary:
+        factory_str = 'Flat'
+    else:
+        factory_str = 'BFlat'
+        
+    metrics = ['L2', 'cosine']
 
     result = {}
     
     for metric in metrics:
-        experiment.set_index(factory_str, metric=metric, binary=binary)
+        experiment.set_index(factory_str, metric=metric)
         experiment.to_gpu()
         result[experiment.experiment_name] = experiment.fit(k=ks)
         
@@ -465,7 +462,7 @@ def compare_k_Flat(ks, algorithm, main_dataset, query_dataset,
     
     
 def compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
-                         distractor_dataset, filename, k=1, binary=False):
+                         distractor_dataset, filename, k=1):
     """
     Compare the performaces of IVF vs Flat for cosine and L2 metrics, for
     different nprobes.
@@ -489,9 +486,6 @@ def compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
         Filename to save the results.
     k : int, optional
         Number of nearest neighbors for the search.
-    binary : bool, optional
-        Whether the index is used for binary data or not. The default is 
-        False.
     
 
     Returns
@@ -501,25 +495,26 @@ def compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
     """
     
     assert(max(nprobes) <= nlist)
-    
-    if not binary:
-        factory_str = ['Flat', f'IVF{nlist},Flat']
-    else:
-        factory_str = ['BFlat', f'BIVF{nlist},Flat']
-    metrics = ['L2', 'cosine']
 
     experiment = Experiment(algorithm, main_dataset, query_dataset,
                             distractor_dataset=distractor_dataset)
+    
+    if not experiment.binary:
+        factory_str = ['Flat', f'IVF{nlist},Flat']
+    else:
+        factory_str = ['BFlat', f'BIVF{nlist},Flat']
+        
+    metrics = ['L2', 'cosine']
 
     result = {}
     
     for metric in tqdm(metrics):
-        experiment.set_index(factory_str[0], metric=metric, binary=binary)
+        experiment.set_index(factory_str[0], metric=metric)
         experiment.to_gpu()
         result[experiment.experiment_name] = experiment.fit(k=k)
         
     for metric in tqdm(metrics):
-        experiment.set_index(factory_str[1], metric=metric, binary=binary)
+        experiment.set_index(factory_str[1], metric=metric)
         experiment.to_gpu()
         result[experiment.experiment_name] = experiment.fit(k=k, probe=nprobes)
             

@@ -15,6 +15,34 @@ import extractor.datasets as datasets
 from extractor.neural import MODEL_LOADER
 from extractor.perceptual import NAME_TO_ALGO
 
+def array_of_bits_to_bytes(array):
+    """
+    Convert an array containing bits to an array of corresponding bytes,
+    by concatenating the bits 8 by 8.
+
+    Parameters
+    ----------
+    array : numpy array
+        The array of bits, with shape (N, d).
+
+    Returns
+    -------
+    Numpy array
+        The array of bytes, with shape (N, d//8).
+
+    """
+    
+    assert(array.shape[1] % 8 == 0)
+    
+    out = np.empty((array.shape[0], array.shape[1] // 8), dtype='uint8')
+    
+    for i in range(array.shape[0]):
+        for j, idx in enumerate(np.arange(0, array.shape[1], 8)):
+            binary_str = ''.join(str(x) for x in array[i, idx:idx+8])
+            out[i,j] = int(binary_str, 2)
+        
+    return out
+
 
 def load_features(method_name, dataset_name):
     """
@@ -52,6 +80,9 @@ def load_features(method_name, dataset_name):
 
     features = np.load(path + '_features.npy')
     mapping = np.load(path + '_map_to_names.npy', allow_pickle=True)
+    
+    if 'bits' in method_name:
+        features = array_of_bits_to_bytes(features)
     
     return features, mapping
 
