@@ -14,7 +14,9 @@ features = np.random.choice(2, size=(500000, 64))
 query = np.random.choice(2, size=(2000, 64))
 
 index = faiss.IndexBinaryFlat(features.shape[1])
-index = faiss.index_cpu_to_all_gpus(index)
+# index = faiss.index_cpu_to_all_gpus(index)
+res = faiss.StandardGpuResources()
+index = faiss.index_cpu_to_gpu(res, 0, index)
 
 index.add(features)
 D, I = index.search(query, 10)
