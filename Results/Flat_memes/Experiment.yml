@@ -3,6 +3,7 @@ name : Compare_metrics_flat_memes
 date generated: Thursday 18/05/2022
 GPU(s): 1 a100
 CPUs: 4
+method: SimCLR v2 ResNet50 2x
 dataset used: Kaggle memes + Flickr500k as distractor
 function: compare_metrics_Flat(...) in experiment.py
 ---
