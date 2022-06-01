@@ -107,7 +107,7 @@ class Experiment(object):
             self.index = faiss.index_binary_factory(self.d, factory_str)
             self.metric = 'Hamming'
             
-        self.experiment_name = factory_str + '--' + metric
+        self.experiment_name = self.factory_str + '--' + self.metric
         
         
     def to_gpu(self):
