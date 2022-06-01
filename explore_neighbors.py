@@ -13,13 +13,13 @@ import os
 
 # algorithm = 'SimCLR v2 ResNet50 2x'
 algorithm = 'Dhash 64 bits'
-main_dataset = 'BSDS500_original'
-# main_dataset = 'Kaggle_templates'
+# main_dataset = 'BSDS500_original'
+main_dataset = 'Kaggle_templates'
 distractor_dataset = 'Flickr500K'
-query_dataset = 'BSDS500_attacks'
-# query_dataset = 'Kaggle_memes'
+# query_dataset = 'BSDS500_attacks'
+query_dataset = 'Kaggle_memes'
 
-save_folder = 'Results/Neighbors_BSDS500_flat_Dhash/'
+save_folder = 'Results/Neighbors_memes_flat_Dhash/'
 
 factory_str = 'BFlat'
 
