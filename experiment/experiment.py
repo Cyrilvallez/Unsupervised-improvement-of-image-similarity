@@ -451,10 +451,12 @@ def compare_k_Flat(ks, algorithm, main_dataset, query_dataset,
     
     if not experiment.binary:
         factory_str = 'Flat'
+        metrics = ['L2', 'cosine']
     else:
         factory_str = 'BFlat'
+        # value will not actually be used
+        metrics = ['foo']
         
-    metrics = ['L2', 'cosine']
 
     result = {}
     
@@ -506,10 +508,12 @@ def compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
     
     if not experiment.binary:
         factory_str = ['Flat', f'IVF{nlist},Flat']
+        metrics = ['L2', 'cosine']
     else:
         factory_str = ['BFlat', f'BIVF{nlist},Flat']
-        
-    metrics = ['L2', 'cosine']
+        # value will not actually be used
+        metrics = ['foo']
+    
 
     result = {}
     
