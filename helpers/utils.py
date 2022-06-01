@@ -354,4 +354,48 @@ def concatenate_images(images, target=True):
         start_i += 300 + small_offset
             
     return Image.fromarray(final_image)
+
+
+def cluster_representation(images):
+    """
+    Concatenate images from the same cluster into one image to get a visual idea
+    of the clustering.
+
+    Parameters
+    ----------
+    images : list of image paths
+        The representatives images from the cluster.
+
+    Returns
+    -------
+    PIL image
+        The concatenation.
+
+    """
+    
+    images = [Image.open(image).convert('RGB') for image in images]
+    # Resize all images to 300x300
+    images = [image.resize((300,300), Image.BICUBIC) for image in images]
+    
+    Nlines = len(images) // 3 + 1
+    Ncols = 3 if len(images) >= 3 else len(images)
+
+    offset = 10
+    
+    final_image = np.zeros((300*Nlines + (Nlines-1)*offset,
+                            300*Ncols + (Ncols-1)*offset, 3), dtype='uint8')
+    
+    start_i = 0
+    start_j = 0
+    index = 0
+    for i in range(Nlines):
+        for j in range(Ncols):
+            if index < len(images):
+                final_image[start_i:start_i+300, start_j:start_j+300, :] = np.array(images[index])
+                index += 1
+                start_j += 300 + offset
+        start_j = 0
+        start_i += 300 + offset
+            
+    return Image.fromarray(final_image)
     
