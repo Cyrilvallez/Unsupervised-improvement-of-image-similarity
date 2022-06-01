@@ -25,7 +25,6 @@ distances = np.load('distances_all_memes_L2.npy')
 Z = linkage(distances, method='ward')
 
 thresholds = np.linspace(10, 100, 20)
-N_clusters = np.zeros(thresholds.shape)
 
 rng = np.random.default_rng(seed=112)
 
@@ -38,9 +37,9 @@ for i, threshold in enumerate(thresholds):
     os.makedirs(current_dir, exist_ok=True)
     
     clusters = fcluster(Z, threshold, criterion='distance')
-    N_clusters[i] = len(np.unique(clusters))
+    N_clusters = int(len(np.unique(clusters)))
     
-    for cluster_idx in range(N_clusters[i]):
+    for cluster_idx in range(N_clusters):
         
         images = mapping[clusters == cluster_idx]
         if len(images) > 10:
