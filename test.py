@@ -10,6 +10,7 @@ import numpy as np
 import faiss
 import time
 
+import experiment as ex
 from helpers import utils
 """
 algorithm = 'Dhash 64 bits'
@@ -39,6 +40,7 @@ print(f'{dt:.2f} s')
 print(f'Recall : {recall:.2f}')
 """
 
+"""
 import torch
 import torch.nn.functional as F
 from helpers import utils
@@ -53,5 +55,18 @@ features = torch.tensor(features).to('cuda')
 distances = F.pdist(features)
 distances = distances.cpu().numpy()
 np.save('distances_all_memes_L2', distances)
+"""
 
+# algorithm = 'SimCLR v2 ResNet50 2x'
+algorithm = 'Dhash 64 bits'
+main_dataset = 'BSDS500_original'
+# main_dataset = 'Kaggle_templates'
+distractor_dataset = 'Flickr500K'
+query_dataset = 'BSDS500_attacks'
+# query_dataset = 'Kaggle_memes'
+
+experiment = ex.Experiment(algorithm, main_dataset, query_dataset,
+                        distractor_dataset=distractor_dataset)
+
+print(experiment.binary)
 

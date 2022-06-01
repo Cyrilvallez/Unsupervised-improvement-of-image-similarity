@@ -49,7 +49,7 @@ for i, threshold in enumerate(thresholds):
             
         representation = utils.cluster_representation(representatives)
         representation.save(current_dir + f'{cluster_idx}.png')
-        
+       
    
 
 """
