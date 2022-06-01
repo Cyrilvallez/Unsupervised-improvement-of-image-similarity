@@ -52,8 +52,9 @@ class Experiment(object):
         self.features_db, self.mapping_db = utils.combine_features(algorithm, main_dataset,
                                                                    distractor_dataset)
         self.features_query, self.mapping_query = utils.load_features(algorithm, query_dataset)
-        self.features_db_normalized = utils.normalize(self.features_db)
-        self.features_query_normalized = utils.normalize(self.features_query)
+        if not self.binary:
+            self.features_db_normalized = utils.normalize(self.features_db)
+            self.features_query_normalized = utils.normalize(self.features_query)
         
         # For binary indices, data is represented as array of bytes
         if self.binary:
@@ -98,12 +99,15 @@ class Experiment(object):
             raise ValueError(f'Metric should be one of {*METRICS.keys(),}')
             
         self.factory_str = factory_str
-        self.metric = metric
-        self.experiment_name = factory_str + '--' + metric
+
         if not self.binary:
             self.index = faiss.index_factory(self.d, factory_str, METRICS[metric])
+            self.metric = metric
         else:
             self.index = faiss.index_binary_factory(self.d, factory_str)
+            self.metric = 'Hamming'
+            
+        self.experiment_name = factory_str + '--' + metric
         
         
     def to_gpu(self):
