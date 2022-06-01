@@ -38,4 +38,4 @@ filename = save_folder + 'results.json'
 ex.compare_k_Flat(ks, algorithm, main_dataset, query_dataset,
                         distractor_dataset, filename)
 # ex.compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
-                        # distractor_dataset, filename, k=10, binary=False)
+                        # distractor_dataset, filename, k=10)
