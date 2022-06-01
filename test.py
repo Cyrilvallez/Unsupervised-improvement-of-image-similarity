@@ -39,4 +39,4 @@ print(f'{dt:.2f} s')
 print(f'Recall : {recall:.2f}')
 """
 
-index = faiss.GpuIndexBinaryFlat(32)
+index = faiss.GpuIndexBinaryIVF(32)
