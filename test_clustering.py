@@ -112,3 +112,20 @@ plt.xlabel('Image number')
 plt.ylabel('Euclidean distance')
 plt.savefig('test.pdf', bbox_inches='tight')
 plt.show()
+
+
+#%%
+
+from scipy.spatial.distance import pdist
+import time
+from helpers import utils
+
+algorithm = 'SimCLR v2 ResNet50 2x'
+dataset1 = 'Kaggle_memes'
+dataset2 = 'Kaggle_templates'
+
+features, _ = utils.combine_features(algorithm, dataset1, dataset2)
+
+t0 = time.time()
+foo = pdist(features)
+dt = time.time() - t0

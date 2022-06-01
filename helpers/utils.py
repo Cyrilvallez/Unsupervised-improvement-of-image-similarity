@@ -90,7 +90,7 @@ def load_features(method_name, dataset_name):
 def combine_features(method_name, dataset_name, other_dataset_name='Flickr500K'):
     """
     Combine two set of features into a single dataset. For example it combines
-    any default dataset with the 500K distractor images from Flickr dataset.
+    any dataset with the 500K distractor images from Flickr dataset.
 
     Parameters
     ----------

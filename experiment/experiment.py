@@ -22,7 +22,6 @@ METRICS = {
     'cosine': faiss.METRIC_INNER_PRODUCT,
     }
 
-
 class Experiment(object):
     """
     Class representing data alongside index method for easier manipulation.

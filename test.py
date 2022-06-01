@@ -39,4 +39,19 @@ print(f'{dt:.2f} s')
 print(f'Recall : {recall:.2f}')
 """
 
-index = faiss.GpuIndexBinaryIVF(32)
+import torch
+import torch.nn.functional as F
+from helpers import utils
+
+algorithm = 'SimCLR v2 ResNet50 2x'
+dataset1 = 'Kaggle_memes'
+dataset2 = 'Kaggle_templates'
+
+features, _ = utils.combine_features(algorithm, dataset1, dataset2)
+features = torch.tensor(features).to('cuda')
+
+distances = F.pdist(features)
+distances = distances.cpu().numpy()
+np.save('distances_all_memes_L2', distances)
+
+
