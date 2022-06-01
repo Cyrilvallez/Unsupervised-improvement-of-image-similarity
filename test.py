@@ -11,7 +11,7 @@ import faiss
 import time
 
 from helpers import utils
-
+"""
 algorithm = 'Dhash 64 bits'
 main_dataset = 'BSDS500_original'
 distractor_dataset = 'Flickr500K'
@@ -37,3 +37,6 @@ recall, _ = utils.recall(I, mapping_db, mapping_query)
 
 print(f'{dt:.2f} s')
 print(f'Recall : {recall:.2f}')
+"""
+
+index = faiss.GpuIndexBinaryFlat(32)

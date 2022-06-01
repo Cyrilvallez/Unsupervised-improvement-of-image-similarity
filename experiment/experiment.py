@@ -109,14 +109,16 @@ class Experiment(object):
         
     def to_gpu(self):
         """
-        Put the index on GPU.
+        Put the index on GPU, if it is not a binary index (since the equivalent
+        for binary indices is not supported in faiss).
 
         Returns
         -------
         None.
 
         """
-        self.index = faiss.index_cpu_to_all_gpus(self.index)
+        if not self.binary:
+            self.index = faiss.index_cpu_to_all_gpus(self.index)
         
         
     def train(self):
