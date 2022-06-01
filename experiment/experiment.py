@@ -44,7 +44,7 @@ class Experiment(object):
                  distractor_dataset='Flickr500K'):
         
         self.algorithm = algorithm
-        self.binary = True if 'bits' in self.algorithm else False
+        self.binary = True if 'bits' in algorithm else False
         self.main_dataset = main_dataset
         self.query_dataset = query_dataset
         self.distractor_dataset = distractor_dataset

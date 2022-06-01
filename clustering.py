@@ -37,9 +37,9 @@ for i, threshold in enumerate(thresholds):
     os.makedirs(current_dir, exist_ok=True)
     
     clusters = fcluster(Z, threshold, criterion='distance')
-    N_clusters = int(len(np.unique(clusters)))
+    N_clusters = int(max(clusters))
     
-    for cluster_idx in range(N_clusters):
+    for cluster_idx in range(1, N_clusters+1):
         
         images = mapping[clusters == cluster_idx]
         if len(images) > 10:
