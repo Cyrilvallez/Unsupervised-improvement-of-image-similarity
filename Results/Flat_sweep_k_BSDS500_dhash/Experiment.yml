@@ -1,0 +1,12 @@
+---
+name : Flat_sweep_k_BSDS500_dhash
+date generated: Wednesday 01/06/2022
+GPU(s): 1 a100
+CPUs: 8
+method: Dhash 64 bits
+dataset used: BSDS500 + Flickr500k as distractor
+function: compare_k_Flat(...) in experiment.py
+ks : [1, 2, 3, 4, 5, 10, 20]
+---
+purpose: |
+Compare the searching time and recall when changing k for Flat binary indices.
