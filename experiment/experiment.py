@@ -105,7 +105,7 @@ class Experiment(object):
             self.metric = metric
         else:
             self.index = faiss.index_binary_factory(self.d, factory_str)
-            self.metric = 'Hamming'
+            self.metric = 'hamming'
             
         self.experiment_name = self.factory_str + '--' + self.metric
         

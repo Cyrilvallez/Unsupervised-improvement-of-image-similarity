@@ -7,6 +7,7 @@ Created on Wed May 18 15:54:40 2022
 """
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.cluster.hierarchy import dendrogram
 
 from helpers import plot_config
 
@@ -111,6 +112,37 @@ def time_recall_plot_IVF(results, ylog=False, save=False, filename=None):
     plt.legend()
     if ylog:
         plt.yscale('log')
+    if save:
+        plt.savefig(filename, bbox_inches='tight')
+    plt.show()
+    
+
+def plot_dendrogram(Z, linkage, save=False, filename=None, **kwargs):
+    """
+    Plot the dendrogram from linkage matrix.
+
+    Parameters
+    ----------
+    Z : Numpy array
+        Linkage matrix.
+    linkage : str
+        Linkage type used.
+    save : bool, optional
+        Whether to save the figure or not. The default is False.
+    filename : str, optional
+        Filename for saving the figure. The default is None.
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    plt.figure(figsize=(10,10))
+    dendrogram(Z, **kwargs)
+    plt.xticks([])
+    plt.xlabel('Image number')
+    plt.ylabel('Cluster distance (linkage: ' + linkage + ')')
     if save:
         plt.savefig(filename, bbox_inches='tight')
     plt.show()

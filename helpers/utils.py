@@ -44,7 +44,7 @@ def array_of_bits_to_bytes(array):
     return out
 
 
-def load_features(method_name, dataset_name):
+def load_features(method_name, dataset_name, to_bytes=True):
     """
     Load features from a given method identifier and dataset.
 
@@ -54,6 +54,8 @@ def load_features(method_name, dataset_name):
         The identifier of the method from which the features were extracted.
     dataset_name : str
         Identifier of the dataset from which the features were extracted.
+    to_bytes : bool, optional
+        Whether to convert binary array to bytes array. The default is True.
 
     Raises
     ------
@@ -81,13 +83,14 @@ def load_features(method_name, dataset_name):
     features = np.load(path + '_features.npy')
     mapping = np.load(path + '_map_to_names.npy', allow_pickle=True)
     
-    if 'bits' in method_name:
+    if 'bits' in method_name and to_bytes:
         features = array_of_bits_to_bytes(features)
     
     return features, mapping
 
 
-def combine_features(method_name, dataset_name, other_dataset_name='Flickr500K'):
+def combine_features(method_name, dataset_name, other_dataset_name='Flickr500K',
+                     to_bytes=True):
     """
     Combine two set of features into a single dataset. For example it combines
     any dataset with the 500K distractor images from Flickr dataset.
@@ -100,6 +103,8 @@ def combine_features(method_name, dataset_name, other_dataset_name='Flickr500K')
         Identifier of the first (smallest) dataset to merge.
     other_dataset_name : str, optional
         Identifier of the second (biggest) dataset to merge. The default is 'Flickr500K'.
+    to_bytes : bool, optional
+        Whether to convert binary array to bytes array. The default is True.
 
     Returns
     -------
@@ -114,7 +119,7 @@ def combine_features(method_name, dataset_name, other_dataset_name='Flickr500K')
     N2 = datasets.DATASET_DIMS[other_dataset_name]
     
     # Load the (supposedly) smaller dataset and use it to get dimension of features
-    features1, mapping1 = load_features(method_name, dataset_name)
+    features1, mapping1 = load_features(method_name, dataset_name, to_bytes)
     M = features1.shape[1]
     
     # Initialize the big array to ensure to load directly data into it to avoid
@@ -128,7 +133,8 @@ def combine_features(method_name, dataset_name, other_dataset_name='Flickr500K')
     # In case it takes a lot of memory already at this point
     del features1, mapping1
     
-    features[N1:, :], mapping[N1:] = load_features(method_name, other_dataset_name)
+    features[N1:, :], mapping[N1:] = load_features(method_name, other_dataset_name,
+                                                   to_bytes)
     
     return features, mapping
 
