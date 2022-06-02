@@ -9,10 +9,11 @@ Created on Fri May 27 09:28:49 2022
 import numpy as np
 import os
 import argparse
-from scipy.cluster.hierarchy import linkage, fcluster
+import matplotlib.pyplot as plt
+from scipy.cluster.hierarchy import linkage, fcluster, dendrogram
 from scipy.spatial.distance import pdist
 
-from helpers import utils, plot
+from helpers import utils
 
 def find_threshold(Z, N_clusters):
     """
@@ -54,6 +55,37 @@ def find_threshold(Z, N_clusters):
         N = int(max(clusters))
         
     return clusters, m
+
+
+def plot_dendrogram(Z, linkage, save=False, filename=None, **kwargs):
+    """
+    Plot the dendrogram from linkage matrix.
+
+    Parameters
+    ----------
+    Z : Numpy array
+        Linkage matrix.
+    linkage : str
+        Linkage type used.
+    save : bool, optional
+        Whether to save the figure or not. The default is False.
+    filename : str, optional
+        Filename for saving the figure. The default is None.
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    plt.figure(figsize=(10,10))
+    dendrogram(Z, **kwargs)
+    plt.xticks([])
+    plt.xlabel('Image number')
+    plt.ylabel('Cluster distance (linkage: ' + linkage + ')')
+    if save:
+        plt.savefig(filename, bbox_inches='tight')
+    plt.show()
 
 
 if __name__ == '__main__':
@@ -124,7 +156,7 @@ if __name__ == '__main__':
             representation = utils.cluster_representation(representatives)
             representation.save(current_dir + f'{cluster_idx}.png')
             
-    plot.plot_dendrogram(Z, linkage_type, save=True, filename=folder + 'dendrogram.pdf')
+    plot_dendrogram(Z, linkage_type, save=True, filename=folder + 'dendrogram.pdf')
        
         
 
