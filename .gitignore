@@ -4,6 +4,6 @@ extractor/SimCLRv1
 extractor/SimCLRv2
 Datasets
 Features
-Results/Neighbors_BSDS500_flat_cosine
-Results/Neighbors_memes_flat_cosine
+Neighbors
 Clustering
+Results/Neighbors_BSDS500_flat_Dhash
