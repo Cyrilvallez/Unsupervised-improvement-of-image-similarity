@@ -69,4 +69,3 @@ experiment = ex.Experiment(algorithm, main_dataset, query_dataset,
                         distractor_dataset=distractor_dataset)
 
 print(experiment.binary)
-
