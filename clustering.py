@@ -92,7 +92,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Clustering of the memes')
     parser.add_argument()
-    parser.add_argument('algo', type=str, default='SimCLR v2 ResNet50 2x',
+    parser.add_argument('--algo', type=str, default='SimCLR v2 ResNet50 2x',
                         help='The algorithm from which the features describing the images derive.')
     parser.add_argument('--metric', type=str, default='euclidean', choices=['euclidean', 'cosine'],
                         help='The metric for distance between features.')
