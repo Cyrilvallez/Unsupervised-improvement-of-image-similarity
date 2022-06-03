@@ -14,7 +14,7 @@ import os
 from helpers import utils
 from helpers import plot
 
-EXPERIMENT_NAME = 'Flat_sweep_k_BSDS500_dhash'
+EXPERIMENT_NAME = 'Flat_sweep_k_memes_dhash'
 
 
 

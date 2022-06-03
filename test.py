@@ -80,4 +80,6 @@ parser.add_argument('--algo', type=str, nargs='+', default='SimCLR v2 ResNet50 2
 parser.add_argument('--linkage', type=str, default='ward', 
                     choices=['single', 'complete', 'average', 'centroid', 'ward'],
                     help='The linkage method for merging clusters.')
-args = parser.parse_args()
+args = parser.parse_args('--algo Dhash 64 bits --linkage average'.split())
+
+algorithm = ' '.join(args.algo)

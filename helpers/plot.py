@@ -14,12 +14,16 @@ COLORS = {
     'cosine': 'b',
     'L2': 'r',
     'L1': 'g',
+    'Hamming': 'b',
+    'hamming': 'b'
     }
 
 MARKERS = {
     'cosine': '*',
     'L2': 'o',
     'L1': 'x',
+    'Hamming': '*',
+    'hamming': '*'
     }
 
 def time_recall_plot_flat(results, save=False, filename=None):

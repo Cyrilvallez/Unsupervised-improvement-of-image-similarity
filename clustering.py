@@ -110,6 +110,9 @@ if __name__ == '__main__':
     
     if (metric != 'euclidean' and linkage_type == 'ward'):
         raise ValueError('Ward linkage can only be used for euclidean metric.')
+        
+    if (metric != 'euclidean' and linkage_type == 'centroid'):
+        raise ValueError('Centroid linkage can only be used for euclidean metric.')
 
     identifier = '_'.join(algorithm.split(' '))
 
