@@ -69,3 +69,15 @@ experiment = ex.Experiment(algorithm, main_dataset, query_dataset,
                         distractor_dataset=distractor_dataset)
 
 print(experiment.binary)
+
+#%%
+
+import argparse
+
+parser = argparse.ArgumentParser(description='Clustering of the memes')
+parser.add_argument('--algo', type=str, nargs='+', default='SimCLR v2 ResNet50 2x',
+                    help='The algorithm from which the features describing the images derive.')
+parser.add_argument('--linkage', type=str, default='ward', 
+                    choices=['single', 'complete', 'average', 'centroid', 'ward'],
+                    help='The linkage method for merging clusters.')
+args = parser.parse_args()

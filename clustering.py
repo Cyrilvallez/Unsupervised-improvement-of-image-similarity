@@ -91,7 +91,7 @@ def plot_dendrogram(Z, linkage, save=False, filename=None, **kwargs):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Clustering of the memes')
-    parser.add_argument('--algo', type=str, default='SimCLR v2 ResNet50 2x',
+    parser.add_argument('--algo', type=str, nargs='+', default='SimCLR v2 ResNet50 2x',
                         help='The algorithm from which the features describing the images derive.')
     parser.add_argument('--metric', type=str, default='euclidean', choices=['euclidean', 'cosine'],
                         help='The metric for distance between features.')
@@ -100,7 +100,7 @@ if __name__ == '__main__':
                         help='The linkage method for merging clusters.')
     args = parser.parse_args()
 
-    algorithm = args.algo
+    algorithm = ' '.join(args.algo)
     metric = args.metric
     linkage_type = args.linkage
 
@@ -116,7 +116,7 @@ if __name__ == '__main__':
     dataset1 = 'Kaggle_memes'
     dataset2 = 'Kaggle_templates'
 
-    folder = f'Clustering/{identifier}_{metric}_{linkage_type}/'
+    folder = f'Clustering/{metric}_{linkage_type}_{identifier}/'
     os.makedirs(folder)
 
     # Load features and mapping to actual images
