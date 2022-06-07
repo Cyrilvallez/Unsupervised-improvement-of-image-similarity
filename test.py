@@ -178,13 +178,3 @@ for i, precision in enumerate(precisions):
         representation = utils.cluster_representation(representatives)
         representation.save(current_dir + f'{cluster_idx}.png')
 """
-
-
-#%%
-import argparse
-
-parser = argparse.ArgumentParser(description='Clustering of the memes')
-parser.add_argument('--algo', type=str, nargs='+', default='SimCLR v2 ResNet50 2x'.split(),
-                    help='The algorithm from which the features describing the images derive.')
-a = parser.parse_args()
-print(a.algo)
