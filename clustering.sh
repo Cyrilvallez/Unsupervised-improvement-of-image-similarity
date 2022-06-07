@@ -4,7 +4,7 @@
 #SBATCH --output=%x-%j.out
 #SBATCH --error=%x-%j.err
 #SBATCH --time=10-00:00:00
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=12
 #SBATCH --mem=20000
 #SBATCH --partition=nodes
 #SBATCH --gres=gpu:0
@@ -12,9 +12,6 @@
 
 # Verify working directory
 echo $(pwd)
-
-# Pull last modifications
-git pull
 
 # Print gpu configuration for this job
 nvidia-smi
