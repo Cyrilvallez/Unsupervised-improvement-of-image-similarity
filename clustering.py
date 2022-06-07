@@ -16,7 +16,7 @@ from scipy.spatial.distance import pdist
 
 from helpers import utils
 
-def find_threshold(Z, N_clusters):
+def find_threshold(Z, N_clusters, max_iter=1e4):
     """
     Find the threshold and the cluster assignments corresponding to the given number of
     clusters desired. It uses a very simple dichotomy algorithm.
@@ -27,6 +27,9 @@ def find_threshold(Z, N_clusters):
         The linkage matrix.
     N_clusters : int
         The number of clusters desired.
+    max_iter : int or float, optional
+        Maximum number of iterations the algorithm should perform. The default
+        is 1e4.
 
     Returns
     -------
@@ -44,7 +47,8 @@ def find_threshold(Z, N_clusters):
     clusters = fcluster(Z, m, criterion='distance')
     N = int(max(clusters))
 
-    while N != N_clusters:
+    iter_count = 0
+    while N != N_clusters and iter_count < max_iter:
         
         if N < N_clusters:
             b = m
@@ -54,6 +58,7 @@ def find_threshold(Z, N_clusters):
         m = (a+b)/2
         clusters = fcluster(Z, m, criterion='distance')
         N = int(max(clusters))
+        iter_count += 1
         
     return clusters, m
 
@@ -213,6 +218,9 @@ def hierarchical_clustering():
     for i, N_cluster in enumerate(N_clusters):
     
         clusters, threshold = find_threshold(Z, N_cluster)
+        # Recompute the number of clusters, in case find_threshold did
+        # not converge
+        N_cluster = int(max(clusters))
         
         current_dir = folder + f'{N_cluster}-clusters_thresh-{threshold:.3f}/'
         os.makedirs(current_dir, exist_ok=True)

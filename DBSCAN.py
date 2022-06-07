@@ -102,7 +102,9 @@ def cluster_DBSCAN():
     
     if metric == 'euclidean':
         precisions = np.linspace(4, 4.5, 5)
-    if metric == 'cosine':
+    elif metric == 'cosine':
+        precisions = np.linspace(0.18, 0.25, 5)
+    elif metric == 'hamming':
         precisions = np.linspace(0.18, 0.25, 5)
     
     rng = np.random.default_rng(seed=112)

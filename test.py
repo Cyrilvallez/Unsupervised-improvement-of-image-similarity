@@ -129,8 +129,8 @@ def cluster_size_plot(cluster_assignments, save=False, filename=None):
     plt.show()
     
 
-algorithm = 'SimCLR v2 ResNet50 2x'
-metric = 'euclidean'
+algorithm = 'Dhash 64 bits'
+metric = 'hamming'
 
 # Force usage of hamming distance for Dhash
 if 'bits' in algorithm:
@@ -142,8 +142,8 @@ dataset1 = 'Kaggle_memes'
 dataset2 = 'Kaggle_templates'
 
 # Load features and mapping to actual images
-features, mapping = utils.combine_features(algorithm, dataset1, dataset2,
-                                       to_bytes=False)
+# features, mapping = utils.combine_features(algorithm, dataset1, dataset2,
+                                       # to_bytes=False)
 distances = np.load(f'Clustering/distances_{identifier}_{metric}.npy')
 
     
@@ -151,8 +151,8 @@ distances = np.load(f'Clustering/distances_{identifier}_{metric}.npy')
 distances = squareform(distances)
 
 # precisions = [3, 4, 5, 6, 7]
-precisions = np.linspace(4, 4.5, 5)
-sizes_euclid = []
+precisions = np.linspace(0.15, 0.4, 5)
+sizes_hamming = []
 
 rng = np.random.default_rng(seed=112)
     
@@ -161,7 +161,7 @@ for i, precision in enumerate(precisions):
     clustering = DBSCAN(eps=precision, metric='precomputed', algorithm='brute',
                         n_jobs=10)
     clusters = clustering.fit_predict(distances)
-    sizes_euclid.append(len(np.unique(clusters)))
+    sizes_hamming.append(len(np.unique(clusters)))
     
     cluster_size_plot(clusters, save=False)
 """
@@ -178,3 +178,95 @@ for i, precision in enumerate(precisions):
         representation = utils.cluster_representation(representatives)
         representation.save(current_dir + f'{cluster_idx}.png')
 """
+
+
+#%%
+
+from scipy.cluster.hierarchy import linkage, fcluster, dendrogram
+from scipy.spatial.distance import pdist
+
+def find_threshold(Z, N_clusters):
+    """
+    Find the threshold and the cluster assignments corresponding to the given number of
+    clusters desired. It uses a very simple dichotomy algorithm.
+
+    Parameters
+    ----------
+    Z : Numpy array
+        The linkage matrix.
+    N_clusters : int
+        The number of clusters desired.
+
+    Returns
+    -------
+    clusters : Numpy array
+        The clusters assignment corresponding to N_clusters.
+    m : float
+        The threshold in clustering distance corresponding to the cutting of
+        the dendrogram making exactly N_clusters clusters.
+
+    """
+    
+    a = 0
+    b = np.max(Z[:,2])
+    m = (a+b)/2
+    clusters = fcluster(Z, m, criterion='distance')
+    N = int(max(clusters))
+
+    count = 0
+    while N != N_clusters and count < 1e6:
+        
+        if N < N_clusters:
+            b = m
+        else:
+            a = m
+            
+        m = (a+b)/2
+        clusters = fcluster(Z, m, criterion='distance')
+        N = int(max(clusters))
+        count += 1
+        
+    return clusters, m
+
+
+algorithm = 'Dhash 64 bits'
+metric = 'hamming'
+linkage_type = 'single'
+
+identifier = '_'.join(algorithm.split(' '))
+
+dataset1 = 'Kaggle_memes'
+dataset2 = 'Kaggle_templates'
+
+distances = np.load(f'Clustering/distances_{identifier}_{metric}.npy')
+
+# Perform hierarchical clustering
+Z1 = linkage(distances, method='single')
+Z2 = linkage(distances, method='complete')
+Z3 = linkage(distances, method='average')
+
+
+#%%
+
+a = 0
+b = np.max(Z1[:,2])
+m = (a+b)/2
+clusters = fcluster(Z1, 0.261, criterion='distance')
+N = int(max(clusters))
+
+"""
+while N != N_clusters:
+    
+    if N < N_clusters:
+        b = m
+    else:
+        a = m
+        
+    m = (a+b)/2
+    clusters = fcluster(Z, m, criterion='distance')
+    N = int(max(clusters))   
+"""
+
+
+
+
