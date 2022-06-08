@@ -71,10 +71,13 @@ def cluster_DBSCAN():
                         help='The algorithm from which the features describing the images derive.')
     parser.add_argument('--metric', type=str, default='euclidean', choices=['euclidean', 'cosine'],
                         help='The metric for distance between features.')
+    parser.add_argument('--samples', type=int, default=5, 
+                        help='The number of samples in a neighborhood for a point to be considered as a core point.')
     args = parser.parse_args()
 
     algorithm = ' '.join(args.algo)
     metric = args.metric
+    min_samples = args.samples
 
     # Force usage of hamming distance for Dhash
     if 'bits' in algorithm:
@@ -85,7 +88,7 @@ def cluster_DBSCAN():
     dataset1 = 'Kaggle_memes'
     dataset2 = 'Kaggle_templates'
 
-    folder = f'Clustering/{metric}_DBSCAN_{identifier}/'
+    folder = f'Clustering/{metric}_DBSCAN_{identifier}_{min_samples}_samples/'
     os.makedirs(folder)
 
     # Load features and mapping to actual images
@@ -112,10 +115,11 @@ def cluster_DBSCAN():
     for i, precision in enumerate(precisions):
     
         clustering = DBSCAN(eps=precision, metric='precomputed', algorithm='brute',
-                            n_jobs=10)
+                            min_samples=min_samples, n_jobs=10)
         clusters = clustering.fit_predict(distances)
+        N_clusters = len(np.unique(clusters))
         
-        current_dir = folder + f'eps-{precision:.3f}/'
+        current_dir = folder + f'{N_clusters}-clusters_{precision:.3f}-eps/'
         os.makedirs(current_dir, exist_ok=True)
         
         cluster_size_plot(clusters, save=True,
