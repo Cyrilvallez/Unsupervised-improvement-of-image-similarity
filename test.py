@@ -145,14 +145,14 @@ dataset2 = 'Kaggle_templates'
 # Load features and mapping to actual images
 # features, mapping = utils.combine_features(algorithm, dataset1, dataset2,
                                        # to_bytes=False)
-distances = np.load(f'Clustering/distances_{identifier}_{metric}.npy')
+distances = np.load('/Users/cyrilvallez/Desktop/Clustering/distances_Dhash_64_bits_hamming.npy')
 
     
 # Reshape the distances as a symmetric matrix
 distances = squareform(distances)
 
 # precisions = [3, 4, 5, 6, 7]
-precisions = np.linspace(0.16, 0.2, 5)
+precisions = np.linspace(0.16, 0.2, 3)
 # precisions = np.linspace(4, 4.5, 5)
 sizes_hamming = []
 
