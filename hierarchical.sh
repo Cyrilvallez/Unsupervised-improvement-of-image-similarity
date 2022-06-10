@@ -25,6 +25,6 @@ eval "$(conda shell.bash hook)"
 # Activate (local) env
 conda activate faiss
 
-python3 clustering.py "$@"
+python3 clustering/hierarchical.py "$@"
 
 conda deactivate

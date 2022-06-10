@@ -25,6 +25,6 @@ eval "$(conda shell.bash hook)"
 # Activate (local) env
 conda activate faiss
 
-python3 DBSCAN.py "$@"
+python3 clustering/DBSCAN.py "$@"
 
 conda deactivate
