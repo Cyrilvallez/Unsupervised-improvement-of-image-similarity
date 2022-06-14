@@ -9,8 +9,13 @@ Created on Thu Jun  9 10:24:02 2022
 from PIL import Image
 import numpy as np
 import os
+import itertools
+import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pandas as pd
+from scipy.spatial.distance import pdist
+from tqdm import tqdm
 
 from helpers import utils
 
@@ -86,7 +91,136 @@ def save_representatives(clusters, mapping, current_dir):
         representation = cluster_representation(representatives)
         representation.save(current_dir + f'{cluster_idx}.png')
         
+        
+def get_cluster_diameters(assignments, algorithm, metric):
+    """
+    Compute the diameter of each clusters.
 
+    Parameters
+    ----------
+    assignments : Numpy array
+        The clusters assignments.
+    algorithm : str
+        The algorithm used to extract features.
+    metric : str
+        The metric used for the distances.
+
+    Returns
+    -------
+    Numpy array
+        The diameter of each cluster.
+
+    """
+    identifier = '_'.join(algorithm.split(' '))
+
+    dataset1 = 'Kaggle_memes'
+    dataset2 = 'Kaggle_templates'
+
+    # Load features and mapping to actual images
+    features, mapping = utils.combine_features(algorithm, dataset1, dataset2,
+                                           to_bytes=False)
+    
+    try:  
+        distances = np.load(f'Clustering_results/distances_{identifier}_{metric}.npy')
+    except FileNotFoundError:
+        distances = pdist(features, metric=metric)
+        np.save(f'Clustering_results/distances_{identifier}_{metric}.npy', distances)
+        
+    # Mapping from distance matrix indices to condensed representation index
+    N = len(features)
+    
+    def square_to_condensed(i, j):
+        assert i != j, "no diagonal elements in condensed matrix"
+        if i < j:
+            i, j = j, i
+        return N*j - j*(j+1)//2 + i - 1 - j
+        
+    diameters = []
+    for cluster_idx in np.unique(assignments):
+        
+        correct_indices = np.argwhere(assignments == cluster_idx).flatten()
+        
+        condensed_indices = [square_to_condensed(i,j) for i,j \
+                             in itertools.combinations(correct_indices, 2)]
+        cluster_distances = distances[condensed_indices]
+        
+        # If the cluster contains only 1 image
+        if len(cluster_distances) == 0:
+            diameters.append(0.)
+        else:
+            diameters.append(np.max(cluster_distances))
+        
+    return np.array(diameters)
+
+
+def get_cluster_centroids(assignment, algorithm, metric):
+    """
+    Compute the centroids of each clusters.
+
+    Parameters
+    ----------
+    assignments : Numpy array
+        The clusters assignments.
+    algorithm : str
+        The algorithm used to extract features.
+    metric : str
+        The metric used for the distances.
+
+    Returns
+    -------
+    Numpy array
+        The diameter of each cluster.
+
+    """
+
+    assignment = np.load(folder)
+    unique, counts = np.unique(assignment, return_counts=True)
+
+    dataset1 = 'Kaggle_memes'
+    dataset2 = 'Kaggle_templates'
+
+    # Load features and mapping to actual images
+    features, mapping = utils.combine_features(algorithm, dataset1, dataset2,
+                                           to_bytes=False)
+
+    engine = NearestCentroid(metric=metric)
+    engine.fit(features, assignment)
+    
+    # They are already sorted correctly with respect to the cluster indices
+    return engine.centroids_
+
+
+
+def save_diameters(experiment_folder):
+    """
+    Save the diameter of each cluster to file for later reuse.
+
+    Parameters
+    ----------
+    experiment_folder : str
+        Path to the folder containing the clustering results.
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    algorithm = experiment_folder.rsplit('/', 2)[1].split('_', 2)[-1]
+    algorithm = ' '.join(algorithm.split('_'))
+    if 'samples' in algorithm:
+        algorithm = algorithm.rsplit(' ', 2)[0]
+        
+    metric = experiment_folder.rsplit('/', 2)[1].split('_', 1)[0]
+    
+    for subfolder in tqdm([f.path for f in os.scandir(experiment_folder) if f.is_dir()]):
+        
+        clusters = np.load(subfolder + '/assignment.npy')
+        diameters = get_cluster_diameters(clusters, algorithm, metric)
+        np.save(subfolder + '/diameters.npy', diameters)
+        
+        
+        
 def cluster_size_plot(cluster_assignments, save=False, filename=None):
     """
     Creates a bar plot and box plot showing how much images belong to each cluster.
@@ -134,7 +268,52 @@ def cluster_size_plot(cluster_assignments, save=False, filename=None):
         fig.savefig(filename, bbox_inches='tight')
     plt.show()
     
+    
+def cluster_size_diameter_plot(assignments, diameters, save=False, filename=None):
+    """
+    Creates a scatter plot showing the diameter of each cluster against its size.
 
+    Parameters
+    ----------
+    assignments : Numpy array
+        The clusters assignments.
+    algorithm : str
+        The algorithm used to extract features.
+    metric : str
+        The metric used for the distances.
+    save : bool, optional
+        Whether to save the figure or not. The default is False.
+    filename : str, optional
+        Filename for saving the figure. The default is None.
+
+    Raises
+    ------
+    ValueError
+        If save is True but filename is not provided.
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    if save and filename is None:
+        raise ValueError('Filename cannot be None if save is True.')
+    
+    _, counts = np.unique(assignments, return_counts=True)
+
+    plt.figure()
+    plt.scatter(counts, diameters)
+    plt.xscale('log')
+    plt.xlabel('Cluster size')
+    plt.ylabel(f'Cluster diameter ({metric} distance)')
+    plt.grid()
+
+    if save:
+        plt.savefig(filename, bbox_inches='tight')
+    plt.show()
+    
+    
 def cluster_size_evolution(directory, save=False, filename=None):
     """
     Plot the cluster sizes along with the distribution of each real clusters.
@@ -193,6 +372,8 @@ def cluster_size_evolution(directory, save=False, filename=None):
     
     algorithm = directory.rsplit('/', 2)[1].split('_', 2)[-1]
     algorithm = ' '.join(algorithm.split('_'))
+    if 'samples' in algorithm:
+        algorithm = algorithm.rsplit(' ', 2)[0]
 
     # Load features and mapping to actual images
     features, mapping = utils.combine_features(algorithm, dataset1, dataset2,
@@ -218,44 +399,215 @@ def cluster_size_evolution(directory, save=False, filename=None):
     if save:
         fig.savefig(directory + filename, bbox_inches='tight')
     plt.show()
+    
+    
+def cluster_size_violin(directory, cut=2, save=False, filename=None):
+    """
+    Plot the cluster sizes as a violin plot.
+
+    Parameters
+    ----------
+    directory : str
+        Directory where the results are.
+    cut : float, optional 
+        Distance, in units of bandwidth size, to extend the density past the
+        extreme datapoints. Set to 0 to limit the violin range within the
+        range of the observed data. The default is 2.
+    save : bool, optional
+        Whether to save the figure or not. The default is False.
+    filename : str, optional
+        Filename for saving the figure. The default is None.
+
+    Raises
+    ------
+    ValueError
+        If save is True but filename is not provided.
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    if save and filename is None:
+        raise ValueError('Filename cannot be None if save is True.')
+            
+    if directory[-1] != '/':
+        directory += '/'
+            
+    counts = []
         
+    subfolders = [f.path for f in os.scandir(directory) if f.is_dir()]
+    subfolders = sorted(subfolders, reverse=True,
+                        key=lambda x: int(x.rsplit('/', 1)[1].split('-', 1)[0]))
+        
+    for folder in subfolders:
+        assignment = np.load(folder + '/assignment.npy')
+        _, count = np.unique(assignment, return_counts=True)
+        counts.append(count)
+    
+    # Creates a dataframe for easy violinplot with seaborn
+    order = sorted([len(counts[i]) for i in range(len(counts))], reverse=True)
+    N_clusters = [len(counts[i])*np.ones(len(counts[i]), dtype=int) \
+                  for i in range(len(counts))]
+    N_clusters = np.concatenate(N_clusters)
+    # Put data in log because violinplot cannot use log-scale directly
+    counts = np.log10(np.concatenate(counts))
+    
+    frame = pd.DataFrame({'Number of clusters': N_clusters, 'Cluster size': counts})
+    
+    plt.figure(figsize=(8,8))
+    sns.violinplot(x='Number of clusters', y='Cluster size', data=frame,
+                   order=order, cut=cut)
+    # Set the ticks correctly for log plot in a linear scale (since this is the data
+    # which is in log)
+    ax = plt.gca()
+    ymin, ymax = ax.get_ylim()
+    tick_range = np.arange(np.floor(ymin), ymax)
+    minor_ticks = [np.log10(x) for a in tick_range \
+                   for x in np.linspace(10**a, 10**(a+1), 10)[1:-1]]
+    ax.yaxis.set_major_locator(matplotlib.ticker.FixedLocator(tick_range))
+    ax.yaxis.set_minor_locator(matplotlib.ticker.FixedLocator(minor_ticks))
+    ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('$10^{{{x:.0f}}}$'))
+
+    if save:
+        plt.savefig(directory + filename, bbox_inches='tight')
+    plt.show()
+    
+    return counts
+    
+    
+def cluster_diameter_violin(directory, save=False, filename=None):
+    """
+    Plot the cluster diameters as a violin plot.
+
+    Parameters
+    ----------
+    directory : str
+        Directory where the results are.
+    save : bool, optional
+        Whether to save the figure or not. The default is False.
+    filename : str, optional
+        Filename for saving the figure. The default is None.
+
+    Raises
+    ------
+    ValueError
+        If save is True but filename is not provided.
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    if save and filename is None:
+        raise ValueError('Filename cannot be None if save is True.')
+            
+    if directory[-1] != '/':
+        directory += '/'
+            
+    diameters = []
+        
+    subfolders = [f.path for f in os.scandir(directory) if f.is_dir()]
+    subfolders = sorted(subfolders, reverse=True,
+                        key=lambda x: int(x.rsplit('/', 1)[1].split('-', 1)[0]))
+    
+    algorithm = directory.rsplit('/', 2)[1].split('_', 2)[-1]
+    algorithm = ' '.join(algorithm.split('_'))
+    if 'samples' in algorithm:
+        algorithm = algorithm.rsplit(' ', 2)[0]
+        
+    metric = directory.rsplit('/', 2)[1].split('_', 1)[0]
+        
+    for folder in subfolders:
+        diameters.append(np.load(folder + '/diameters.npy'))
+    
+    # Creates a dataframe for easy violinplot with seaborn
+    order = sorted([len(diameters[i]) for i in range(len(diameters))], reverse=True)
+    N_clusters = [len(diameters[i])*np.ones(len(diameters[i]), dtype=int) \
+                  for i in range(len(diameters))]
+    N_clusters = np.concatenate(N_clusters)
+    
+    frame = pd.DataFrame({'Number of clusters': N_clusters, 'Cluster diameter': diameters})
+    
+    plt.figure(figsize=(8,8))
+    sns.violinplot(x='Number of clusters', y='Cluster diameter', data=frame,
+                   order=order)
+    plt.ylabel(f'Cluster diameter ({metric} distance)')
+
+    if save:
+        plt.savefig(directory + filename, bbox_inches='tight')
+    plt.show()
+    
+    
+    
+    
         
 if __name__ == '__main__':
-    
+
     directory = 'Clustering_results'
     for folder in [f.path for f in os.scandir(directory) if f.is_dir()]:
-        cluster_size_evolution(folder, save=True, filename='sizes.pdf')
-    
-    
+        counts = cluster_size_violin(folder, save=True)
+        # cluster_size_evolution(folder, save=False, filename='sizes.pdf')
+        # cluster_diameter_violin(folder, save=True, filename='sizes_violin.pdf')
+    """
+    from tqdm import tqdm
+        
+    directory = 'Clustering_results'
+    for folder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
+        save_diameter(folder)
+    """
+
 #%%
 
-if directory[-1] != '/':
-    directory += '/'
-    
-counts = []
-
-subfolders = [f.path for f in os.scandir(directory) if f.is_dir()]
-subfolders = sorted(subfolders, reverse=True,
-                    key=lambda x: int(x.rsplit('/', 1)[1].split('-', 1)[0]))
-
-assignment = np.load(subfolders[0] + '/assignment.npy')
-_, count = np.unique(assignment, return_counts=True)
-    
-plt.figure(figsize=(15, 4))
-
-# Sort in decreasing order
-count = -np.sort(-count)
-plt.bar(np.arange(len(count)), count)
-plt.ylabel(f'{len(count)} clusters')
-plt.xlabel('Number of cluster')
-plt.yscale('log')
-lims = plt.ylim()
-    
-    
-    
-    
-    
-    
-    
+algorithm = 'SimCLR v2 ResNet50 2x'
+metric = 'cosine'
+folder = 'Clustering_results/cosine_single_SimCLR_v2_ResNet50_2x/250-clusters_thresh-0.436/assignment.npy'
+assignment = np.load(folder)
+get_cluster_diameters(assignment, algorithm, metric)
 
 
+#%%
+
+from sklearn.neighbors import NearestCentroid
+from sklearn import preprocessing
+import time
+import numpy as np
+
+from helpers import utils
+
+algorithm = 'SimCLR v2 ResNet50 2x'
+metric = 'euclidean'
+folder = 'Clustering_results/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples/172-clusters_4.375-eps/assignment.npy'
+assignment = np.load(folder)
+unique, counts = np.unique(assignment, return_counts=True)
+
+dataset1 = 'Kaggle_memes'
+dataset2 = 'Kaggle_templates'
+
+# Load features and mapping to actual images
+features, mapping = utils.combine_features(algorithm, dataset1, dataset2,
+                                       to_bytes=False)
+
+t0 = time.time()
+
+foo = NearestCentroid(metric=metric)
+foo.fit(features, assignment)
+
+centroids = foo.centroids_
+names = foo.classes_
+
+dt = time.time() - t0
+
+
+le = preprocessing.LabelEncoder()
+foo = le.fit_transform(assignment)
+
+
+#%%
+
+import matplotlib.pyplot as plt
+
+# plt.violinplot(counts, showmedians=True, vert=False, points=1000)
+sns.violinplot(x=counts, orient='v', cut=2)
