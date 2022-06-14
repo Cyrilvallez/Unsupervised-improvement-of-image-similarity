@@ -559,10 +559,66 @@ if __name__ == '__main__':
     
 
 #%%
+def clusters_intersection(assignment1, assignment2, algorithm):
+    
+    dataset1 = 'Kaggle_memes'
+    dataset2 = 'Kaggle_templates'
+    features, mapping = utils.combine_features(algorithm, dataset1, dataset2,
+                                           to_bytes=False)
+    N = len(features)
 
+    cluster_indices1 = np.unique(assignment1)
+    cluster_indices2 = np.unique(assignment2)
+    
+    intersection_percentage = np.empty((len(cluster_indices1), len(cluster_indices2)))
+    
+    for i, index1 in enumerate(cluster_indices1):
+        
+        cluster1 = set(np.argwhere(assignment1 == index1).flatten())
+
+        for j, index2 in enumerate(cluster_indices2):
+            
+            cluster2 = set(np.argwhere(assignment2 == index2).flatten())
+            intersection_percentage[i,j] = len(cluster1.intersection(cluster2))/N
+
+    return intersection_percentage, cluster_indices1, cluster_indices2
+
+
+def intersection_plot(folder1, folder2, save=False, filename=None):
+
+    if folder1[-1] != '/':
+        folder1 += '/'
+    if folder2[-1] != '/':
+        folder2 += '/'
+        
+    assert (folder1.rsplit('/', 2)[0] == folder2.rsplit('/', 2)[0])
+    
+    algorithm = folder1.rsplit('/', 3)[1].split('_', 2)[-1]
+    algorithm = ' '.join(algorithm.split('_'))
+    if 'samples' in algorithm:
+        algorithm = algorithm.rsplit(' ', 2)[0]
+        
+    assignment1 = np.load(folder1 + 'assignment.npy')
+    assignment2 = np.load(folder2 + 'assignment.npy')
+    intersection, indices1, indices2 = clusters_intersection(assignment1, assignment2,
+                                                             algorithm)
+    plt.figure()
+    sns.heatmap(intersection, annot=True, fmt='.2%', xticklabels=indices2, 
+                yticklabels=indices1, center=0.5)
+    if save:
+        plt.savefig(filename, bbox_inches='tight')
+        
+#%%
+"""
 algorithm = 'SimCLR v2 ResNet50 2x'
 metric = 'cosine'
-folder = 'Clustering_results/cosine_single_SimCLR_v2_ResNet50_2x/250-clusters_thresh-0.436/assignment.npy'
-assignment = np.load(folder)
+folder = 'Clustering_results/cosine_single_SimCLR_v2_ResNet50_2x/250-clusters_thresh-0.436'
+folder2 = 'Clustering_results/cosine_single_SimCLR_v2_ResNet50_2x/300-clusters_thresh-0.425'
 
-
+intersection_plot(folder, folder2)
+"""
+    
+        
+        
+        
+        
