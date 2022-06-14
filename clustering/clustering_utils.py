@@ -557,7 +557,7 @@ if __name__ == '__main__':
     for folder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
         save_diameters(folder)
     
-
+"""
 #%%
 def clusters_intersection(assignment1, assignment2, algorithm):
     
@@ -623,6 +623,10 @@ folder2 = 'Clustering_results/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_5_samples/3
 # assignment2 = np.load(folder2 + '/assignment.npy')
 intersection, indices1, indices2 = intersection_plot(folder, folder2, save=True, filename='test.pdf')
 
-plt.imshow(intersection)
+indices2 = indices2[0:len(indices1)]
+intersection = intersection[0:len(indices1), 0:len(indices1)]
+plt.figure(figsize=(8,8))
+plt.hexbin(indices2, indices1, intersection)
+plt.savefig('test_hexbin.pdf')
         
-        
+"""      
