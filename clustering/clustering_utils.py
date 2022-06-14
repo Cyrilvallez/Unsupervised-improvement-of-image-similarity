@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 from scipy.spatial.distance import pdist
+from sklearn.neighbors import NearestCentroid
 from tqdm import tqdm
 
 from helpers import utils
@@ -269,7 +270,7 @@ def cluster_size_plot(cluster_assignments, save=False, filename=None):
     plt.show()
     
     
-def cluster_size_diameter_plot(assignments, diameters, save=False, filename=None):
+def cluster_size_diameter_plot(assignments, diameters, metric, save=False, filename=None):
     """
     Creates a scatter plot showing the diameter of each cluster against its size.
 
@@ -277,8 +278,8 @@ def cluster_size_diameter_plot(assignments, diameters, save=False, filename=None
     ----------
     assignments : Numpy array
         The clusters assignments.
-    algorithm : str
-        The algorithm used to extract features.
+    diameters : Numpy array
+        The diameters of each cluster.
     metric : str
         The metric used for the distances.
     save : bool, optional
@@ -546,21 +547,19 @@ def cluster_diameter_violin(directory, save=False, filename=None):
         
 if __name__ == '__main__':
 
-    directory = 'Clustering_results'
-    for folder in [f.path for f in os.scandir(directory) if f.is_dir()]:
-        counts = cluster_size_violin(folder, save=True)
+    # directory = 'Clustering_results'
+    # for folder in [f.path for f in os.scandir(directory) if f.is_dir()]:
+        # counts = cluster_size_violin(folder, save=True, filename='sizes_violin.pdf')
         # cluster_size_evolution(folder, save=False, filename='sizes.pdf')
         # cluster_diameter_violin(folder, save=True, filename='sizes_violin.pdf')
-    """
-    from tqdm import tqdm
         
     directory = 'Clustering_results'
     for folder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
-        save_diameter(folder)
-    """
+        save_diameters(folder)
+    
 
 #%%
-
+"""
 algorithm = 'SimCLR v2 ResNet50 2x'
 metric = 'cosine'
 folder = 'Clustering_results/cosine_single_SimCLR_v2_ResNet50_2x/250-clusters_thresh-0.436/assignment.npy'
@@ -611,3 +610,4 @@ import matplotlib.pyplot as plt
 
 # plt.violinplot(counts, showmedians=True, vert=False, points=1000)
 sns.violinplot(x=counts, orient='v', cut=2)
+"""
