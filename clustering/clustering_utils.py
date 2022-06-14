@@ -559,55 +559,10 @@ if __name__ == '__main__':
     
 
 #%%
-"""
+
 algorithm = 'SimCLR v2 ResNet50 2x'
 metric = 'cosine'
 folder = 'Clustering_results/cosine_single_SimCLR_v2_ResNet50_2x/250-clusters_thresh-0.436/assignment.npy'
 assignment = np.load(folder)
-get_cluster_diameters(assignment, algorithm, metric)
 
 
-#%%
-
-from sklearn.neighbors import NearestCentroid
-from sklearn import preprocessing
-import time
-import numpy as np
-
-from helpers import utils
-
-algorithm = 'SimCLR v2 ResNet50 2x'
-metric = 'euclidean'
-folder = 'Clustering_results/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples/172-clusters_4.375-eps/assignment.npy'
-assignment = np.load(folder)
-unique, counts = np.unique(assignment, return_counts=True)
-
-dataset1 = 'Kaggle_memes'
-dataset2 = 'Kaggle_templates'
-
-# Load features and mapping to actual images
-features, mapping = utils.combine_features(algorithm, dataset1, dataset2,
-                                       to_bytes=False)
-
-t0 = time.time()
-
-foo = NearestCentroid(metric=metric)
-foo.fit(features, assignment)
-
-centroids = foo.centroids_
-names = foo.classes_
-
-dt = time.time() - t0
-
-
-le = preprocessing.LabelEncoder()
-foo = le.fit_transform(assignment)
-
-
-#%%
-
-import matplotlib.pyplot as plt
-
-# plt.violinplot(counts, showmedians=True, vert=False, points=1000)
-sns.violinplot(x=counts, orient='v', cut=2)
-"""
