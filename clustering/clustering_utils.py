@@ -565,7 +565,6 @@ def clusters_intersection(assignment1, assignment2, algorithm):
     dataset2 = 'Kaggle_templates'
     features, mapping = utils.combine_features(algorithm, dataset1, dataset2,
                                            to_bytes=False)
-    N = len(features)
 
     cluster_indices1 = np.unique(assignment1)
     cluster_indices2 = np.unique(assignment2)
@@ -574,12 +573,13 @@ def clusters_intersection(assignment1, assignment2, algorithm):
     
     for i, index1 in enumerate(cluster_indices1):
         
-        cluster1 = set(np.argwhere(assignment1 == index1).flatten())
+        cluster1 = np.argwhere(assignment1 == index1).flatten()
 
         for j, index2 in enumerate(cluster_indices2):
             
-            cluster2 = set(np.argwhere(assignment2 == index2).flatten())
-            intersection_percentage[i,j] = len(cluster1.intersection(cluster2))/N
+            cluster2 = np.argwhere(assignment2 == index2).flatten()
+            intersection_percentage[i,j] = len(np.intersect1d(cluster1, cluster2,
+                                                              assume_unique=True))/len(cluster1)
 
     return intersection_percentage, cluster_indices1, cluster_indices2
 
@@ -602,23 +602,27 @@ def intersection_plot(folder1, folder2, save=False, filename=None):
     assignment2 = np.load(folder2 + 'assignment.npy')
     intersection, indices1, indices2 = clusters_intersection(assignment1, assignment2,
                                                              algorithm)
-    plt.figure()
-    sns.heatmap(intersection, annot=True, fmt='.2%', xticklabels=indices2, 
-                yticklabels=indices1, center=0.5)
+    
+    mask = intersection == 0.
+
+    plt.figure(figsize=(20,20))
+    sns.heatmap(intersection, annot=False, fmt='.2%', xticklabels=indices2,
+                yticklabels=indices1)
     if save:
         plt.savefig(filename, bbox_inches='tight')
+
+    return intersection, indices1, indices2
         
 #%%
-"""
+
 algorithm = 'SimCLR v2 ResNet50 2x'
 metric = 'cosine'
-folder = 'Clustering_results/cosine_single_SimCLR_v2_ResNet50_2x/250-clusters_thresh-0.436'
-folder2 = 'Clustering_results/cosine_single_SimCLR_v2_ResNet50_2x/300-clusters_thresh-0.425'
+folder = 'Clustering_results/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_5_samples/268-clusters_4.375-eps'
+folder2 = 'Clustering_results/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_5_samples/306-clusters_4.250-eps'
+# assignment1 = np.load(folder + '/assignment.npy')
+# assignment2 = np.load(folder2 + '/assignment.npy')
+intersection, indices1, indices2 = intersection_plot(folder, folder2, save=True, filename='test.pdf')
 
-intersection_plot(folder, folder2)
-"""
-    
-        
-        
+plt.imshow(intersection)
         
         
