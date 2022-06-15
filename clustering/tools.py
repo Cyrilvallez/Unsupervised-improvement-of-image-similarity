@@ -444,7 +444,7 @@ def _save_attribute(directory, func, identifier):
     
     for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
         
-        print(subfolder)
+        print(subfolder, flush=True)
         attribute = func(subfolder)
         np.save(subfolder + identifier + '.npy', attribute)
         
@@ -863,19 +863,36 @@ def intersection_plot(folder1, folder2, save=False, filename=None):
 
 if __name__ == '__main__':
     
+    
     algorithm = 'SimCLR v2 ResNet50 2x'
     metric = 'cosine'
     folder = 'Clustering_results/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_5_samples/268-clusters_4.375-eps'
     folder2 = 'Clustering_results/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_5_samples/306-clusters_4.250-eps'
-    # assignment1 = np.load(folder + '/assignment.npy')
-    # assignment2 = np.load(folder2 + '/assignment.npy')
-    intersection, indices1, indices2 = intersection_plot(folder, folder2, save=True, filename='test.pdf')
+    assignment1 = np.load(folder + '/assignment.npy')
+    assignment2 = np.load(folder2 + '/assignment.npy')
+    intersection, indices1, indices2 = clusters_intersection(assignment1,
+                                                             assignment2, algorithm)
+    
+    # intersection, indices1, indices2 = intersection_plot(folder, folder2, save=True, filename='test.pdf')
 
+    """
     indices2 = indices2[0:len(indices1)]
     intersection = intersection[0:len(indices1), 0:len(indices1)]
     plt.figure(figsize=(8,8))
     plt.hexbin(indices2, indices1, intersection)
     plt.savefig('test_hexbin.pdf')
+    """
+    
+    plt.figure()
+    plt.hist(intersection.flatten(), bins=50)
+    plt.yscale('log')
+    ax = plt.gca()
+    ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda x, pos: f'${x:.2%}$ %'))
+    
+    print((intersection == 1).sum())
+    
+    
+    
         
 
     
