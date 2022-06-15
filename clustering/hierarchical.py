@@ -8,7 +8,7 @@ Created on Fri May 27 09:28:49 2022
 
 import numpy as np
 import os
-print(os.getcwd())
+print(os.listdir())
 import argparse
 import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import linkage, fcluster, dendrogram
