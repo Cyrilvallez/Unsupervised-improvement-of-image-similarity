@@ -13,9 +13,7 @@ import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import linkage, fcluster, dendrogram
 from scipy.spatial.distance import pdist
 
-import DBSCAN
-print('success')
-from helpers import utils
+from ..helpers import utils
 from clustering.clustering_utils import save_representatives, cluster_size_plot
 
 def find_threshold(Z, N_clusters, max_iter=1e4):
