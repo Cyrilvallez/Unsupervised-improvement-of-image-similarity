@@ -13,18 +13,12 @@
 # Verify working directory
 echo $(pwd)
 
-# Print gpu configuration for this job
-nvidia-smi
-
-# Verify gpu allocation (should be 1 GPU)
-echo "Indices of visible GPU(s) before job : $CUDA_VISIBLE_DEVICES"
-
 # Initialize the shell to use local conda
 eval "$(conda shell.bash hook)"
 
 # Activate (local) env
 conda activate faiss
 
-python3 clustering/DBSCAN.py "$@"
+python3 DBSCAN.py "$@"
 
 conda deactivate
