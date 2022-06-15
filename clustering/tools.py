@@ -64,16 +64,18 @@ def cluster_representation(images):
     return Image.fromarray(final_image)
 
 
-def save_representatives(clusters, mapping, current_dir):
+def save_representatives(assignments, mapping, current_dir):
     """
     Save representatives of each clusters from the cluster assignments.
 
     Parameters
     ----------
-    directory : str
-        Path to the results.
+    assignments : Numpy array
+        The clusters assignments.
     mapping : Numpy array
         Mapping from indices to image paths.
+    current_dir : str
+        Directory where to save the images.
 
     Returns
     -------
@@ -81,9 +83,9 @@ def save_representatives(clusters, mapping, current_dir):
 
     """
     
-    for cluster_idx in np.unique(clusters):
+    for cluster_idx in np.unique(assignments):
     
-        images = mapping[clusters == cluster_idx]
+        images = mapping[assignments == cluster_idx]
         if len(images) > 10:
             representatives = np.random.choice(images, size=10, replace=False)
         else:
@@ -93,27 +95,65 @@ def save_representatives(clusters, mapping, current_dir):
         representation.save(current_dir + f'{cluster_idx}.png')
         
         
-def get_cluster_diameters(assignments, algorithm, metric):
+def extract_params_from_folder_name(directory):
     """
-    Compute the diameter of each clusters.
+    Extract the algorithm name and metric used from the directory name of
+    a clustering experiment.
 
     Parameters
     ----------
-    assignments : Numpy array
-        The clusters assignments.
-    algorithm : str
-        The algorithm used to extract features.
-    metric : str
-        The metric used for the distances.
+    directory : str
+        The directory where the experiment is contained.
 
     Returns
     -------
-    Numpy array
-        The diameter of each cluster.
+    algorithm : str
+        Algorithm name used for the experiment.
+    metric : str
+        Metric used for the experiment.
 
     """
-    identifier = '_'.join(algorithm.split(' '))
+    
+    if directory[-1] == '/':
+        directory = directory.rsplit('/', 1)[0]
+        
+    # If True, this is a child folder of the experiment directory
+    if 'clusters' in directory.rsplit('/', 1)[1]:
+        directory = os.path.dirname(directory)
+    
+    algorithm = directory.rsplit('/', 1)[1].split('_', 2)[-1]
+    algorithm = ' '.join(algorithm.split('_'))
+    if 'samples' in algorithm:
+        algorithm = algorithm.rsplit(' ', 2)[0]
+        
+    metric = directory.rsplit('/', 2)[1].split('_', 1)[0]
+    
+    return algorithm, metric
 
+
+def extract_features_from_folder_name(directory, return_distances=False):
+    """
+    Extract the features and mapping to images from the directory name of
+    a clustering experiment.
+
+    Parameters
+    ----------
+    directory : str
+        The directory where the experiment is contained.
+
+    Returns
+    -------
+    features : Numpy array
+        The features corresponding to the images.
+    mapping : Numpy array
+        Mapping from feature index to actual image (as a path name).
+    return_distances : bool, optional
+        If `True`, will also return the distances between each features.
+
+    """
+    
+    algorithm, metric = extract_params_from_folder_name(directory)
+    
     dataset1 = 'Kaggle_memes'
     dataset2 = 'Kaggle_templates'
 
@@ -121,11 +161,43 @@ def get_cluster_diameters(assignments, algorithm, metric):
     features, mapping = utils.combine_features(algorithm, dataset1, dataset2,
                                            to_bytes=False)
     
-    try:  
-        distances = np.load(f'Clustering_results/distances_{identifier}_{metric}.npy')
-    except FileNotFoundError:
-        distances = pdist(features, metric=metric)
-        np.save(f'Clustering_results/distances_{identifier}_{metric}.npy', distances)
+    if return_distances:
+        identifier = '_'.join(algorithm.split(' '))
+        try:  
+            distances = np.load(f'Clustering_results/distances_{identifier}_{metric}.npy')
+        except FileNotFoundError:
+            distances = pdist(features, metric=metric)
+            np.save(f'Clustering_results/distances_{identifier}_{metric}.npy', distances)
+        
+        return features, mapping, distances
+    
+    else:
+        return features, mapping   
+ 
+        
+def compute_cluster_diameters(subfolder):
+    """
+    Compute the diameter of each clusters.
+
+    Parameters
+    ----------
+    subfolder : str
+        Subfolder of a clustering experiment, containing the assignments,
+        representatives images etc...
+
+    Returns
+    -------
+    Numpy array
+        The diameter of each cluster.
+
+    """
+    
+    if subfolder[-1] != '/':
+        subfolder += '/'
+        
+    features, _, distances = extract_features_from_folder_name(subfolder,
+                                                                     return_distances=True)
+    assignments = np.load(subfolder + 'assignment.npy')
         
     # Mapping from distance matrix indices to condensed representation index
     N = len(features)
@@ -154,18 +226,15 @@ def get_cluster_diameters(assignments, algorithm, metric):
     return np.array(diameters)
 
 
-def get_cluster_centroids(assignment, algorithm, metric):
+def compute_cluster_centroids(subfolder):
     """
     Compute the centroids of each clusters.
 
     Parameters
     ----------
-    assignments : Numpy array
-        The clusters assignments.
-    algorithm : str
-        The algorithm used to extract features.
-    metric : str
-        The metric used for the distances.
+    subfolder : str
+        Subfolder of a clustering experiment, containing the assignments,
+        representatives images etc...
 
     Returns
     -------
@@ -174,31 +243,31 @@ def get_cluster_centroids(assignment, algorithm, metric):
 
     """
 
-    unique, counts = np.unique(assignment, return_counts=True)
-
-    dataset1 = 'Kaggle_memes'
-    dataset2 = 'Kaggle_templates'
-
-    # Load features and mapping to actual images
-    features, mapping = utils.combine_features(algorithm, dataset1, dataset2,
-                                           to_bytes=False)
+    if subfolder[-1] != '/':
+        subfolder += '/'
+    
+    _, metric = extract_params_from_folder_name(subfolder)
+    features, _ = extract_features_from_folder_name(subfolder)
+    assignments = np.load(subfolder + 'assignment.npy')
+    
+    unique, counts = np.unique(assignments, return_counts=True)
 
     engine = NearestCentroid(metric=metric)
-    engine.fit(features, assignment)
+    engine.fit(features, assignments)
     
     # They are already sorted correctly with respect to the cluster indices
     return engine.centroids_
 
 
 
-def save_diameters(experiment_folder):
+def save_diameters(directory):
     """
     Save the diameter of each cluster to file for later reuse.
 
     Parameters
     ----------
-    experiment_folder : str
-        Path to the folder containing the clustering results.
+    directory : str
+        The directory where the experiment is contained.
 
     Returns
     -------
@@ -206,28 +275,41 @@ def save_diameters(experiment_folder):
 
     """
     
-    algorithm = experiment_folder.rsplit('/', 2)[1].split('_', 2)[-1]
-    algorithm = ' '.join(algorithm.split('_'))
-    if 'samples' in algorithm:
-        algorithm = algorithm.rsplit(' ', 2)[0]
+    for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
         
-    metric = experiment_folder.rsplit('/', 2)[1].split('_', 1)[0]
-    
-    for subfolder in tqdm([f.path for f in os.scandir(experiment_folder) if f.is_dir()]):
-        
-        clusters = np.load(subfolder + '/assignment.npy')
-        diameters = get_cluster_diameters(clusters, algorithm, metric)
+        diameters = compute_cluster_diameters(subfolder)
         np.save(subfolder + '/diameters.npy', diameters)
         
+
+def save_centroids(directory):
+    """
+    Save the diameter of each cluster to file for later reuse.
+
+    Parameters
+    ----------
+    directory : str
+        The directory where the experiment is contained.
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
+        
+        centroids = compute_cluster_centroids(subfolder)
+        np.save(subfolder + '/centroids.npy', centroids)
         
         
-def cluster_size_plot(cluster_assignments, save=False, filename=None):
+        
+def cluster_size_plot(assignments, save=False, filename=None):
     """
     Creates a bar plot and box plot showing how much images belong to each cluster.
 
     Parameters
     ----------
-    cluster_assignments : Numpy array
+    assignments : Numpy array
         The clusters assignments.
     save : bool, optional
         Whether to save the figure or not. The default is False.
@@ -248,11 +330,12 @@ def cluster_size_plot(cluster_assignments, save=False, filename=None):
     if save and filename is None:
         raise ValueError('Filename cannot be None if save is True.')
     
-    unique, counts = np.unique(cluster_assignments, return_counts=True)
+    unique, counts = np.unique(assignments, return_counts=True)
 
-    fig, (ax1,ax2) = plt.subplots(2,1, figsize=(15,7), gridspec_kw={'height_ratios': [3, 1]})
+    fig, (ax1,ax2) = plt.subplots(2,1, figsize=(15,7),
+                                  gridspec_kw={'height_ratios': [3, 1]})
 
-    sns.countplot(x=cluster_assignments, ax=ax1)
+    sns.countplot(x=assignments, ax=ax1)
     ax1.set(xlabel='Cluster number')
     ax1.set(ylabel='Number of images in the cluster')
     ax1.set(yscale='log')
@@ -269,7 +352,8 @@ def cluster_size_plot(cluster_assignments, save=False, filename=None):
     plt.show()
     
     
-def cluster_size_diameter_plot(assignments, diameters, metric, save=False, filename=None):
+def cluster_size_diameter_plot(assignments, diameters, metric, save=False,
+                               filename=None):
     """
     Creates a scatter plot showing the diameter of each cluster against its size.
 
@@ -540,6 +624,7 @@ def cluster_diameter_violin(directory, save=False, filename=None):
         plt.savefig(directory + filename, bbox_inches='tight')
     plt.show()
     
-    
-    
+
+
+
     
