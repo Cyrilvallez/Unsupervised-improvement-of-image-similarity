@@ -8,14 +8,13 @@ Created on Fri May 27 09:28:49 2022
 
 import numpy as np
 import os
-import argparse
 import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import linkage, fcluster, dendrogram
-from scipy.spatial.distance import pdist
+from scipy.spatial.distance import pdist, squareform
+from sklearn.cluster import DBSCAN
 
-from ..helpers import utils
-print('success')
-from clustering.clustering_utils import save_representatives, cluster_size_plot
+from helpers import utils
+from clustering import tools
 
 def find_threshold(Z, N_clusters, max_iter=1e4):
     """
@@ -176,33 +175,85 @@ def hierarchical_clustering(algorithm, metric, linkage_type):
         
         np.save(current_dir + 'assignment.npy', clusters)
         
-        cluster_size_plot(clusters, save=True,
-                          filename=current_dir + 'cluster_balance.pdf')
-        save_representatives(clusters, mapping, current_dir)
+        tools.cluster_size_plot(clusters, save=True,
+                                filename=current_dir + 'cluster_balance.pdf')
+        tools.save_representatives(clusters, mapping, current_dir)
             
     plot_dendrogram(Z, linkage_type, save=True, filename=folder + 'dendrogram.pdf',
                     truncate_mode='level', p=25)
     
-           
     
-if __name__ == '__main__':
-    # Parse arguments from command line
-    parser = argparse.ArgumentParser(description='Clustering of the memes')
-    parser.add_argument('--algo', type=str, nargs='+', default='SimCLR v2 ResNet50 2x'.split(),
-                        help='The algorithm from which the features describing the images derive.')
-    parser.add_argument('--metric', type=str, default='euclidean', choices=['euclidean', 'cosine'],
-                        help='The metric for distance between features.')
-    parser.add_argument('--linkage', type=str, default='ward', 
-                        choices=['single', 'complete', 'average', 'centroid', 'ward'],
-                        help='The linkage method for merging clusters.')
-    args = parser.parse_args()
+def cluster_DBSCAN(algorithm, metric, min_samples):
+    """
+    Perform DBSCAN clustering and save cluster assignments and representative
+    cluster images.
 
-    algorithm = ' '.join(args.algo)
-    metric = args.metric
-    linkage_type = args.linkage
+    Parameters
+    ----------
+    algorithm : str
+        Algorithm used to extract image features.
+    metric : str
+        The metric used for the distance between images.
+    min_samples : int
+        The number of samples in a neighborhood for a point to be considered
+        as a core point.
+
+    Returns
+    -------
+    None.
+
+    """
+
+    # Force usage of hamming distance for Dhash
+    if 'bits' in algorithm:
+        metric = 'hamming'
+
+    identifier = '_'.join(algorithm.split(' '))
+
+    dataset1 = 'Kaggle_memes'
+    dataset2 = 'Kaggle_templates'
+
+    folder = f'Clustering_results/{metric}_DBSCAN_{identifier}_{min_samples}_samples/'
+    os.makedirs(folder)
+
+    # Load features and mapping to actual images
+    features, mapping = utils.combine_features(algorithm, dataset1, dataset2,
+                                           to_bytes=False)
+    try:  
+        distances = np.load(f'Clustering_results/distances_{identifier}_{metric}.npy')
+    except FileNotFoundError:
+        distances = pdist(features, metric=metric)
+        np.save(f'Clustering_results/distances_{identifier}_{metric}.npy', distances)
+        
+    # Reshape the distances as a symmetric matrix
+    distances = squareform(distances)
     
-    # Clustering
-    hierarchical_clustering(algorithm, metric, linkage_type)
+    if metric == 'euclidean':
+        precisions = np.linspace(4, 4.5, 5)
+    elif metric == 'cosine':
+        precisions = np.linspace(0.18, 0.25, 5)
+    elif metric == 'hamming':
+        precisions = np.linspace(0.16, 0.2, 3)
+    
+    np.random.seed(112)
+        
+    for i, precision in enumerate(precisions):
+    
+        clustering = DBSCAN(eps=precision, metric='precomputed', algorithm='brute',
+                            min_samples=min_samples, n_jobs=10)
+        clusters = clustering.fit_predict(distances)
+        N_clusters = len(np.unique(clusters))
+        
+        current_dir = folder + f'{N_clusters}-clusters_{precision:.3f}-eps/'
+        os.makedirs(current_dir, exist_ok=True)
+        
+        np.save(current_dir + 'assignment.npy', clusters)
+    
+        tools.cluster_size_plot(clusters, save=True,
+                                filename=current_dir + 'cluster_balance.pdf')
+        tools.save_representatives(clusters, mapping, current_dir)
+    
+
     
        
         
