@@ -20,6 +20,13 @@ from tqdm import tqdm
 
 from helpers import utils
 
+# =============================================================================
+# In this file we refer to `directory` as the root directory of a clusterting
+# experiment, e.g "Clustering_results/euclidean_ward_SimCLR_v2_ResNet50_2x", and
+# to `subfolder` as a subfolder of a `directory`, e.g
+# "Clustering_results/euclidean_ward_SimCLR_v2_ResNet50_2x/100-clusters_thresh-66.637"
+# =============================================================================
+
 def cluster_representation(images):
     """
     Concatenate images from the same cluster into one image to get a visual idea
@@ -95,6 +102,63 @@ def save_representatives(assignments, mapping, current_dir):
         representation.save(current_dir + f'{cluster_idx}.png')
         
         
+def _is_directory(directory):
+    """
+    Check if `directory` is indeed the root directory of a clustering experiment.
+
+    Parameters
+    ----------
+    directory : str
+        The directory where the experiment is contained.
+
+    Raises
+    ------
+    ValueError
+        If this is not the case.
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    if directory[-1] == '/':
+        directory = directory.rsplit('/', 1)[0]
+        
+    if os.path.dirname(directory) != 'Clustering_results':
+        raise ValueError('The directory you provided is not valid.')
+        
+        
+def _is_subfolder(subfolder):
+    """
+    Check if `subfolder` is indeed a subfolder of a directory containing a
+    clusterting experiment.
+
+    Parameters
+    ----------
+    subfolder : str
+        Subfolder of a clustering experiment, containing the assignments,
+        representatives images etc...
+
+    Raises
+    ------
+    ValueError
+        If this is not the case.
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    if subfolder[-1] == '/':
+        subfolder = subfolder.rsplit('/', 1)[0]
+        
+    split = subfolder.rsplit('/', 2)
+    if split[0] != 'Clustering_results' or len(split) != 3:
+        raise ValueError('The subfolder you provided is not valid.')
+        
+        
 def extract_params_from_folder_name(directory):
     """
     Extract the algorithm name and metric used from the directory name of
@@ -103,7 +167,8 @@ def extract_params_from_folder_name(directory):
     Parameters
     ----------
     directory : str
-        The directory where the experiment is contained.
+        The directory where the experiment is contained, or subfolder of this
+        directory.
 
     Returns
     -------
@@ -139,7 +204,8 @@ def extract_features_from_folder_name(directory, return_distances=False):
     Parameters
     ----------
     directory : str
-        The directory where the experiment is contained.
+        The directory where the experiment is contained, or subfolder of this
+        directory.
 
     Returns
     -------
@@ -148,7 +214,8 @@ def extract_features_from_folder_name(directory, return_distances=False):
     mapping : Numpy array
         Mapping from feature index to actual image (as a path name).
     return_distances : bool, optional
-        If `True`, will also return the distances between each features.
+        If `True`, will also return the distances between each features. The 
+        default is False.
 
     """
     
@@ -191,6 +258,8 @@ def compute_cluster_diameters(subfolder):
         The diameter of each cluster.
 
     """
+    
+    _is_subfolder(subfolder)
     
     if subfolder[-1] != '/':
         subfolder += '/'
@@ -242,6 +311,8 @@ def compute_cluster_centroids(subfolder):
         The diameter of each cluster.
 
     """
+    
+    _is_subfolder(subfolder)
 
     if subfolder[-1] != '/':
         subfolder += '/'
@@ -259,6 +330,123 @@ def compute_cluster_centroids(subfolder):
     return engine.centroids_
 
 
+def _get_attribute(subfolder, func, identifier, save_if_absent=True):
+    """
+    Return the attribute computed by `func`, trying to load it from disk,
+    then computing it if it is absent.
+
+    Parameters
+    ----------
+    subfolder : str
+        Subfolder of a clustering experiment, containing the assignments,
+        representatives images etc...
+    func : function
+        The function computing the attribute.
+    identifier : str
+        String representing the attribute. E.g `diameters`, `centroids`.
+    save_if_absent : bool, optional
+        Whether or not to save the result is they are not already on disk. The
+        default is True.
+
+    Returns
+    -------
+    diameters : Numpy array
+        The diameters.
+
+    """
+    
+    _is_subfolder(subfolder)
+    
+    if subfolder[-1] != '/':
+        subfolder += '/'
+        
+    try:
+        attribute = np.load(subfolder + identifier + '.npy')
+    except FileNotFoundError:
+        attribute = func(subfolder)
+        if save_if_absent:
+            np.save(subfolder + identifier + '.npy', attribute)
+            
+    return attribute
+
+
+def get_cluster_diameters(subfolder, save_if_absent=True):
+    """
+    Return the cluster diameters, trying to load them from disk then computing
+    them otherwise.
+
+    Parameters
+    ----------
+    subfolder : str
+        Subfolder of a clustering experiment, containing the assignments,
+        representatives images etc...
+    save_if_absent : bool, optional
+        Whether or not to save the result is they are not already on disk. The
+        default is True.
+
+    Returns
+    -------
+    centroids : Numpy array
+        The diameters.
+
+    """
+    
+    return _get_attribute(subfolder, compute_cluster_diameters, 'diameters',
+                          save_if_absent=save_if_absent)
+
+
+def get_cluster_centroids(subfolder, save_if_absent=True):
+    """
+    Return the cluster centroids, trying to load them from disk then computing
+    them otherwise.
+
+    Parameters
+    ----------
+    subfolder : str
+        Subfolder of a clustering experiment, containing the assignments,
+        representatives images etc...
+    save_if_absent : bool, optional
+        Whether or not to save the result is they are not already on disk. The
+        default is True.
+
+    Returns
+    -------
+    centroids : Numpy array
+        The diameters.
+
+    """
+    
+    return _get_attribute(subfolder, compute_cluster_centroids, 'centroids',
+                          save_if_absent=save_if_absent)
+
+
+def _save_attribute(directory, func, identifier):
+    """
+    Save the attribute computed by `func` to disk, for each subfolder of
+    `directory`.
+    
+    Parameters
+    ----------
+    directory : str
+        The directory where the experiment is contained.
+    func : function
+        The function computing the attribute.
+    identifier : str
+        String representing the attribute. E.g `diameters`, `centroids`.
+
+    Returns
+    -------
+    None
+
+    """
+    
+    _is_directory(directory)
+    
+    for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
+        
+        attribute = func(subfolder)
+        np.save(subfolder + identifier + '.npy', attribute)
+        
 
 def save_diameters(directory):
     """
@@ -275,10 +463,7 @@ def save_diameters(directory):
 
     """
     
-    for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
-        
-        diameters = compute_cluster_diameters(subfolder)
-        np.save(subfolder + '/diameters.npy', diameters)
+    _save_attribute(directory, compute_cluster_diameters, 'diameters')
         
 
 def save_centroids(directory):
@@ -296,12 +481,8 @@ def save_centroids(directory):
 
     """
     
-    for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
-        
-        centroids = compute_cluster_centroids(subfolder)
-        np.save(subfolder + '/centroids.npy', centroids)
-        
-        
+    _save_attribute(directory, compute_cluster_centroids, 'centroids')
+             
         
 def cluster_size_plot(assignments, save=False, filename=None):
     """
@@ -352,19 +533,15 @@ def cluster_size_plot(assignments, save=False, filename=None):
     plt.show()
     
     
-def cluster_size_diameter_plot(assignments, diameters, metric, save=False,
-                               filename=None):
+def cluster_size_diameter_plot(subfolder, save=False, filename=None):
     """
     Creates a scatter plot showing the diameter of each cluster against its size.
 
     Parameters
     ----------
-    assignments : Numpy array
-        The clusters assignments.
-    diameters : Numpy array
-        The diameters of each cluster.
-    metric : str
-        The metric used for the distances.
+    subfolder : str
+        Subfolder of a clustering experiment, containing the assignments,
+        representatives images etc...
     save : bool, optional
         Whether to save the figure or not. The default is False.
     filename : str, optional
@@ -381,8 +558,17 @@ def cluster_size_diameter_plot(assignments, diameters, metric, save=False,
 
     """
     
+    _is_subfolder(subfolder)
+    
     if save and filename is None:
         raise ValueError('Filename cannot be None if save is True.')
+        
+    if subfolder[-1] != '/':
+        subfolder += '/'
+        
+    _, metric = extract_params_from_folder_name(subfolder)
+    assignments = np.load(subfolder + 'assignment.npy')
+    diameters = get_cluster_diameters(subfolder)
     
     _, counts = np.unique(assignments, return_counts=True)
 
@@ -405,7 +591,7 @@ def cluster_size_evolution(directory, save=False, filename=None):
     Parameters
     ----------
     directory : str
-        Directory where the results are.
+        The directory where the experiment is contained.
     save : bool, optional
         Whether to save the figure or not. The default is False.
     filename : str, optional
@@ -421,6 +607,8 @@ def cluster_size_evolution(directory, save=False, filename=None):
     None.
 
     """
+    
+    _is_directory(directory)
     
     if save and filename is None:
         raise ValueError('Filename cannot be None if save is True.')
@@ -451,17 +639,9 @@ def cluster_size_evolution(directory, save=False, filename=None):
         ax.set(xlabel='Number of cluster')
         ax.set(yscale='log')
         
-    dataset1 = 'Kaggle_memes'
-    dataset2 = 'Kaggle_templates'
+    features, mapping = extract_features_from_folder_name(directory)
     
-    algorithm = directory.rsplit('/', 2)[1].split('_', 2)[-1]
-    algorithm = ' '.join(algorithm.split('_'))
-    if 'samples' in algorithm:
-        algorithm = algorithm.rsplit(' ', 2)[0]
-
-    # Load features and mapping to actual images
-    features, mapping = utils.combine_features(algorithm, dataset1, dataset2,
-                                           to_bytes=False)
+    # Find the count of memes inside each "real" clusters (from the groundtruths)
     identifiers = []
     for name in mapping:
         identifier = name.rsplit('/', 1)[1].split('_', 1)[0]
@@ -512,6 +692,8 @@ def cluster_size_violin(directory, cut=2, save=False, filename=None):
     None.
 
     """
+    
+    _is_directory(directory)
     
     if save and filename is None:
         raise ValueError('Filename cannot be None if save is True.')
@@ -585,6 +767,8 @@ def cluster_diameter_violin(directory, save=False, filename=None):
 
     """
     
+    _is_directory(directory)
+    
     if save and filename is None:
         raise ValueError('Filename cannot be None if save is True.')
             
@@ -597,15 +781,10 @@ def cluster_diameter_violin(directory, save=False, filename=None):
     subfolders = sorted(subfolders, reverse=True,
                         key=lambda x: int(x.rsplit('/', 1)[1].split('-', 1)[0]))
     
-    algorithm = directory.rsplit('/', 2)[1].split('_', 2)[-1]
-    algorithm = ' '.join(algorithm.split('_'))
-    if 'samples' in algorithm:
-        algorithm = algorithm.rsplit(' ', 2)[0]
-        
-    metric = directory.rsplit('/', 2)[1].split('_', 1)[0]
+    _, metric = extract_params_from_folder_name(directory)
         
     for folder in subfolders:
-        diameters.append(np.load(folder + '/diameters.npy'))
+        diameters.append(get_cluster_diameters(folder))
     
     # Creates a dataframe for easy violinplot with seaborn
     order = sorted([len(diameters[i]) for i in range(len(diameters))], reverse=True)
