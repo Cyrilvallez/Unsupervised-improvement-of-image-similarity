@@ -14,6 +14,7 @@ from scipy.cluster.hierarchy import linkage, fcluster, dendrogram
 from scipy.spatial.distance import pdist
 
 from ..helpers import utils
+print('success')
 from clustering.clustering_utils import save_representatives, cluster_size_plot
 
 def find_threshold(Z, N_clusters, max_iter=1e4):
