@@ -264,12 +264,11 @@ def compute_cluster_diameters(subfolder):
     if subfolder[-1] != '/':
         subfolder += '/'
         
-    features, _, distances = extract_features_from_folder_name(subfolder,
-                                                                     return_distances=True)
+    _, _, distances = extract_features_from_folder_name(subfolder, return_distances=True)
     assignments = np.load(subfolder + 'assignment.npy')
         
     # Mapping from distance matrix indices to condensed representation index
-    N = len(features)
+    N = len(assignments)
     
     def square_to_condensed(i, j):
         assert i != j, "no diagonal elements in condensed matrix"
@@ -444,7 +443,6 @@ def _save_attribute(directory, func, identifier):
     
     for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
         
-        print(subfolder, flush=True)
         attribute = func(subfolder)
         np.save(subfolder + identifier + '.npy', attribute)
         

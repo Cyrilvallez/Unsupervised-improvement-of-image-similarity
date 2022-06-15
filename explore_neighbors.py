@@ -11,22 +11,23 @@ import experiment as ex
 import os
 
 
-# algorithm = 'SimCLR v2 ResNet50 2x'
-algorithm = 'Dhash 64 bits'
+algorithm = 'SimCLR v2 ResNet50 2x'
+# algorithm = 'Dhash 64 bits'
 # main_dataset = 'BSDS500_original'
 main_dataset = 'Kaggle_templates'
 distractor_dataset = 'Flickr500K'
 # query_dataset = 'BSDS500_attacks'
 query_dataset = 'Kaggle_memes'
 
-save_folder = 'Results/Neighbors_memes_flat_Dhash/'
+save_folder = 'Results/Contrastive_memes_L2/'
 
-factory_str = 'BFlat'
+factory_str = 'Flat'
+metric = 'L2'
 
 experiment = ex.Experiment(algorithm, main_dataset, query_dataset,
                         distractor_dataset=distractor_dataset)
 
-experiment.set_index(factory_str)
+experiment.set_index(factory_str, metric=metric)
 experiment.to_gpu()
 experiment.fit(k=10)
 _, correct = experiment.recall()
