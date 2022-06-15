@@ -444,6 +444,7 @@ def _save_attribute(directory, func, identifier):
     
     for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
         
+        print(subfolder)
         attribute = func(subfolder)
         np.save(subfolder + identifier + '.npy', attribute)
         
