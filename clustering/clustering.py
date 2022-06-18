@@ -10,11 +10,12 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import linkage, fcluster, dendrogram
-from scipy.spatial.distance import pdist, squareform
+from scipy.spatial.distance import squareform
 from sklearn.cluster import DBSCAN
+from tqdm import tqdm
 
-from helpers import utils
 from clustering import tools
+from clustering import clustering_plot as cplot
 
 def find_threshold(Z, N_clusters, max_iter=1e4):
     """
@@ -123,7 +124,8 @@ def hierarchical_clustering(algorithm, metric, linkage_type):
 
     Returns
     -------
-    None
+    folder : str
+        The folder where the results have been saved.
 
     """
 
@@ -139,27 +141,17 @@ def hierarchical_clustering(algorithm, metric, linkage_type):
 
     identifier = '_'.join(algorithm.split(' '))
 
-    dataset1 = 'Kaggle_memes'
-    dataset2 = 'Kaggle_templates'
-
     folder = f'Clustering_results/{metric}_{linkage_type}_{identifier}/'
     os.makedirs(folder)
 
-    # Load features and mapping to actual images
-    features, mapping = utils.combine_features(algorithm, dataset1, dataset2,
-                                           to_bytes=False)
-    try:  
-        distances = np.load(f'Clustering_results/distances_{identifier}_{metric}.npy')
-    except FileNotFoundError:
-        distances = pdist(features, metric=metric)
-        np.save(f'Clustering_results/distances_{identifier}_{metric}.npy', distances)
+    features, mapping, distances = tools.extract_features_from_folder_name(folder,
+                                                                           return_distances=True)
       
-
     # Perform hierarchical clustering
     Z = linkage(distances, method=linkage_type)
 
     # Number of clusters we desire
-    N_clusters = [500, 450, 400, 350, 300, 250, 200, 150, 100]
+    N_clusters = [400, 350, 300, 250, 200, 150, 100]
     
     np.random.seed(112)
 
@@ -174,16 +166,14 @@ def hierarchical_clustering(algorithm, metric, linkage_type):
         os.makedirs(current_dir, exist_ok=True)
         
         np.save(current_dir + 'assignment.npy', clusters)
-        
-        tools.cluster_size_plot(clusters, save=True,
-                                filename=current_dir + 'cluster_balance.pdf')
-        tools.save_representatives(clusters, mapping, current_dir)
             
     plot_dendrogram(Z, linkage_type, save=True, filename=folder + 'dendrogram.pdf',
                     truncate_mode='level', p=25)
     
+    return folder
     
-def cluster_DBSCAN(algorithm, metric, min_samples):
+    
+def cluster_DBSCAN(algorithm, metric, min_samples, precisions=None):
     """
     Perform DBSCAN clustering and save cluster assignments and representative
     cluster images.
@@ -197,12 +187,21 @@ def cluster_DBSCAN(algorithm, metric, min_samples):
     min_samples : int
         The number of samples in a neighborhood for a point to be considered
         as a core point.
+    precisions : list or float, optional
+        The maximum distance between two samples for one to be considered as
+        in the neighborhood of the other. This is not a maximum bound on the
+        distances of points within a cluster. If not specified, some default 
+        will be set. The default is None.
 
     Returns
     -------
-    None.
+    folder : str
+        The folder where the results have been saved.
 
     """
+    
+    if type(precisions) == float or type(precisions) == int:
+        precisions = [precisions]
 
     # Force usage of hamming distance for Dhash
     if 'bits' in algorithm:
@@ -210,30 +209,22 @@ def cluster_DBSCAN(algorithm, metric, min_samples):
 
     identifier = '_'.join(algorithm.split(' '))
 
-    dataset1 = 'Kaggle_memes'
-    dataset2 = 'Kaggle_templates'
-
     folder = f'Clustering_results/{metric}_DBSCAN_{identifier}_{min_samples}_samples/'
     os.makedirs(folder)
 
-    # Load features and mapping to actual images
-    features, mapping = utils.combine_features(algorithm, dataset1, dataset2,
-                                           to_bytes=False)
-    try:  
-        distances = np.load(f'Clustering_results/distances_{identifier}_{metric}.npy')
-    except FileNotFoundError:
-        distances = pdist(features, metric=metric)
-        np.save(f'Clustering_results/distances_{identifier}_{metric}.npy', distances)
+    features, mapping, distances = tools.extract_features_from_folder_name(folder,
+                                                                           return_distances=True)
         
     # Reshape the distances as a symmetric matrix
     distances = squareform(distances)
     
-    if metric == 'euclidean':
-        precisions = np.linspace(4, 4.5, 5)
-    elif metric == 'cosine':
-        precisions = np.linspace(0.18, 0.25, 5)
-    elif metric == 'hamming':
-        precisions = np.linspace(0.16, 0.2, 3)
+    if precisions is None:
+        if metric == 'euclidean':
+            precisions = np.linspace(4, 4.5, 5)
+        elif metric == 'cosine':
+            precisions = np.linspace(0.18, 0.25, 5)
+        elif metric == 'hamming':
+            precisions = np.linspace(0.16, 0.2, 3)
     
     np.random.seed(112)
         
@@ -248,13 +239,95 @@ def cluster_DBSCAN(algorithm, metric, min_samples):
         os.makedirs(current_dir, exist_ok=True)
         
         np.save(current_dir + 'assignment.npy', clusters)
-    
-        tools.cluster_size_plot(clusters, save=True,
-                                filename=current_dir + 'cluster_balance.pdf')
-        tools.save_representatives(clusters, mapping, current_dir)
-    
+        
+    return folder
 
+
+def save_attributes(directory):
+    """
+    Save diameters and centroids for the clustering experiment.
+
+    Parameters
+    ----------
+    directory : str
+        The directory where the experiment is contained.
+
+    Returns
+    -------
+    None.
+
+    """
     
+    print('Saving diameters', flush=True)
+    tools.save_diameters(directory)
+    print('Saving centroids', flush=True)
+    tools.save_centroids(directory)
+    
+    
+def save_plots(directory):
+    """
+    Save all plots for the clustering experiment.
+
+    Parameters
+    ----------
+    directory : str
+        The directory where the experiment is contained.
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    print('Saving the different plots and image representatives', flush=True)
+    cplot.cluster_size_evolution(directory, save=True, filename='sizes.pdf')
+    cplot.cluster_size_violin(directory, save=True, filename='sizes_violin.pdf')
+    cplot.cluster_diameter_violin(directory, save=True, filename='diameters_violin.pdf')
+    
+    for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
+        cplot.cluster_size_plot(subfolder, save=True, filename='cluster_balance.pdf')
+        cplot.cluster_size_diameter_plot(subfolder, save=True, filename='size_diameter.pdf')
+        
+        
+def save_visualizations(directory):
+    """
+    Save the cluster visualizations for the clustering experiment.
+
+    Parameters
+    ----------
+    directory : str
+        The directory where the experiment is contained.
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    print('Saving visualizations')
+    for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
+        tools.save_representatives(subfolder)
+        tools.save_extremes(subfolder)
+        
+
+def save_all(directory):
+    """
+    Save everything for the clustering experiment.
+
+    Parameters
+    ----------
+    directory : str
+        The directory where the experiment is contained.
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    save_attributes(directory)
+    save_visualizations(directory)
+    save_plots(directory)
        
         
 

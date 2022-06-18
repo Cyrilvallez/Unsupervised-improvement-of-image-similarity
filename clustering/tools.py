@@ -10,12 +10,9 @@ from PIL import Image
 import numpy as np
 import os
 import itertools
-import matplotlib
-import matplotlib.pyplot as plt
-import seaborn as sns
-import pandas as pd
 from scipy.spatial.distance import pdist
 from sklearn.neighbors import NearestCentroid
+from sklearn.preprocessing import LabelEncoder
 from tqdm import tqdm
 
 from helpers import utils
@@ -69,26 +66,35 @@ def cluster_representation(images):
         start_i += 300 + offset
             
     return Image.fromarray(final_image)
+      
 
-
-def save_representatives(assignments, mapping, current_dir):
+def save_representatives(subfolder):
     """
     Save representatives of each clusters from the cluster assignments.
 
     Parameters
     ----------
-    assignments : Numpy array
-        The clusters assignments.
-    mapping : Numpy array
-        Mapping from indices to image paths.
-    current_dir : str
-        Directory where to save the images.
+    subfolder : str
+        Subfolder of a clustering experiment, containing the assignments,
+        representatives images etc...
 
     Returns
     -------
     None.
 
     """
+    
+    _is_subfolder(subfolder)
+    
+    if subfolder[-1] != '/':
+        subfolder += '/'
+        
+    os.makedirs(subfolder + 'representatives', exist_ok=True)
+    
+    _, mapping = extract_features_from_folder_name(subfolder)
+    assignments = np.load(subfolder + 'assignment.npy')
+    
+    np.random.seed(112)
     
     for cluster_idx in np.unique(assignments):
     
@@ -99,7 +105,44 @@ def save_representatives(assignments, mapping, current_dir):
             representatives = images
         
         representation = cluster_representation(representatives)
-        representation.save(current_dir + f'{cluster_idx}.png')
+        representation.save(subfolder + f'representatives/{cluster_idx}.png')
+        
+        
+def save_extremes(subfolder):
+    """
+    Concatenate and save images from the same cluster, by pulling 5 closest
+    and 5 furthest from the cluster centroid.
+
+    Parameters
+    ----------
+    subfolder : str
+        Subfolder of a clustering experiment, containing the assignments,
+        representatives images etc...
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    _is_subfolder(subfolder)
+    
+    if subfolder[-1] != '/':
+        subfolder += '/'
+        
+    os.makedirs(subfolder + 'extremes', exist_ok=True)
+    
+    assignment = np.load(subfolder + 'assignment.npy')
+    centroids = np.load(subfolder + 'centroids.npy')
+    
+    features, mapping = extract_features_from_folder_name(subfolder)
+    
+    extremes = extremes_from_centroids(features, mapping, assignment, centroids)
+    cluster_indices = np.unique(assignment)
+    
+    for index, extreme in zip(cluster_indices, extremes):
+        representation = cluster_representation(extreme)
+        representation.save(subfolder + f'extremes/{index}.png')
         
         
 def _is_directory(directory):
@@ -240,6 +283,45 @@ def extract_features_from_folder_name(directory, return_distances=False):
     
     else:
         return features, mapping   
+    
+    
+def compute_assignment_groundtruth(algorithm, metric):
+
+    """
+    Find and save the assignment of memes inside each "real" clusters (from the
+    groundtruths we have).
+
+    Parameters
+    ----------
+    algorithm : str
+        Algorithm name used for extracting the features from images.
+    metric : str
+        Metric to use for later distance computation (e.g diameters).
+
+    Returns
+    -------
+    None.
+    
+    """
+    
+    algorithm = '_'.join(algorithm.split())
+    folder = f'Clustering_results/{metric}_GT_{algorithm}'
+    
+    _, mapping = extract_features_from_folder_name(folder)
+    
+    # Find the count of memes inside each "real" clusters (from the groundtruths)
+    identifiers = []
+    for name in mapping:
+        identifier = name.rsplit('/', 1)[1].split('_', 1)[0]
+        if '.' in identifier:
+            identifier = name.rsplit('/', 1)[1].rsplit('.', 1)[0]
+        identifiers.append(identifier)
+        
+    encoder = LabelEncoder()
+    assignment = encoder.fit_transform(identifiers)
+    
+    os.makedirs(folder, exist_ok=True)
+    np.save(folder + '/assignment.npy', assignment)
  
         
 def compute_cluster_diameters(subfolder):
@@ -259,12 +341,16 @@ def compute_cluster_diameters(subfolder):
 
     """
     
-    _is_subfolder(subfolder)
+    # If this is a groundtruth, we skip the check because the file structure is
+    # different
+    if not ('GT' in subfolder):
+        _is_subfolder(subfolder)
     
     if subfolder[-1] != '/':
         subfolder += '/'
         
     _, _, distances = extract_features_from_folder_name(subfolder, return_distances=True)
+        
     assignments = np.load(subfolder + 'assignment.npy')
         
     # Mapping from distance matrix indices to condensed representation index
@@ -311,7 +397,10 @@ def compute_cluster_centroids(subfolder):
 
     """
     
-    _is_subfolder(subfolder)
+    # If this is a groundtruth, we skip the check because the file structure is
+    # different
+    if not ('GT' in subfolder):
+        _is_subfolder(subfolder)
 
     if subfolder[-1] != '/':
         subfolder += '/'
@@ -354,7 +443,7 @@ def _get_attribute(subfolder, func, identifier, save_if_absent=True):
 
     """
     
-    _is_subfolder(subfolder)
+    assert ('/' not in identifier), 'Identifier cannot be a path'
     
     if subfolder[-1] != '/':
         subfolder += '/'
@@ -439,12 +528,12 @@ def _save_attribute(directory, func, identifier):
 
     """
     
-    _is_directory(directory)
+    assert ('/' not in identifier), 'Identifier cannot be a path'
     
     for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
         
         attribute = func(subfolder)
-        np.save(subfolder + identifier + '.npy', attribute)
+        np.save(subfolder + '/' + identifier + '.npy', attribute)
         
 
 def save_diameters(directory):
@@ -481,329 +570,117 @@ def save_centroids(directory):
     """
     
     _save_attribute(directory, compute_cluster_centroids, 'centroids')
-             
-        
-def cluster_size_plot(assignments, save=False, filename=None):
+    
+    
+def get_groundtruth_attribute(directory, attribute):
     """
-    Creates a bar plot and box plot showing how much images belong to each cluster.
-
-    Parameters
-    ----------
-    assignments : Numpy array
-        The clusters assignments.
-    save : bool, optional
-        Whether to save the figure or not. The default is False.
-    filename : str, optional
-        Filename for saving the figure. The default is None.
-
-    Raises
-    ------
-    ValueError
-        If save is True but filename is not provided.
-
-    Returns
-    -------
-    None.
-
-    """
-    
-    if save and filename is None:
-        raise ValueError('Filename cannot be None if save is True.')
-    
-    unique, counts = np.unique(assignments, return_counts=True)
-
-    fig, (ax1,ax2) = plt.subplots(2,1, figsize=(15,7),
-                                  gridspec_kw={'height_ratios': [3, 1]})
-
-    sns.countplot(x=assignments, ax=ax1)
-    ax1.set(xlabel='Cluster number')
-    ax1.set(ylabel='Number of images in the cluster')
-    ax1.set(yscale='log')
-    ticks = ax1.get_xticks()
-    ax1.set_xticks(ticks[0::10])
-
-    sns.boxplot(x=counts, color='royalblue', ax=ax2)
-    ax2.set(xlabel='Number of images inside the clusters')
-    ax2.set(xscale='log')
-
-    fig.tight_layout()
-    if save:
-        fig.savefig(filename, bbox_inches='tight')
-    plt.show()
-    
-    
-def cluster_size_diameter_plot(subfolder, save=False, filename=None):
-    """
-    Creates a scatter plot showing the diameter of each cluster against its size.
-
-    Parameters
-    ----------
-    subfolder : str
-        Subfolder of a clustering experiment, containing the assignments,
-        representatives images etc...
-    save : bool, optional
-        Whether to save the figure or not. The default is False.
-    filename : str, optional
-        Filename for saving the figure. The default is None.
-
-    Raises
-    ------
-    ValueError
-        If save is True but filename is not provided.
-
-    Returns
-    -------
-    None.
-
-    """
-    
-    _is_subfolder(subfolder)
-    
-    if save and filename is None:
-        raise ValueError('Filename cannot be None if save is True.')
-        
-    if subfolder[-1] != '/':
-        subfolder += '/'
-        
-    _, metric = extract_params_from_folder_name(subfolder)
-    assignments = np.load(subfolder + 'assignment.npy')
-    diameters = get_cluster_diameters(subfolder)
-    
-    _, counts = np.unique(assignments, return_counts=True)
-
-    plt.figure()
-    plt.scatter(counts, diameters)
-    plt.xscale('log')
-    plt.xlabel('Cluster size')
-    plt.ylabel(f'Cluster diameter ({metric} distance)')
-    plt.grid()
-
-    if save:
-        plt.savefig(filename, bbox_inches='tight')
-    plt.show()
-    
-    
-def cluster_size_evolution(directory, save=False, filename=None):
-    """
-    Plot the cluster sizes along with the distribution of each real clusters.
+    Get the groundtruth `attribute` corresponding to the actual `directory`.
 
     Parameters
     ----------
     directory : str
         The directory where the experiment is contained.
-    save : bool, optional
-        Whether to save the figure or not. The default is False.
-    filename : str, optional
-        Filename for saving the figure. The default is None.
+    attribute : str
+        Either `assignment`, `diameters` or `centroids`.
 
     Raises
     ------
     ValueError
-        If save is True but filename is not provided.
+        If `attribute` is not correct.
 
     Returns
     -------
-    None.
+    groundtruth : Numpy array
+        The array corresponding to the groundtruth of the attribute.
 
     """
     
-    _is_directory(directory)
-    
-    if save and filename is None:
-        raise ValueError('Filename cannot be None if save is True.')
+    algorithm, metric = extract_params_from_folder_name(directory)
+    algorithm = '_'.join(algorithm.split())
+    if attribute == 'assignment':
+        try:
+            groundtruth = np.load(f'Clustering_results/{metric}_GT_{algorithm}/{attribute}.npy') 
+        except:
+            compute_assignment_groundtruth(algorithm, metric)
+            groundtruth = np.load(f'Clustering_results/{metric}_GT_{algorithm}/{attribute}.npy')
+    elif attribute == 'diameters':
+        groundtruth = get_cluster_diameters(f'Clustering_results/{metric}_GT_{algorithm}/{attribute}.npy')
+    elif attribute == 'centroids':
+        groundtruth = get_cluster_centroids(f'Clustering_results/{metric}_GT_{algorithm}/{attribute}.npy')
+    else:
+        raise ValueError('The attribute is not correct.')
         
-    if directory[-1] != '/':
-        directory += '/'
+    return groundtruth
         
-    counts = []
     
-    subfolders = [f.path for f in os.scandir(directory) if f.is_dir()]
-    subfolders = sorted(subfolders, reverse=True,
-                        key=lambda x: int(x.rsplit('/', 1)[1].split('-', 1)[0]))
-    
-    for folder in subfolders:
-        assignment = np.load(folder + '/assignment.npy')
-        _, count = np.unique(assignment, return_counts=True)
-        counts.append(count)
-        
-    N = len(counts)
-    fig, axes = plt.subplots(N+1, 1, figsize=(15, 15), sharex=True, sharey=True)
-    
-    for count, ax in zip(counts, axes[0:-1]):
-        
-        # Sort in decreasing order
-        count = -np.sort(-count)
-        ax.bar(np.arange(len(count)), count)
-        ax.set(ylabel=f'{len(count)} clusters')
-        ax.set(xlabel='Number of cluster')
-        ax.set(yscale='log')
-        
-    features, mapping = extract_features_from_folder_name(directory)
-    
-    # Find the count of memes inside each "real" clusters (from the groundtruths)
-    identifiers = []
-    for name in mapping:
-        identifier = name.rsplit('/', 1)[1].split('_', 1)[0]
-        if '.' in identifier:
-            identifier = name.rsplit('/', 1)[1].rsplit('.', 1)[0]
-        identifiers.append(identifier)
-        
-    _, count = np.unique(identifiers, return_counts=True)
-    count = -np.sort(-count)
-    
-    
-    axes[-1].bar(np.arange(len(count)), count, color='r')
-    axes[-1].set(ylabel='Original clusters')
-    axes[-1].set(xlabel='Number of cluster')
-    axes[-1].set(yscale='log')
-    lims = axes[-1].get_ylim()
-    axes[-1].set_ylim(0.64, lims[1])
-    
-    if save:
-        fig.savefig(directory + filename, bbox_inches='tight')
-    plt.show()
-    
-    
-def cluster_size_violin(directory, cut=2, save=False, filename=None):
+def extremes_from_centroids(features, mapping, assignment, centroids):
     """
-    Plot the cluster sizes as a violin plot.
+    Compute the 5 extremes (closest and furthest) points from the centroid
+    for each cluster. Note that the distance used is always euclidean.
 
     Parameters
     ----------
-    directory : str
-        Directory where the results are.
-    cut : float, optional 
-        Distance, in units of bandwidth size, to extend the density past the
-        extreme datapoints. Set to 0 to limit the violin range within the
-        range of the observed data. The default is 2.
-    save : bool, optional
-        Whether to save the figure or not. The default is False.
-    filename : str, optional
-        Filename for saving the figure. The default is None.
-
-    Raises
-    ------
-    ValueError
-        If save is True but filename is not provided.
+    features : Numpy array
+        Features extracted from the images.
+    mapping : Numpy array
+        Mapping from indices to image path.
+    assignment : Numpy array
+        The cluster assignment.
+    centroids : Numpy array
+        The centroid of each cluster.
 
     Returns
     -------
-    None.
+    extremes : list of list
+        The path to the most extremes images inside each cluster.
 
     """
+    extremes = []
     
-    _is_directory(directory)
-    
-    if save and filename is None:
-        raise ValueError('Filename cannot be None if save is True.')
-            
-    if directory[-1] != '/':
-        directory += '/'
-            
-    counts = []
+    for cluster_idx in np.unique(assignment):
         
-    subfolders = [f.path for f in os.scandir(directory) if f.is_dir()]
-    subfolders = sorted(subfolders, reverse=True,
-                        key=lambda x: int(x.rsplit('/', 1)[1].split('-', 1)[0]))
+        indices = assignment == cluster_idx
+        cluster_features = features[indices]
+        cluster_images = mapping[indices]
+        centroid = centroids[cluster_idx]
         
-    for folder in subfolders:
-        assignment = np.load(folder + '/assignment.npy')
-        _, count = np.unique(assignment, return_counts=True)
-        counts.append(count)
-    
-    # Creates a dataframe for easy violinplot with seaborn
-    order = sorted([len(counts[i]) for i in range(len(counts))], reverse=True)
-    N_clusters = [len(counts[i])*np.ones(len(counts[i]), dtype=int) \
-                  for i in range(len(counts))]
-    N_clusters = np.concatenate(N_clusters)
-    # Put data in log because violinplot cannot use log-scale directly
-    counts = np.log10(np.concatenate(counts))
-    
-    frame = pd.DataFrame({'Number of clusters': N_clusters, 'Cluster size': counts})
-    
-    plt.figure(figsize=(8,8))
-    sns.violinplot(x='Number of clusters', y='Cluster size', data=frame,
-                   order=order, cut=cut)
-    # Set the ticks correctly for log plot in a linear scale (since this is the data
-    # which is in log)
-    ax = plt.gca()
-    ymin, ymax = ax.get_ylim()
-    tick_range = np.arange(np.floor(ymin), ymax)
-    minor_ticks = [np.log10(x) for a in tick_range \
-                   for x in np.linspace(10**a, 10**(a+1), 10)[1:-1]]
-    ax.yaxis.set_major_locator(matplotlib.ticker.FixedLocator(tick_range))
-    ax.yaxis.set_minor_locator(matplotlib.ticker.FixedLocator(minor_ticks))
-    ax.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('$10^{{{x:.0f}}}$'))
+        distances = np.linalg.norm(cluster_features - centroid, axis=1)
+        sorting = np.argsort(distances)
+        cluster_images = cluster_images[sorting]
+        if len(cluster_images) <= 10:
+            extremes.append(cluster_images.tolist())
+        else:
+            extreme = cluster_images[0:5].tolist() + cluster_images[-5:].tolist()
+            extremes.append(extreme)
+        
+    return extremes
 
-    if save:
-        plt.savefig(directory + filename, bbox_inches='tight')
-    plt.show()
-    
-    return counts
-    
-    
-def cluster_diameter_violin(directory, save=False, filename=None):
+
+def cluster_intersections(assignment1, assignment2, algorithm):
     """
-    Plot the cluster diameters as a violin plot.
+    Compute the intersection matrix of 2 cluster assignments. Each row 
+    represents the intersection percentage of cluster i in `assignment1` with
+    all other clusters in `assignment2`. Thus all rows sum to 1.
 
     Parameters
     ----------
-    directory : str
-        Directory where the results are.
-    save : bool, optional
-        Whether to save the figure or not. The default is False.
-    filename : str, optional
-        Filename for saving the figure. The default is None.
-
-    Raises
-    ------
-    ValueError
-        If save is True but filename is not provided.
+    assignment1 : Numpy array
+        The first cluster assignments.
+    assignment2 : Numpy array
+        The second cluster assignments.
+    algorithm : str
+        The algorithm used to extract the features.
 
     Returns
     -------
-    None.
+    intersection_percentage : Numpy array
+        The intersection matrix.
+    cluster_indices1 : Numpy array
+        Indices of clusters corresponding to the columns.
+    cluster_indices2 : Numpy array
+        Indices of clusters corresponding to the rows.
 
     """
-    
-    _is_directory(directory)
-    
-    if save and filename is None:
-        raise ValueError('Filename cannot be None if save is True.')
-            
-    if directory[-1] != '/':
-        directory += '/'
-            
-    diameters = []
-        
-    subfolders = [f.path for f in os.scandir(directory) if f.is_dir()]
-    subfolders = sorted(subfolders, reverse=True,
-                        key=lambda x: int(x.rsplit('/', 1)[1].split('-', 1)[0]))
-    
-    _, metric = extract_params_from_folder_name(directory)
-        
-    for folder in subfolders:
-        diameters.append(get_cluster_diameters(folder))
-    
-    # Creates a dataframe for easy violinplot with seaborn
-    order = sorted([len(diameters[i]) for i in range(len(diameters))], reverse=True)
-    N_clusters = [len(diameters[i])*np.ones(len(diameters[i]), dtype=int) \
-                  for i in range(len(diameters))]
-    N_clusters = np.concatenate(N_clusters)
-    
-    frame = pd.DataFrame({'Number of clusters': N_clusters, 'Cluster diameter': diameters})
-    
-    plt.figure(figsize=(8,8))
-    sns.violinplot(x='Number of clusters', y='Cluster diameter', data=frame,
-                   order=order)
-    plt.ylabel(f'Cluster diameter ({metric} distance)')
-
-    if save:
-        plt.savefig(directory + filename, bbox_inches='tight')
-    plt.show()
-    
-
-def clusters_intersection(assignment1, assignment2, algorithm):
     
     dataset1 = 'Kaggle_memes'
     dataset2 = 'Kaggle_templates'
@@ -827,41 +704,12 @@ def clusters_intersection(assignment1, assignment2, algorithm):
 
     return intersection_percentage, cluster_indices1, cluster_indices2
 
-
-def intersection_plot(folder1, folder2, save=False, filename=None):
-
-    if folder1[-1] != '/':
-        folder1 += '/'
-    if folder2[-1] != '/':
-        folder2 += '/'
-        
-    assert (folder1.rsplit('/', 2)[0] == folder2.rsplit('/', 2)[0])
-    
-    algorithm = folder1.rsplit('/', 3)[1].split('_', 2)[-1]
-    algorithm = ' '.join(algorithm.split('_'))
-    if 'samples' in algorithm:
-        algorithm = algorithm.rsplit(' ', 2)[0]
-        
-    assignment1 = np.load(folder1 + 'assignment.npy')
-    assignment2 = np.load(folder2 + 'assignment.npy')
-    intersection, indices1, indices2 = clusters_intersection(assignment1, assignment2,
-                                                             algorithm)
-    
-    mask = intersection == 0.
-
-    plt.figure(figsize=(20,20))
-    sns.heatmap(intersection, annot=False, fmt='.2%', xticklabels=indices2,
-                yticklabels=indices1)
-    if save:
-        plt.savefig(filename, bbox_inches='tight')
-
-    return intersection, indices1, indices2
         
 #%%
 
 if __name__ == '__main__':
     
-    
+    """
     algorithm = 'SimCLR v2 ResNet50 2x'
     metric = 'cosine'
     folder = 'Clustering_results/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_5_samples/268-clusters_4.375-eps'
@@ -873,23 +721,38 @@ if __name__ == '__main__':
     
     # intersection, indices1, indices2 = intersection_plot(folder, folder2, save=True, filename='test.pdf')
 
-    """
+    
     indices2 = indices2[0:len(indices1)]
     intersection = intersection[0:len(indices1), 0:len(indices1)]
     plt.figure(figsize=(8,8))
     plt.hexbin(indices2, indices1, intersection)
     plt.savefig('test_hexbin.pdf')
-    """
+    
+    
+    foo = intersection[intersection > 0]
     
     plt.figure()
-    plt.hist(intersection.flatten(), bins=50)
-    plt.yscale('log')
+    plt.hist(foo.flatten(), bins=50)
+    # plt.yscale('log')
     ax = plt.gca()
     ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda x, pos: f'${x:.2%}$ %'))
     
     print((intersection == 1).sum())
+    """
     
+    # algorithm = 'Dhash 64 bits'
+    # metric = 'hamming'
+    # compute_assignment_groundtruth(algorithm, metric)
+    # get_cluster_diameters('Clustering_results/hamming_GT_Dhash_64_bits', True)
+    # directory = 'Clustering_results/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples'
+    # foo = cluster_diameter_violin(directory, save=True, filename='test34.pdf')
     
+    directory = 'Clustering_results'
+    for folder in [f.path for f in os.scandir(directory) if f.is_dir()]:
+        if 'DBSCAN' in folder:
+            for subfolder in [f.path for f in os.scandir(folder) if f.is_dir()]:
+                save_extremes(subfolder)
+            
     
         
 
