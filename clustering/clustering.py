@@ -103,7 +103,8 @@ def plot_dendrogram(Z, linkage, save=False, filename=None, **kwargs):
     plt.show()
 
 
-def hierarchical_clustering(algorithm, metric, linkage_type):
+def hierarchical_clustering(algorithm, metric, linkage_type,
+                            partition='full_dataset'):
     """
     Perform hierarchical clustering and save cluster assignments, representative
     cluster images, and dendrogram.
@@ -116,6 +117,9 @@ def hierarchical_clustering(algorithm, metric, linkage_type):
         The metric used for the distance between images.
     linkage_type : str
         The linkage type for merging clusters.
+    partition : str
+        The desired partition. Either `full_dataset` or `clean_dataset`.
+        
 
     Raises
     ------
@@ -141,7 +145,7 @@ def hierarchical_clustering(algorithm, metric, linkage_type):
 
     identifier = '_'.join(algorithm.split(' '))
 
-    folder = f'Clustering_results/{metric}_{linkage_type}_{identifier}/'
+    folder = f'Clustering_results/{partition}/{metric}_{linkage_type}_{identifier}/'
     os.makedirs(folder)
 
     features, mapping, distances = tools.extract_features_from_folder_name(folder,
@@ -173,7 +177,8 @@ def hierarchical_clustering(algorithm, metric, linkage_type):
     return folder
     
     
-def cluster_DBSCAN(algorithm, metric, min_samples, precisions=None):
+def cluster_DBSCAN(algorithm, metric, min_samples, precisions=None,
+                   partition='full_dataset'):
     """
     Perform DBSCAN clustering and save cluster assignments and representative
     cluster images.
@@ -192,6 +197,8 @@ def cluster_DBSCAN(algorithm, metric, min_samples, precisions=None):
         in the neighborhood of the other. This is not a maximum bound on the
         distances of points within a cluster. If not specified, some default 
         will be set. The default is None.
+    partition : str
+        The desired partition. Either `full_dataset` or `clean_dataset`.
 
     Returns
     -------
@@ -209,7 +216,7 @@ def cluster_DBSCAN(algorithm, metric, min_samples, precisions=None):
 
     identifier = '_'.join(algorithm.split(' '))
 
-    folder = f'Clustering_results/{metric}_DBSCAN_{identifier}_{min_samples}_samples/'
+    folder = f'Clustering_results/{partition}/{metric}_DBSCAN_{identifier}_{min_samples}_samples/'
     os.makedirs(folder)
 
     features, mapping, distances = tools.extract_features_from_folder_name(folder,

@@ -22,6 +22,8 @@ parser.add_argument('--precisions', type=float, nargs='+', default=None,
                           'considered as in the neighborhood of the other.'))
 parser.add_argument('--samples', type=int, default=5, 
                     help='The number of samples in a neighborhood for a point to be considered as a core point.')
+parser.add_argument('--partition', type=str, default='full', choices=['full', 'clean'],
+                    help='Dataset partition to use.')
 parser.add_argument('--save', type=str, default='True', choices=['True', 'False'],
                     help='Whether to save everything, or just the cluster assignments.')
 args = parser.parse_args()
@@ -30,10 +32,11 @@ algorithm = ' '.join(args.algo)
 metric = args.metric
 min_samples = args.samples
 precisions = args.precisions
+partition = args.partition + '_dataset'
 save = args.save == 'True'
     
 # Clustering
-directory = cluster_DBSCAN(algorithm, metric, min_samples, precisions)
+directory = cluster_DBSCAN(algorithm, metric, min_samples, precisions, partition)
 if save:
     save_all(directory)
         

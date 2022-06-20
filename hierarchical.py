@@ -19,6 +19,8 @@ parser.add_argument('--metric', type=str, default='euclidean', choices=['euclide
 parser.add_argument('--linkage', type=str, default='ward', 
                     choices=['single', 'complete', 'average', 'centroid', 'ward'],
                     help='The linkage method for merging clusters.')
+parser.add_argument('--partition', type=str, default='full', choices=['full', 'clean'],
+                    help='Dataset partition to use.')
 parser.add_argument('--save', type=str, default='True', choices=['True', 'False'],
                     help='Whether to save everything, or just the cluster assignments.')
 args = parser.parse_args()
@@ -26,9 +28,10 @@ args = parser.parse_args()
 algorithm = ' '.join(args.algo)
 metric = args.metric
 linkage_type = args.linkage
+partition = args.partition + '_dataset'
 save = args.save == 'True'
     
 # Clustering
-directory = hierarchical_clustering(algorithm, metric, linkage_type)
+directory = hierarchical_clustering(algorithm, metric, linkage_type, partition)
 if save:
     save_all(directory)

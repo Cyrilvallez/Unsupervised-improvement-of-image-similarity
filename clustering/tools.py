@@ -133,7 +133,7 @@ def save_extremes(subfolder):
     os.makedirs(subfolder + 'extremes', exist_ok=True)
     
     assignment = np.load(subfolder + 'assignment.npy')
-    centroids = np.load(subfolder + 'centroids.npy')
+    centroids = get_cluster_centroids(subfolder)
     
     features, mapping = extract_features_from_folder_name(subfolder)
     
@@ -168,7 +168,7 @@ def _is_directory(directory):
     if directory[-1] == '/':
         directory = directory.rsplit('/', 1)[0]
         
-    if os.path.dirname(directory) != 'Clustering_results':
+    if os.path.dirname(os.path.dirname(directory)) != 'Clustering_results':
         raise ValueError('The directory you provided is not valid.')
         
         
@@ -194,13 +194,58 @@ def _is_subfolder(subfolder):
 
     """
     
+    # If this is a groundtruth folder, we skip the checks because the file structure 
+    # is different
+    if 'GT' in subfolder:
+        return 
+    
     if subfolder[-1] == '/':
         subfolder = subfolder.rsplit('/', 1)[0]
         
-    split = subfolder.rsplit('/', 2)
-    if split[0] != 'Clustering_results' or len(split) != 3:
+    split = subfolder.rsplit('/', 3)
+    if split[0] != 'Clustering_results' or len(split) != 4:
         raise ValueError('The subfolder you provided is not valid.')
         
+
+ALLOWED_PARTITIONS = [
+    'full_dataset',
+    'clean_dataset',
+    ]
+        
+def get_dataset(partition, algorithm):
+    """
+    Extract the features and mapping corresponding to the wanted `partition` of
+    the kaggle memes dataset.
+
+    Parameters
+    ----------
+    partition : str
+        The desired partition. Either `full_dataset` or `clean_dataset`.
+    algorithm : str
+        Algorithm used to extract the features.
+
+    Returns
+    -------
+    features : Numpy array
+        The features corresponding to the images.
+    mapping : Numpy array
+        Mapping from feature index to actual image (as a path name).
+
+    """
+    assert partition in ALLOWED_PARTITIONS
+    
+    dataset1 = 'Kaggle_memes'
+    dataset2 = 'Kaggle_templates'
+    
+    # Load features and mapping to actual images
+    features, mapping = utils.combine_features(algorithm, dataset1, dataset2,
+                                           to_bytes=False)
+    if partition == 'clean_dataset':
+        indices = clean_dataset(mapping)
+        features, mapping = features[indices], mapping[indices]
+        
+    return features, mapping
+
         
 def extract_params_from_folder_name(directory):
     """
@@ -234,7 +279,7 @@ def extract_params_from_folder_name(directory):
     if 'samples' in algorithm:
         algorithm = algorithm.rsplit(' ', 2)[0]
         
-    metric = directory.rsplit('/', 2)[1].split('_', 1)[0]
+    metric = directory.rsplit('/', 1)[1].split('_', 1)[0]
     
     return algorithm, metric
 
@@ -263,21 +308,18 @@ def extract_features_from_folder_name(directory, return_distances=False):
     """
     
     algorithm, metric = extract_params_from_folder_name(directory)
+    partition = directory.split('/')[1]
     
-    dataset1 = 'Kaggle_memes'
-    dataset2 = 'Kaggle_templates'
-
     # Load features and mapping to actual images
-    features, mapping = utils.combine_features(algorithm, dataset1, dataset2,
-                                           to_bytes=False)
+    features, mapping = get_dataset(partition, algorithm)
     
     if return_distances:
         identifier = '_'.join(algorithm.split(' '))
         try:  
-            distances = np.load(f'Clustering_results/distances_{identifier}_{metric}.npy')
+            distances = np.load(f'Clustering_results/{partition}/distances_{identifier}_{metric}.npy')
         except FileNotFoundError:
             distances = pdist(features, metric=metric)
-            np.save(f'Clustering_results/distances_{identifier}_{metric}.npy', distances)
+            np.save(f'Clustering_results/{partition}/distances_{identifier}_{metric}.npy', distances)
         
         return features, mapping, distances
     
@@ -285,7 +327,7 @@ def extract_features_from_folder_name(directory, return_distances=False):
         return features, mapping   
     
     
-def compute_assignment_groundtruth(algorithm, metric):
+def compute_assignment_groundtruth(algorithm, metric, partition='full_dataset'):
 
     """
     Find and save the assignment of memes inside each "real" clusters (from the
@@ -297,15 +339,17 @@ def compute_assignment_groundtruth(algorithm, metric):
         Algorithm name used for extracting the features from images.
     metric : str
         Metric to use for later distance computation (e.g diameters).
+    partition : str
+        The desired partition. Either `full_dataset` or `clean_dataset`.
 
     Returns
     -------
     None.
     
     """
-    
+    assert partition in ALLOWED_PARTITIONS
     algorithm = '_'.join(algorithm.split())
-    folder = f'Clustering_results/{metric}_GT_{algorithm}'
+    folder = f'Clustering_results/{partition}/{metric}_GT_{algorithm}'
     
     _, mapping = extract_features_from_folder_name(folder)
     
@@ -324,7 +368,7 @@ def compute_assignment_groundtruth(algorithm, metric):
     np.save(folder + '/assignment.npy', assignment)
  
         
-def compute_cluster_diameters(subfolder):
+def _compute_cluster_diameters(subfolder, quantile=1.):
     """
     Compute the diameter of each clusters.
 
@@ -333,6 +377,9 @@ def compute_cluster_diameters(subfolder):
     subfolder : str
         Subfolder of a clustering experiment, containing the assignments,
         representatives images etc...
+    quantile : float, optional
+        The quantile on which to base the diameters. Give 1 for the maximum
+        of the distances. The default is 1.
 
     Returns
     -------
@@ -341,10 +388,7 @@ def compute_cluster_diameters(subfolder):
 
     """
     
-    # If this is a groundtruth, we skip the check because the file structure is
-    # different
-    if not ('GT' in subfolder):
-        _is_subfolder(subfolder)
+    _is_subfolder(subfolder)
     
     if subfolder[-1] != '/':
         subfolder += '/'
@@ -375,12 +419,12 @@ def compute_cluster_diameters(subfolder):
         if len(cluster_distances) == 0:
             diameters.append(0.)
         else:
-            diameters.append(np.max(cluster_distances))
+            diameters.append(np.quantile(cluster_distances, quantile))
         
     return np.array(diameters)
 
 
-def compute_cluster_centroids(subfolder):
+def _compute_cluster_centroids(subfolder):
     """
     Compute the centroids of each clusters.
 
@@ -397,10 +441,7 @@ def compute_cluster_centroids(subfolder):
 
     """
     
-    # If this is a groundtruth, we skip the check because the file structure is
-    # different
-    if not ('GT' in subfolder):
-        _is_subfolder(subfolder)
+    _is_subfolder(subfolder)
 
     if subfolder[-1] != '/':
         subfolder += '/'
@@ -418,47 +459,8 @@ def compute_cluster_centroids(subfolder):
     return engine.centroids_
 
 
-def _get_attribute(subfolder, func, identifier, save_if_absent=True):
-    """
-    Return the attribute computed by `func`, trying to load it from disk,
-    then computing it if it is absent.
 
-    Parameters
-    ----------
-    subfolder : str
-        Subfolder of a clustering experiment, containing the assignments,
-        representatives images etc...
-    func : function
-        The function computing the attribute.
-    identifier : str
-        String representing the attribute. E.g `diameters`, `centroids`.
-    save_if_absent : bool, optional
-        Whether or not to save the result is they are not already on disk. The
-        default is True.
-
-    Returns
-    -------
-    diameters : Numpy array
-        The diameters.
-
-    """
-    
-    assert ('/' not in identifier), 'Identifier cannot be a path'
-    
-    if subfolder[-1] != '/':
-        subfolder += '/'
-        
-    try:
-        attribute = np.load(subfolder + identifier + '.npy')
-    except FileNotFoundError:
-        attribute = func(subfolder)
-        if save_if_absent:
-            np.save(subfolder + identifier + '.npy', attribute)
-            
-    return attribute
-
-
-def get_cluster_diameters(subfolder, save_if_absent=True):
+def get_cluster_diameters(subfolder, quantile=1., save_if_absent=True):
     """
     Return the cluster diameters, trying to load them from disk then computing
     them otherwise.
@@ -474,13 +476,22 @@ def get_cluster_diameters(subfolder, save_if_absent=True):
 
     Returns
     -------
-    centroids : Numpy array
+    diameters : Numpy array
         The diameters.
 
     """
     
-    return _get_attribute(subfolder, compute_cluster_diameters, 'diameters',
-                          save_if_absent=save_if_absent)
+    if subfolder[-1] != '/':
+        subfolder += '/'
+        
+    try:
+        diameters = np.load(subfolder + f'diameters_{quantile:.2f}.npy')
+    except FileNotFoundError:
+        diameters = _compute_cluster_diameters(subfolder, quantile=quantile)
+        if save_if_absent:
+            np.save(subfolder + f'diameters_{quantile:.2f}.npy', diameters)
+            
+    return diameters
 
 
 def get_cluster_centroids(subfolder, save_if_absent=True):
@@ -504,39 +515,20 @@ def get_cluster_centroids(subfolder, save_if_absent=True):
 
     """
     
-    return _get_attribute(subfolder, compute_cluster_centroids, 'centroids',
-                          save_if_absent=save_if_absent)
-
-
-def _save_attribute(directory, func, identifier):
-    """
-    Save the attribute computed by `func` to disk, for each subfolder of
-    `directory`.
-    
-    Parameters
-    ----------
-    directory : str
-        The directory where the experiment is contained.
-    func : function
-        The function computing the attribute.
-    identifier : str
-        String representing the attribute. E.g `diameters`, `centroids`.
-
-    Returns
-    -------
-    None
-
-    """
-    
-    assert ('/' not in identifier), 'Identifier cannot be a path'
-    
-    for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
+    if subfolder[-1] != '/':
+        subfolder += '/'
         
-        attribute = func(subfolder)
-        np.save(subfolder + '/' + identifier + '.npy', attribute)
+    try:
+        centroids = np.load(subfolder + 'centroids.npy')
+    except FileNotFoundError:
+        centroids = _compute_cluster_centroids(subfolder)
+        if save_if_absent:
+            np.save(subfolder + 'centroids.npy', centroids)
+            
+    return centroids
         
 
-def save_diameters(directory):
+def save_diameters(directory, quantile=1.):
     """
     Save the diameter of each cluster to file for later reuse.
 
@@ -551,7 +543,10 @@ def save_diameters(directory):
 
     """
     
-    _save_attribute(directory, compute_cluster_diameters, 'diameters')
+    for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
+        
+        diameters = _compute_cluster_diameters(subfolder, quantile=quantile)
+        np.save(subfolder + f'diameters_{quantile:.2f}.npy', diameters)
         
 
 def save_centroids(directory):
@@ -569,10 +564,13 @@ def save_centroids(directory):
 
     """
     
-    _save_attribute(directory, compute_cluster_centroids, 'centroids')
+    for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
+        
+        centroids = _compute_cluster_centroids(subfolder)
+        np.save(subfolder + 'centroids.npy', centroids)
     
     
-def get_groundtruth_attribute(directory, attribute):
+def get_groundtruth_attribute(directory, attribute, quantile=1.):
     """
     Get the groundtruth `attribute` corresponding to the actual `directory`.
 
@@ -582,6 +580,9 @@ def get_groundtruth_attribute(directory, attribute):
         The directory where the experiment is contained.
     attribute : str
         Either `assignment`, `diameters` or `centroids`.
+    quantile : float, optional
+        Only used if `attribute` is `diameters`.The quantile on which to base
+        the diameters. Give 1 for the maximum of the distances. The default is 1.
 
     Raises
     ------
@@ -597,16 +598,18 @@ def get_groundtruth_attribute(directory, attribute):
     
     algorithm, metric = extract_params_from_folder_name(directory)
     algorithm = '_'.join(algorithm.split())
+    partition = directory.split('/')[1]
     if attribute == 'assignment':
         try:
-            groundtruth = np.load(f'Clustering_results/{metric}_GT_{algorithm}/{attribute}.npy') 
+            groundtruth = np.load(f'Clustering_results/{partition}/{metric}_GT_{algorithm}/{attribute}.npy') 
         except:
             compute_assignment_groundtruth(algorithm, metric)
-            groundtruth = np.load(f'Clustering_results/{metric}_GT_{algorithm}/{attribute}.npy')
+            groundtruth = np.load(f'Clustering_results/{partition}/{metric}_GT_{algorithm}/{attribute}.npy')
     elif attribute == 'diameters':
-        groundtruth = get_cluster_diameters(f'Clustering_results/{metric}_GT_{algorithm}/{attribute}.npy')
+        groundtruth = get_cluster_diameters(f'Clustering_results/{partition}/{metric}_GT_{algorithm}/{attribute}.npy',
+                                            quantile=quantile)
     elif attribute == 'centroids':
-        groundtruth = get_cluster_centroids(f'Clustering_results/{metric}_GT_{algorithm}/{attribute}.npy')
+        groundtruth = get_cluster_centroids(f'Clustering_results/{partition}/{metric}_GT_{algorithm}/{attribute}.npy')
     else:
         raise ValueError('The attribute is not correct.')
         
@@ -704,41 +707,36 @@ def cluster_intersections(assignment1, assignment2, algorithm):
 
     return intersection_percentage, cluster_indices1, cluster_indices2
 
+
+def clean_dataset(mapping):
+    
+    templates_to_remove = [
+        'zuckerberg',
+        'harold',
+        'netflix-adaptation',
+        'shrek',
+        'so-glad',
+        'who-would-win',
+        'you-vs-the-guy',
+        'skyrim-100',
+        ]
+    
+    indices = []
+    for i, name in enumerate(mapping):
+        identifier = name.rsplit('/', 1)[1].split('_', 1)[0]
+        if '.' in identifier:
+            identifier = name.rsplit('/', 1)[1].rsplit('.', 1)[0]
+        
+        if identifier not in templates_to_remove:
+            indices.append(i)
+            
+    return indices
         
 #%%
 
 if __name__ == '__main__':
     
-    """
-    algorithm = 'SimCLR v2 ResNet50 2x'
-    metric = 'cosine'
-    folder = 'Clustering_results/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_5_samples/268-clusters_4.375-eps'
-    folder2 = 'Clustering_results/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_5_samples/306-clusters_4.250-eps'
-    assignment1 = np.load(folder + '/assignment.npy')
-    assignment2 = np.load(folder2 + '/assignment.npy')
-    intersection, indices1, indices2 = clusters_intersection(assignment1,
-                                                             assignment2, algorithm)
     
-    # intersection, indices1, indices2 = intersection_plot(folder, folder2, save=True, filename='test.pdf')
-
-    
-    indices2 = indices2[0:len(indices1)]
-    intersection = intersection[0:len(indices1), 0:len(indices1)]
-    plt.figure(figsize=(8,8))
-    plt.hexbin(indices2, indices1, intersection)
-    plt.savefig('test_hexbin.pdf')
-    
-    
-    foo = intersection[intersection > 0]
-    
-    plt.figure()
-    plt.hist(foo.flatten(), bins=50)
-    # plt.yscale('log')
-    ax = plt.gca()
-    ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda x, pos: f'${x:.2%}$ %'))
-    
-    print((intersection == 1).sum())
-    """
     
     # algorithm = 'Dhash 64 bits'
     # metric = 'hamming'
@@ -747,13 +745,60 @@ if __name__ == '__main__':
     # directory = 'Clustering_results/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples'
     # foo = cluster_diameter_violin(directory, save=True, filename='test34.pdf')
     
-    directory = 'Clustering_results'
-    for folder in [f.path for f in os.scandir(directory) if f.is_dir()]:
-        if 'DBSCAN' in folder:
-            for subfolder in [f.path for f in os.scandir(folder) if f.is_dir()]:
-                save_extremes(subfolder)
-            
+    # directory = 'Clustering_results'
+    # for folder in [f.path for f in os.scandir(directory) if f.is_dir()]:
+        # if 'DBSCAN' in folder:
+            # for subfolder in [f.path for f in os.scandir(folder) if f.is_dir()]:
+                # save_extremes(subfolder)
     
+    def find_templates(assignment, mapping):
         
-
+        identifiers = []
+        for name in mapping:
+            identifier = name.rsplit('/', 1)[1].split('_', 1)[0]
+            if '.' in identifier:
+                identifier = name.rsplit('/', 1)[1].rsplit('.', 1)[0]
+            identifiers.append(identifier)
+                
+        identifiers = np.array(identifiers)
+                
+        cluster_names = []
+        for idx in np.unique(assignment):
+            cluster = identifiers[assignment == idx]
+            assert len(np.unique(cluster)) == 1
+            cluster_names.append(cluster[0])
+                
+        return np.array(cluster_names)
+    
+    
+    path = 'Clustering_results/euclidean_GT_SimCLR_v2_ResNet50_2x'
+    assignment = np.load(path + '/assignment.npy')
+    diameters = get_cluster_diameters(path, quantile=0.5)
+    _, mapping = extract_features_from_folder_name(path)
+    templates = find_templates(assignment, mapping)
+    sorting = np.argsort(diameters)
+    bad = templates[sorting[-10:]]
+    
+    
+    """
+    path = 'Clustering_results/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples/233-clusters_4.000-eps'
+    assignment = np.load(path + '/assignment.npy')
+    _, mapping = extract_features_from_folder_name(path)
+    
+    identifiers = []
+    for name in mapping:
+        identifier = name.rsplit('/', 1)[1].split('_', 1)[0]
+        if '.' in identifier:
+            identifier = name.rsplit('/', 1)[1].rsplit('.', 1)[0]
+        identifiers.append(identifier)
+            
+    identifiers = np.array(identifiers)
+    
+    
+    # meme = 'who-would-win'
+    meme = 'skyrim-100'
+    cond = identifiers == meme
+    foo = assignment[cond]
+    bar = (assignment == -1).sum()
+    """
     

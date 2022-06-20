@@ -219,7 +219,7 @@ def create_dataset(dataset_name, transforms):
 
     
     if dataset_name not in VALID_DATASET_NAMES:
-        raise ValueError(f'The dataset name must be one of {VALID_DATASET_NAMES,}.')
+        raise ValueError(f'The dataset name must be one of {*VALID_DATASET_NAMES,}.')
     
     if dataset_name == 'Kaggle_templates':
         path1 = 'Datasets/Kaggle_memes/Templates_experimental/'
@@ -236,6 +236,8 @@ def create_dataset(dataset_name, transforms):
     elif dataset_name == 'Flickr500K':
         return FlickrDataset(transforms)
         
+    # Combine the images into a single list because they are split into
+    # control/experimental
     imgs = [path1 + file for file in os.listdir(path1) if not file.startswith('.')]
     imgs += [path2 + file for file in os.listdir(path2) if not file.startswith('.')]
     
