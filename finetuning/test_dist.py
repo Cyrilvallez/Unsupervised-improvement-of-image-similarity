@@ -29,7 +29,7 @@ def main(rank, world_size):
     
     tensor_list = [torch.zeros(2, dtype=torch.int64) for _ in range(2)]
     
-    tensor = torch.rand(2)
+    tensor = torch.rand(2).to('cuda')
     print('Simple tensor :')
     print(tensor)
     
