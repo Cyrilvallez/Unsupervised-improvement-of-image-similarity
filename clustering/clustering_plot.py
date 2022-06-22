@@ -367,6 +367,151 @@ def cluster_diameter_violin(directory, save=False, filename=None):
     if save:
         plt.savefig(directory + filename, bbox_inches='tight')
     plt.show()
+        
+    
+def _reorder(a):
+    """
+    Reorder an array for large matrix plotting. The rows are ordered by largest
+    column value in descending order. The columns are reordered such that the 
+    biggest value of each row is on the main diagonal, and other values are 
+    in descending order 'centered' along this diagonal value. Note that 
+    columns are reordered differently on each row, thus the ordering of
+    the resulting matrix does not make sense anymore and is only useful for
+    plotting.
+    
+    Example
+    --------
+    
+    a = np.array(
+        [[1, 2, 3, 4],
+        [9, 4, 4, 0],
+        1, 1, 0, 2]]        
+        )
+        
+    _reorder(a) = np.array(
+        [[9, 4, 4, 0]
+        [3, 4, 2, 1],
+        [0, 1, 2, 1]]
+        )
+                  
+    Parameters
+    ----------
+    a : Numpy array
+        The array to reorder.
+
+    Returns
+    -------
+    a : Numpy array
+        The reordered array.
+
+    """
+    N, M = a.shape
+
+    # Reorder the rows
+    idx = np.argsort(-np.max(a, axis=1))
+    a = a[idx, :]
+    
+    # Reorder the columns
+    for i in range(N):
+        
+        if i == 0:
+            a[i,:] = -np.sort(-a[i,:])
+            
+        elif i < M//2:
+            sorted_row = -np.sort(-a[i,:])
+            left = sorted_row[1:2*i:2]
+            # Opposite side for coherent ordering around the diagonal value
+            left = left[::-1]
+            right = sorted_row[0:2*i:2]
+            a[i, 0:i] = left
+            a[i, i:2*i] = right
+            a[i, 2*i:] = sorted_row[2*i:]
+        
+        elif i == M//2:
+            sorted_row = np.sort(a[i,:])
+            if M % 2 == 1:
+                a[i, 0:M//2+1] = sorted_row[::2]
+                a[i, M//2+1:] = sorted_row[-2::-2]
+            else:
+                a[i, 0:M//2] = sorted_row[::2]
+                a[i, M//2:] = sorted_row[::-2]
+            
+        elif i < M:
+            sorted_row = -np.sort(-a[i,:])
+            left = sorted_row[1:2*(M-i):2]
+            left = left[::-1]
+            right = sorted_row[0:2*(M-i):2]
+            a[i, 0:i-(M-i)] = sorted_row[2*(M-i):][::-1]
+            a[i, i-(M-i):i] = left
+            a[i, i:] = right
+            
+        else:
+            a[i, :] = np.sort(a[i,:])
+        
+    return a
+
+    
+def intersection_over_union(subfolder, other_subfolder=None, save=False, filename=None):
+    """
+    Creates a plot showing the intersection over union for each clusters.
+
+    Parameters
+    ----------
+    subfolder : str
+        Subfolder of a clustering experiment, containing the assignments,
+        representatives images etc...
+    other_subfolder : str, optional
+        Another subfolder to compare assignment. If not provided, the comparison
+        will be eprformed with the groundtruth. The default is None.
+    save : bool, optional
+        Whether to save the figure or not. The default is False.
+    filename : str, optional
+        Filename for saving the figure. The default is None.
+
+    Raises
+    ------
+    ValueError
+        If save is True but filename is not provided.
+
+    Returns
+    -------
+    None.
+
+    """
+
+    tools._is_subfolder(subfolder)
+    if other_subfolder is not None:
+        tools._is_subfolder(other_subfolder)
+        if other_subfolder[-1] != '/':
+            other_subfolder += '/'
+    
+    if save and filename is None:
+        raise ValueError('Filename cannot be None if save is True.')
+        
+    if subfolder[-1] != '/':
+        subfolder += '/'
+    
+    assignment = np.load(subfolder + 'assignment.npy')
+    if other_subfolder is None:
+        other_assignment = tools.get_groundtruth_attribute(subfolder, 'assignment')
+    else:
+        other_assignment = np.load(other_subfolder + '/assignment.npy')
+        
+    intersection, indices1, indices2 = tools.cluster_intersection_over_union(assignment, other_assignment)
+    
+    
+    intersection = _reorder(intersection)
+
+    fig = plt.figure(figsize=(12,12))
+    ax = plt.gca()
+    # sns.heatmap(intersection, annot=False, fmt='.2%', cmap='Greys', vmin=0., vmax=1.)
+    matrix = ax.imshow(intersection, cmap='afmhot_r', vmin=0., vmax=1.)
+    cax = fig.add_axes([ax.get_position().x1+0.02, ax.get_position().y0 , 0.04,
+                        ax.get_position().height])
+    plt.colorbar(matrix, cax=cax)
+    if save:
+        fig.savefig(subfolder + filename, bbox_inches='tight')
+    plt.show()
     
     
 def intersection_plot(subfolder, save=False, filename=None):
@@ -380,8 +525,8 @@ def intersection_plot(subfolder, save=False, filename=None):
         subfolder = subfolder.rsplit('/', 1)[0]
         
     directory = subfolder.rsplit('/', 1)[0]
-    algorithm, _ = tools.extract_params_from_folder_name(directory)
-    ref_assignment = np.load(subfolder + '/assignment.npy')
+    algorithm, _, _ = tools.extract_params_from_folder_name(directory)
+    ref_assignment = np.load(subfolder + 'assignment.npy')
     
     subfolders = [f.path for f in os.scandir(directory) if f.is_dir()]
     subfolders = sorted(subfolders, reverse=True,
@@ -428,50 +573,26 @@ def intersection_plot(subfolder, save=False, filename=None):
     if save:
         fig.savefig(subfolder + '/' + filename, bbox_inches='tight')
     plt.show()
-        
-    
-    
-def intersection_plot2(folder1, folder2, save=False, filename=None):
-
-    if folder1[-1] != '/':
-        folder1 += '/'
-    if folder2[-1] != '/':
-        folder2 += '/'
-        
-    assert (folder1.rsplit('/', 2)[0] == folder2.rsplit('/', 2)[0])
-    
-    algorithm = folder1.rsplit('/', 3)[1].split('_', 2)[-1]
-    algorithm = ' '.join(algorithm.split('_'))
-    if 'samples' in algorithm:
-        algorithm = algorithm.rsplit(' ', 2)[0]
-        
-    assignment1 = np.load(folder1 + 'assignment.npy')
-    assignment2 = np.load(folder2 + 'assignment.npy')
-    intersection, indices1, indices2 = tools.clusters_intersection(assignment1, assignment2,
-                                                                   algorithm)
-    
-    # mask = intersection == 0.
-
-    plt.figure(figsize=(20,20))
-    sns.heatmap(intersection, annot=False, fmt='.2%', xticklabels=indices2,
-                yticklabels=indices1)
-    if save:
-        plt.savefig(filename, bbox_inches='tight')
-
-    return intersection, indices1, indices2
 
 
 #%%
 
-directory = 'Clustering_results'
-for folder in [f.path for f in os.scandir(directory) if f.is_dir()]:
-    if 'DBSCAN' in folder:
-        for subfolder in [f.path for f in os.scandir(folder) if f.is_dir()]:
-            intersection_plot(subfolder, save=True, filename='intersection.pdf')
-# test = 'Clustering_results/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples/220-clusters_4.125-eps'
-# intersection_plot(test, save=True, filename='test.pdf')
+if __name__ == '__main__':
+
+    # directory = 'Clustering_results'
+    # for folder in [f.path for f in os.scandir(directory) if f.is_dir()]:
+        # if 'DBSCAN' in folder:
+            # for subfolder in [f.path for f in os.scandir(folder) if f.is_dir()]:
+                # intersection_plot(subfolder, save=True, filename='intersection.pdf')
+                # test = 'Clustering_results/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples/220-clusters_4.125-eps'
+                # intersection_plot(test, save=True, filename='test.pdf')
+
+    subfolder = 'Clustering_results/clean_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_5_samples/253-clusters_4.375-eps'
+    intersection_over_union(subfolder, save=True, filename='test1.pdf')
+    # assignment = np.load(subfolder + '/assignment.npy')
+    # if 'DBSCAN' in subfolder:
+        # assignment = assignment[assignment != -1]
 
 
 
 
-    

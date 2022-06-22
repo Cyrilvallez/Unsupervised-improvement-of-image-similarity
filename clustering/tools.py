@@ -280,8 +280,9 @@ def extract_params_from_folder_name(directory):
         algorithm = algorithm.rsplit(' ', 2)[0]
         
     metric = directory.rsplit('/', 1)[1].split('_', 1)[0]
+    partition = directory.split('/')[1]
     
-    return algorithm, metric
+    return algorithm, metric, partition
 
 
 def extract_features_from_folder_name(directory, return_distances=False):
@@ -307,8 +308,7 @@ def extract_features_from_folder_name(directory, return_distances=False):
 
     """
     
-    algorithm, metric = extract_params_from_folder_name(directory)
-    partition = directory.split('/')[1]
+    algorithm, metric, partition = extract_params_from_folder_name(directory)
     
     # Load features and mapping to actual images
     features, mapping = get_dataset(partition, algorithm)
@@ -344,7 +344,8 @@ def compute_assignment_groundtruth(algorithm, metric, partition='full_dataset'):
 
     Returns
     -------
-    None.
+    assignment : Numpy array
+        The clustering assignment of the groundtruth.
     
     """
     assert partition in ALLOWED_PARTITIONS
@@ -366,6 +367,8 @@ def compute_assignment_groundtruth(algorithm, metric, partition='full_dataset'):
     
     os.makedirs(folder, exist_ok=True)
     np.save(folder + '/assignment.npy', assignment)
+    
+    return assignment
  
         
 def _compute_cluster_diameters(subfolder, quantile=1.):
@@ -446,7 +449,7 @@ def _compute_cluster_centroids(subfolder):
     if subfolder[-1] != '/':
         subfolder += '/'
     
-    _, metric = extract_params_from_folder_name(subfolder)
+    _, metric, _ = extract_params_from_folder_name(subfolder)
     features, _ = extract_features_from_folder_name(subfolder)
     assignments = np.load(subfolder + 'assignment.npy')
     
@@ -546,7 +549,7 @@ def save_diameters(directory, quantile=1.):
     for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
         
         diameters = _compute_cluster_diameters(subfolder, quantile=quantile)
-        np.save(subfolder + f'diameters_{quantile:.2f}.npy', diameters)
+        np.save(subfolder + f'/diameters_{quantile:.2f}.npy', diameters)
         
 
 def save_centroids(directory):
@@ -567,7 +570,7 @@ def save_centroids(directory):
     for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
         
         centroids = _compute_cluster_centroids(subfolder)
-        np.save(subfolder + 'centroids.npy', centroids)
+        np.save(subfolder + '/centroids.npy', centroids)
     
     
 def get_groundtruth_attribute(directory, attribute, quantile=1.):
@@ -596,15 +599,14 @@ def get_groundtruth_attribute(directory, attribute, quantile=1.):
 
     """
     
-    algorithm, metric = extract_params_from_folder_name(directory)
+    algorithm, metric, partition = extract_params_from_folder_name(directory)
     algorithm = '_'.join(algorithm.split())
-    partition = directory.split('/')[1]
     if attribute == 'assignment':
         try:
             groundtruth = np.load(f'Clustering_results/{partition}/{metric}_GT_{algorithm}/{attribute}.npy') 
-        except:
-            compute_assignment_groundtruth(algorithm, metric)
-            groundtruth = np.load(f'Clustering_results/{partition}/{metric}_GT_{algorithm}/{attribute}.npy')
+        except FileNotFoundError:
+            groundtruth = compute_assignment_groundtruth(algorithm, metric,
+                                                         partition=partition)
     elif attribute == 'diameters':
         groundtruth = get_cluster_diameters(f'Clustering_results/{partition}/{metric}_GT_{algorithm}/{attribute}.npy',
                                             quantile=quantile)
@@ -659,53 +661,51 @@ def extremes_from_centroids(features, mapping, assignment, centroids):
     return extremes
 
 
-def cluster_intersections(assignment1, assignment2, algorithm):
+def cluster_intersection_over_union(assignment1, assignment2):
     """
-    Compute the intersection matrix of 2 cluster assignments. Each row 
-    represents the intersection percentage of cluster i in `assignment1` with
-    all other clusters in `assignment2`. Thus all rows sum to 1.
+    Compute the intersection over union matrix of 2 cluster assignments. Each 
+    entry [i,j] represents the intersection over union of cluster i in `assignment1`
+    with cluster j in `assignment2`.
 
     Parameters
     ----------
     assignment1 : Numpy array
         The first cluster assignments.
     assignment2 : Numpy array
-        The second cluster assignments.
-    algorithm : str
-        The algorithm used to extract the features.
+        TThe second cluster assignments.
 
     Returns
     -------
-    intersection_percentage : Numpy array
+    intersection : Numpy array
         The intersection matrix.
-    cluster_indices1 : Numpy array
+    indices1 : Numpy array
         Indices of clusters corresponding to the columns.
-    cluster_indices2 : Numpy array
+    indices2 : Numpy array
         Indices of clusters corresponding to the rows.
 
     """
     
-    dataset1 = 'Kaggle_memes'
-    dataset2 = 'Kaggle_templates'
-    features, mapping = utils.combine_features(algorithm, dataset1, dataset2,
-                                           to_bytes=False)
-
-    cluster_indices1 = np.unique(assignment1)
-    cluster_indices2 = np.unique(assignment2)
+    indices1 = np.unique(assignment1)
+    indices2 = np.unique(assignment2)
     
-    intersection_percentage = np.empty((len(cluster_indices1), len(cluster_indices2)))
+    # Do not take cluster of outliers into account, if it exists
+    indices1 = indices1[indices1 != -1]
+    indices2 = indices2[indices2 != -1]
     
-    for i, index1 in enumerate(cluster_indices1):
+    intersection = np.empty((len(indices1), len(indices2)))
+    
+    for i, index1 in enumerate(indices1):
         
         cluster1 = np.argwhere(assignment1 == index1).flatten()
 
-        for j, index2 in enumerate(cluster_indices2):
+        for j, index2 in enumerate(indices2):
             
             cluster2 = np.argwhere(assignment2 == index2).flatten()
-            intersection_percentage[i,j] = len(np.intersect1d(cluster1, cluster2,
-                                                              assume_unique=True))/len(cluster1)
+            inter = np.intersect1d(cluster1, cluster2, assume_unique=True)
+            union = np.union1d(cluster1, cluster2)
+            intersection[i,j] = len(inter)/len(union)
 
-    return intersection_percentage, cluster_indices1, cluster_indices2
+    return intersection, indices1, indices2
 
 
 def clean_dataset(mapping):
@@ -770,7 +770,7 @@ if __name__ == '__main__':
                 
         return np.array(cluster_names)
     
-    
+    """
     path = 'Clustering_results/euclidean_GT_SimCLR_v2_ResNet50_2x'
     assignment = np.load(path + '/assignment.npy')
     diameters = get_cluster_diameters(path, quantile=0.5)
@@ -778,7 +778,7 @@ if __name__ == '__main__':
     templates = find_templates(assignment, mapping)
     sorting = np.argsort(diameters)
     bad = templates[sorting[-10:]]
-    
+    """
     
     """
     path = 'Clustering_results/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples/233-clusters_4.000-eps'
@@ -801,4 +801,36 @@ if __name__ == '__main__':
     foo = assignment[cond]
     bar = (assignment == -1).sum()
     """
+    
+    directory1 = 'Clustering_results/clean_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_5_samples/253-clusters_4.375-eps'
+    gt_assignment1 = get_groundtruth_attribute(directory1, 'assignment')
+    assignment1 = np.load(directory1 + '/assignment.npy')
+    
+    directory2 = 'Clustering_results/full_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_5_samples/268-clusters_4.375-eps'
+    gt_assignment2 = get_groundtruth_attribute(directory2, 'assignment')
+    assignment2 = np.load(directory2 + '/assignment.npy')
+    
+    features, mapping = extract_features_from_folder_name(directory2)
+    
+    
+    
+    #%%
+    """
+    import time
+    from scipy.spatial.distance import squareform
+    from sklearn.manifold import TSNE
+
+    folder = 'Clustering_results/clean_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_5_samples'
+    features, mapping, distances = extract_features_from_folder_name(folder, return_distances=True)
+    # Reshape the distances as a symmetric matrix
+    distances = squareform(distances)
+
+    t0 = time.time()
+    embedding = TSNE(metric='precomputed', learning_rate='auto', method='exact')
+    foo = embedding.fit_transform(distances)
+    dt = time.time() - t0
+    """
+
+
+
     

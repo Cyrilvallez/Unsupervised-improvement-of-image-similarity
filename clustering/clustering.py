@@ -294,6 +294,7 @@ def save_plots(directory):
     for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
         cplot.cluster_size_plot(subfolder, save=True, filename='cluster_balance.pdf')
         cplot.cluster_size_diameter_plot(subfolder, save=True, filename='size_diameter.pdf')
+        cplot.intersection_over_union(subfolder, save=True, filename='intersection_union.pdf')
         
         
 def save_visualizations(directory):
