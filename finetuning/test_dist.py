@@ -71,7 +71,7 @@ def main(rank, world_size):
     else:
         test = test2.apply
     forward = test(tensor)
-    external_grad = torch.tensor([1., 1.]).cuda(rank)
+    external_grad = torch.ones_like(forward)
     backward = forward.backward(external_grad)
     grad = tensor.grad
     print('initial tensor')
