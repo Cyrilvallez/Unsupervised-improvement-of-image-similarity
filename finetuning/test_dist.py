@@ -27,16 +27,18 @@ def main(rank, world_size):
     
     setup(rank, world_size)
     
-    tensor_list = [torch.zeros(2).cuda(rank) for _ in range(2)]
-    
-    tensor = torch.rand(2).cuda(rank)
+    tensor = (torch.rand(2, 2) + 2*rank).cuda(rank) 
     print('Simple tensor :')
     print(tensor)
+    
+    tensor_list = [torch.zeros_like(tensor) for _ in range(world_size)]
     
     dist.all_gather(tensor_list, tensor)
     print('Gathered output :')
     print(tensor_list)
-    
+    reduction = dist.all_reduce(tensor, op=dist.ReduceOp.SUM, async_op=False)
+    print('Reducted output :')
+    print(reduction)
     
     cleanup()
 
