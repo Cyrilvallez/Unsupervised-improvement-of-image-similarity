@@ -27,9 +27,9 @@ def main(rank, world_size):
     
     setup(rank, world_size)
     
-    tensor_list = [torch.zeros(2, dtype=torch.int64).to('cuda') for _ in range(2)]
+    tensor_list = [torch.zeros(2) for _ in range(2)]
     
-    tensor = torch.rand(2).to('cuda')
+    tensor = torch.rand(2).cuda(rank)
     print('Simple tensor :')
     print(tensor)
     
@@ -40,9 +40,9 @@ def main(rank, world_size):
     
     cleanup()
 
-def run_demo(demo_fn, world_size):
+def run_demo(function, world_size):
     
-    mp.spawn(demo_fn, args=(world_size,), nprocs=world_size, join=True)
+    mp.spawn(function, args=(world_size,), nprocs=world_size, join=True)
     
     
 if __name__ == '__main__':
