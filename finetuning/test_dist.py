@@ -67,7 +67,8 @@ def main(rank, world_size):
     setup(rank, world_size)
     tensor = torch.rand(2,2, requires_grad=True).cuda(rank)
     if rank == 0:
-        test = test1.apply
+        # test = test1.apply
+        test = test2.apply
     else:
         test = test2.apply
     forward = test(tensor)
