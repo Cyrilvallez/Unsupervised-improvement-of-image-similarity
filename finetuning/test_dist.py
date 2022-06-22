@@ -12,6 +12,45 @@ import torch.distributed as dist
 import torch.multiprocessing as mp
 from torch.nn.parallel import DistributedDataParallel as DDP
 
+class test1(torch.autograd.Function):
+    """Gather tensors from all process, supporting backward propagation."""
+
+    @staticmethod
+    def forward(ctx, input):
+        ctx.save_for_backward(input)
+        output = [torch.zeros_like(input) for _ in range(dist.get_world_size())]
+        dist.all_gather(output, input)
+        return torch.cat(output, 0)
+
+    @staticmethod
+    def backward(ctx, *grads):
+        (input,) = ctx.saved_tensors
+        grad_out = torch.zeros_like(input)
+        grad_out[:] = grads[dist.get_rank()]
+        return grad_out
+    
+class test2(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, tensor):
+        ctx.batch_size = tensor.shape[0]
+
+        gathered_tensor = [torch.zeros_like(tensor) for _ in range(torch.distributed.get_world_size())]
+
+        torch.distributed.all_gather(gathered_tensor, tensor)
+        gathered_tensor = torch.cat(gathered_tensor, 0)
+
+        return gathered_tensor
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        grad_input = grad_output.clone()
+        torch.distributed.all_reduce(grad_input, op=torch.distributed.ReduceOp.SUM, async_op=False)
+
+        idx_from = torch.distributed.get_rank() * ctx.batch_size
+        idx_to = (torch.distributed.get_rank() + 1) * ctx.batch_size
+        return grad_input[idx_from:idx_to]
+    
+
 def setup(rank, world_size):
     os.environ['MASTER_ADDR'] = 'localhost'
     os.environ['MASTER_PORT'] = '12355'
@@ -26,7 +65,25 @@ def cleanup():
 def main(rank, world_size):
     
     setup(rank, world_size)
-    
+    tensor = torch.rand(2,2, requires_grad=True).cuda(rank)
+    if rank == 0:
+        test = test1.apply
+    else:
+        test = test2.apply
+    forward = test(tensor)
+    external_grad = torch.tensor([1., 1.]).cuda(rank)
+    backward = forward.backward(external_grad)
+    grad = tensor.grad
+    print('initial tensor')
+    print(tensor)
+    print('forward result')
+    print(forward)
+    print('backward result')
+    print(backward)
+    print('grad wtf initial tensor')
+    print(grad)
+
+    """
     tensor = (torch.rand(2,2) + 2*rank).cuda(rank) 
     print('Simple tensor :')
     print(tensor)
@@ -39,7 +96,7 @@ def main(rank, world_size):
     dist.all_reduce(tensor, op=dist.ReduceOp.SUM, async_op=False)
     print('Reducted output :')
     print(tensor)
-    
+    """
     cleanup()
 
 def run_demo(function, world_size):
