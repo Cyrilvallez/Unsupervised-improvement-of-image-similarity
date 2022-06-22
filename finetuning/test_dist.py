@@ -27,7 +27,7 @@ def main(rank, world_size):
     
     setup(rank, world_size)
     
-    tensor_list = [torch.zeros(2) for _ in range(2)]
+    tensor_list = [torch.zeros(2).cuda(rank) for _ in range(2)]
     
     tensor = torch.rand(2).cuda(rank)
     print('Simple tensor :')
