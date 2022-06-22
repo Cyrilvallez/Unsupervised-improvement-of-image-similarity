@@ -36,9 +36,9 @@ def main(rank, world_size):
     dist.all_gather(tensor_list, tensor)
     print('Gathered output :')
     print(tensor_list)
-    reduction = dist.all_reduce(tensor, op=dist.ReduceOp.SUM, async_op=False)
+    dist.all_reduce(tensor, op=dist.ReduceOp.SUM, async_op=False)
     print('Reducted output :')
-    print(reduction)
+    print(tensor)
     
     cleanup()
 
