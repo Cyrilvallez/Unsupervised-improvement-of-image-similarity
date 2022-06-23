@@ -37,6 +37,9 @@ class Gather(torch.autograd.Function):
         # grad_output must NEVER be modified inplace, thus we clone it
         grad_input = grad_output.clone()
         
+        # reduce is needed since the loss will be computed only for the 
+        # batch of each process, and not directly using the gathered output
+        # (this is coherent with PyTorch structure)
         dist.all_reduce(grad_input, op=dist.ReduceOp.SUM, async_op=False)
 
         # Get the indices of the batch of the current process
