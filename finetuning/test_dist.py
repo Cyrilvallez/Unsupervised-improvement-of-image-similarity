@@ -211,7 +211,7 @@ def main(rank, world_size):
     batch1, batch2 = batch1.cuda(rank), batch2.cuda(rank)
     output1 = model(batch1)
     output2 = model(batch2)
-    L = loss1(output1, output2, 3.)
+    L = loss2(output1, output2, 3.)
     print(f'loss : {L}')
     L.backward()
     optimizer.step()
@@ -274,7 +274,7 @@ if __name__ == '__main__':
     batch1, batch2 = batch1.cuda(0), batch2.cuda(0)
     output1 = model(batch1)
     output2 = model(batch2)
-    L = loss1(output1, output2, 3.)
+    L = loss2(output1, output2, 3.)
     print(f'loss : {L}')
     L.backward()
     optimizer.step()
@@ -285,6 +285,6 @@ if __name__ == '__main__':
     state = {a.split('.', 1)[1]:b for a,b in state.items()}
     previous.load_state_dict(state)
     
-    print(f'ALL SAME : {all([(a == b).all() for a,b in zip(list(model.parameters()), list(previous.parameters()))])}')
+    print(f'ALL SAME : {max([torch.max(torch.abs((a - b))) for a,b in zip(list(model.parameters()), list(previous.parameters()))])}')
     
     
