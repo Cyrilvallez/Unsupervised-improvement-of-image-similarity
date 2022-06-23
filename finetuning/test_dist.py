@@ -118,6 +118,8 @@ def main(rank, world_size):
     optimizer.zero_grad()
     batch = get_batch(rank).cuda(rank)
     output = model(batch)
+    if func == test1.apply:
+        output = torch.cat(output, 0)
     full = func(output)
     L = loss(full)
     print(f'loss : {L}')
@@ -167,7 +169,7 @@ def run_demo(function, world_size):
     
     mp.spawn(function, args=(world_size,), nprocs=world_size, join=True)
     
-    
+ 
 if __name__ == '__main__':
     
     run_demo(main, 2)
