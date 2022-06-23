@@ -107,20 +107,20 @@ class NT_Xent(nn.Module):
         norm2 = torch.linalg.norm(z2, ord=2, dim=1)
         epsilon = self.epsilon*torch.ones(z1.shape[0],1, dtype=z1.dtype,
                                           device=z1.device)
-        z1 /= torch.max(norm1.unsqueeze(1), epsilon)
-        z2 /= torch.max(norm2.unsqueeze(1), epsilon)
+        z1_ = z1 / torch.max(norm1.unsqueeze(1), epsilon)
+        z2_ = z2 / torch.max(norm2.unsqueeze(1), epsilon)
         
         # Gather batch from all processes
         if dist.is_available() and dist.is_initialized():
-            z1_tot = gather(z1)
-            z2_tot = gather(z2)
+            z1_tot = gather(z1_)
+            z2_tot = gather(z2_)
         else:
-            z1_tot = z1
-            z2_tot = z2
+            z1_tot = z1_
+            z2_tot = z2_
         
         # Concatenate to make use of matrix multiplication
         z_tot = torch.cat((z1_tot, z2_tot), dim=0)
-        z = torch.cat((z1, z2), dim=0)
+        z = torch.cat((z1_, z2_), dim=0)
         
         # Compute pairwise cosine similarity
         similarity = torch.mm(z, z_tot.t()) 
@@ -132,7 +132,7 @@ class NT_Xent(nn.Module):
             torch.exp(torch.tensor(1./self.temperature, dtype=z.dtype, device=z.device))
         
         # Compute cosine similarity for the positives examples 
-        positives = torch.sum(z1 * z2, dim=1)
+        positives = torch.sum(z1_ * z2_, dim=1)
         positives = torch.exp(positives / self.temperature)
         # Cosine similarity is symetric, thus s_i_j = s_j_i
         positives = torch.cat((positives, positives), dim=0)
