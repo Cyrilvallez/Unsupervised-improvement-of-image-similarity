@@ -69,7 +69,7 @@ def main(rank, world_size):
     
     tensor = torch.randn(20,20,dtype=torch.double,requires_grad=True).cuda(rank)
     
-    func = test1.apply
+    func = test2.apply
     
     test = gradcheck(func, tensor, eps=1e-6, atol=1e-4)
     print(f'Rank {rank} : test is {test}')
