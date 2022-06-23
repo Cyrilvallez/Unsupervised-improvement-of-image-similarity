@@ -69,7 +69,7 @@ def main(rank, world_size):
     
     func = test1.apply
     
-    x = torch.tensor(42., requires_grad=True)
+    x = torch.tensor(42., requires_grad=True).cuda(rank)
     xs = torch.stack(func(x))
 
     xs *= rank # multiply by rank
