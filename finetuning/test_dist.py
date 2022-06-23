@@ -12,6 +12,37 @@ import torch.distributed as dist
 import torch.multiprocessing as mp
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.autograd import gradcheck
+import torch.nn as nn
+import torch.optim as optim
+
+class ToyModel(nn.Module):
+    def __init__(self):
+        super(ToyModel, self).__init__()
+        self.net1 = nn.Linear(10, 10)
+        self.relu = nn.ReLU()
+        self.net2 = nn.Linear(10, 5)
+
+    def forward(self, x):
+        return self.net2(self.relu(self.net1(x)))
+    
+def get_model():
+    torch.manual_seed(20)
+    return ToyModel()
+    
+    
+def loss(batch):
+    return torch.nn.functional.pdist(batch).sum()
+    
+def get_batch(rank, part=True):
+    torch.manual_seed(20)
+    batch = torch.rand(60, 10)
+    
+    if part:
+        return batch[20*rank:20*(rank+1)]
+    else:
+        return batch
+        
+
 
 class test1(torch.autograd.Function):
     """Gather tensors from all process, supporting backward propagation."""
@@ -82,6 +113,20 @@ def main(rank, world_size):
     
     func = test1.apply
     
+    model = DDP(get_model().cuda(rank), device_ids=[rank])
+    optimizer = optim.SGD(model.parameters(), lr=0.001)
+    optimizer.zero_grad()
+    batch = get_batch(rank).cuda(rank)
+    output = model(batch)
+    full = func(output)
+    L = loss(full)
+    print(f'loss : {L}')
+    L.backward()
+    optimizer.step()
+    
+    print('Parameters : {model.parameters()}')
+    
+    """
     x = torch.tensor([42.], requires_grad=True).cuda(rank)
     x.retain_grad()
     xs = torch.stack(func(x))
@@ -98,7 +143,7 @@ def main(rank, world_size):
         x.grad,
         torch.arange(world_size).sum().float()
     )
-    
+    """
 
     """
     tensor = (torch.rand(2,2) + 2*rank).cuda(rank) 
@@ -115,6 +160,8 @@ def main(rank, world_size):
     print(tensor)
     """
     cleanup()
+    
+    
 
 def run_demo(function, world_size):
     
@@ -124,5 +171,17 @@ def run_demo(function, world_size):
 if __name__ == '__main__':
     
     run_demo(main, 3)
+    
+    print('Without DDP :')
+    model = get_model().cuda(0)
+    optimizer = optim.SGD(model.parameters(), lr=0.001)
+    optimizer.zero_grad()
+    batch = get_batch(0, part=False).cuda(0)
+    output = model(batch)
+    L = loss(output)
+    print(f'loss : {L}')
+    L.backward()
+    optimizer.step()
+    print('Parameters : {model.parameters()}')
     
     
