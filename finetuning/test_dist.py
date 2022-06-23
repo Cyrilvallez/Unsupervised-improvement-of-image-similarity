@@ -80,7 +80,7 @@ def main(rank, world_size):
     
     setup(rank, world_size)
     
-    func = test3.apply
+    func = test1.apply
     
     x = torch.tensor([42.], requires_grad=True).cuda(rank)
     x.retain_grad()
