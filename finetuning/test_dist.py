@@ -126,7 +126,7 @@ def main(rank, world_size):
     L.backward()
     optimizer.step()
     
-    print('Parameters : {model.parameters()}')
+    print(f'Parameters : {model.parameters()}')
     
     """
     x = torch.tensor([42.], requires_grad=True).cuda(rank)
@@ -184,6 +184,6 @@ if __name__ == '__main__':
     print(f'loss : {L}')
     L.backward()
     optimizer.step()
-    print('Parameters : {model.parameters()}')
+    print(f'Parameters : {model.parameters()}')
     
     
