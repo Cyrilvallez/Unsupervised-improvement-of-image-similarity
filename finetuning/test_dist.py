@@ -119,7 +119,7 @@ def main(rank, world_size):
     batch = get_batch(rank).cuda(rank)
     output = model(batch)
     full = func(output)
-    if func == test1.apply:
+    if func == test1.apply or func == test3.apply:
         full = torch.cat(full, 0)
     L = loss(full)
     print(f'loss : {L}')
