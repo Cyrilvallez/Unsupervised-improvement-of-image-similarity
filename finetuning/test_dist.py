@@ -251,6 +251,7 @@ def main(rank, world_size):
     print('Reducted output :')
     print(tensor)
     """
+    torch.save(model.state_dict(), 'test')
     cleanup()
     
     
@@ -277,5 +278,10 @@ if __name__ == '__main__':
     L.backward()
     optimizer.step()
     print(f'Parameters : {list(model.parameters())}')
+    
+    previous = get_model().cuda(0)
+    previous.load_state_dict(torch.load('test'))
+    
+    print(f'ALL SAME : {all([a == b for a,b in zip(list(model.parameters), list(previous.parameters))])}')
     
     
