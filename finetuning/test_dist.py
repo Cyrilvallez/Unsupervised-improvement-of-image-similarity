@@ -118,9 +118,9 @@ def main(rank, world_size):
     optimizer.zero_grad()
     batch = get_batch(rank).cuda(rank)
     output = model(batch)
-    if func == test1.apply:
-        output = torch.cat(output, 0)
     full = func(output)
+    if func == test1.apply:
+        full = torch.cat(full, 0)
     L = loss(full)
     print(f'loss : {L}')
     L.backward()
