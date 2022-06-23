@@ -35,7 +35,7 @@ def loss(batch):
     
 def get_batch(rank, part=True):
     torch.manual_seed(20)
-    batch = torch.rand(60, 10)
+    batch = torch.rand(40, 10)
     
     if part:
         return batch[20*rank:20*(rank+1)]
@@ -170,7 +170,7 @@ def run_demo(function, world_size):
     
 if __name__ == '__main__':
     
-    run_demo(main, 3)
+    run_demo(main, 2)
     
     print('Without DDP :')
     model = get_model().cuda(0)
