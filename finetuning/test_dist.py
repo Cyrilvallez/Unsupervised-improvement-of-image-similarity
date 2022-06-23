@@ -67,12 +67,23 @@ def main(rank, world_size):
     
     setup(rank, world_size)
     
-    tensor = torch.randn(20,20,dtype=torch.double,requires_grad=True).cuda(rank)
+    func = test1.apply
     
-    func = test2.apply
+    x = torch.tensor(42., requires_grad=True)
+    xs = torch.stack(func(x))
+
+    xs *= rank # multiply by rank
+    xs.sum().backward()
+
+    print(f"rank: {rank}, x:{x.grad}")
+
+    # gradient should be equal to the rank for each process
+    # so total gradient should be the sum of arange
+    assert torch.allclose(
+        x.grad,
+        torch.arange(world_size).sum().float()
+    )
     
-    test = gradcheck(func, tensor, eps=1e-6, atol=1e-4)
-    print(f'Rank {rank} : test is {test}')
 
     """
     tensor = (torch.rand(2,2) + 2*rank).cuda(rank) 
@@ -97,6 +108,6 @@ def run_demo(function, world_size):
     
 if __name__ == '__main__':
     
-    run_demo(main, 2)
+    run_demo(main, 4)
     
     
