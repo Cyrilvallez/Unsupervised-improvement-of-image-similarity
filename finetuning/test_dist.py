@@ -67,10 +67,11 @@ def main(rank, world_size):
     
     setup(rank, world_size)
     
-    func = test1.apply
+    func = test2.apply
     
     x = torch.tensor(42., requires_grad=True).cuda(rank)
-    xs = torch.stack(func(x))
+    # xs = torch.stack(func(x))
+    xs = func(x)
 
     xs *= rank # multiply by rank
     xs.sum().backward()

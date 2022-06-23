@@ -113,3 +113,14 @@ Q = c**2 - d
 
 external_grad = torch.tensor([1., 1.])
 foo = Q.backward(gradient=external_grad)
+
+
+
+#%%
+
+def foo(*args):
+    return args[2]
+
+a = foo(0,1,19,3)
+print(a)
+    
