@@ -1,72 +1,114 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jun  8 16:32:20 2022
+Created on Wed Jun 22 15:20:16 2022
 
 @author: cyrilvallez
 """
 
 import torch
+import torch.nn as nn
 import torch.distributed as dist
 
-class SyncFunction(torch.autograd.Function):
+
+class Gather(torch.autograd.Function):
+    """
+    Perform an `all_gather` operation to gather tensors from all GPUs, while
+    still enabling backward flow of the gradients. This is needed since the 
+    loss must be computed between all examples of a mini-batch, and not only
+    between examples on each GPU separately.
+    """
     
     @staticmethod
     def forward(ctx, tensor):
+        
+        # Save batch size to the context, for later use in backward
         ctx.batch_size = tensor.shape[0]
-
-        gathered_tensor = [torch.zeros_like(tensor) for _ in range(dist.get_world_size())]
-
-        torch.distributed.all_gather(gathered_tensor, tensor)
-        gathered_tensor = torch.cat(gathered_tensor, 0)
-
-        return gathered_tensor
+        
+        gathered = [torch.zeros_like(tensor) for _ in range(dist.get_world_size())]
+        dist.all_gather(gathered, tensor)
+        
+        # The output is the complete batch
+        return torch.cat(gathered, dim=0)
 
     @staticmethod
     def backward(ctx, grad_output):
+        
+        # grad_output must NEVER be modified inplace, thus we clone it
         grad_input = grad_output.clone()
-        torch.distributed.all_reduce(grad_input, op=torch.distributed.ReduceOp.SUM, async_op=False)
+        
+        dist.all_reduce(grad_input, op=dist.ReduceOp.SUM, async_op=False)
 
-        idx_from = torch.distributed.get_rank() * ctx.batch_size
-        idx_to = (torch.distributed.get_rank() + 1) * ctx.batch_size
+        # Get the indices of the batch of the current process
+        idx_from = dist.get_rank()*ctx.batch_size
+        idx_to = (dist.get_rank() + 1)*ctx.batch_size
+        
         return grad_input[idx_from:idx_to]
     
+    
+    
+def gather(tensor):
+    """
+    Perform an `all_gather` operation to gather tensors from all GPUs, while
+    still enabling backward flow of the gradients. This is needed since the 
+    loss must be computed between all examples of a mini-batch, and not only
+    between examples on each GPU separately.
 
-def nt_xent_loss(self, out_1, out_2, temperature, eps=1e-6):
+    Parameters
+    ----------
+    tensor : Tensor
+        The batch from one process.
+
+    Returns
+    -------
+    Tensor
+        Batch corresponding to the concatenation of batches across all processes.
+
+    """
+    
+    return Gather.apply(tensor)
+    
+    
+    
+class NT_Xent(nn.Module):
+    
+    def __init__(self, process_batch_size, temperature):
+        
+        super(NT_Xent, self).__init__()
+        self.process_batch_size = process_batch_size
+        self.temperature = temperature
+
+        self.mask = self.mask_correlated_samples(batch_size, world_size)
+        self.criterion = nn.CrossEntropyLoss(reduction="sum")
+        self.similarity_f = nn.CosineSimilarity(dim=2)
+
+    def mask_correlated_samples(self, batch_size, world_size):
+        N = 2 * batch_size * world_size
+        mask = torch.ones((N, N), dtype=bool)
+        mask = mask.fill_diagonal_(0)
+        for i in range(batch_size * world_size):
+            mask[i, batch_size * world_size + i] = 0
+            mask[batch_size * world_size + i, i] = 0
+        return mask
+
+    def forward(self, z1, z2):
         """
-        assume out_1 and out_2 are normalized
-        out_1: [batch_size, dim]
-        out_2: [batch_size, dim]
+        We do not sample negative examples explicitly.
+        Instead, given a positive pair, similar to (Chen et al., 2017), we treat the other 2(N − 1) augmented examples within a minibatch as negative examples.
         """
-# gather representations in case of distributed training
-        # out_1_dist: [batch_size * world_size, dim]
-        # out_2_dist: [batch_size * world_size, dim]
-        if torch.distributed.is_available() and torch.distributed.is_initialized():
-            out_1_dist = SyncFunction.apply(out_1)
-            out_2_dist = SyncFunction.apply(out_2)
+        if dist.is_available() and dist.is_initialized():
+            N = 2*self.process_batch_size*dist.get_world_size()
+            z1_tot = gather(z1)
+            z2_tot = gather(z2)
         else:
-            out_1_dist = out_1
-            out_2_dist = out_2
+            N = 2*self.process_batch_size
+            z1_tot = z1
+            z2_tot = z2
 
-        # out: [2 * batch_size, dim]
-        # out_dist: [2 * batch_size * world_size, dim]
-        out = torch.cat([out_1, out_2], dim=0)
-        out_dist = torch.cat([out_1_dist, out_2_dist], dim=0)
+        z_tot = torch.cat((z1_tot, z2_tot), dim=0)
+        z = torch.cat((z1, z2), dim=0)
+        
 
-        # cov and sim: [2 * batch_size, 2 * batch_size * world_size]
-        # neg: [2 * batch_size]
-        cov = torch.mm(out, out_dist.t().contiguous())
-        sim = torch.exp(cov / temperature)
-        neg = sim.sum(dim=-1)
+        
 
-        # from each row, subtract e^(1/temp) to remove similarity measure for x1.x1
-        row_sub = Tensor(neg.shape).fill_(math.e ** (1 / temperature)).to(neg.device)
-        neg = torch.clamp(neg - row_sub, min=eps)  # clamp for numerical stability
-
-        # Positive similarity, pos becomes [2 * batch_size]
-        pos = torch.exp(torch.sum(out_1 * out_2, dim=-1) / temperature)
-        pos = torch.cat([pos, pos], dim=0)
-
-        loss = -torch.log(pos / (neg + eps)).mean()
-
-        return loss
+    
