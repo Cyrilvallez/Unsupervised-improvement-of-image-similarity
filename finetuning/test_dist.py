@@ -69,7 +69,7 @@ class test2(torch.autograd.Function):
         gathered_tensor = [torch.zeros_like(tensor) for _ in range(torch.distributed.get_world_size())]
 
         torch.distributed.all_gather(gathered_tensor, tensor)
-        gathered_tensor = torch.cat(gathered_tensor, 0)
+        gathered_tensor = torch.cat(gathered_tensor, dim=0)
 
         return gathered_tensor
 
@@ -95,6 +95,41 @@ class test3(torch.autograd.Function):
         dist.all_reduce(grad_outs)
         return grad_outs[dist.get_rank()]
     
+    
+class Gather(torch.autograd.Function):
+    """
+    Perform an `all_gather` operation to gather tensors from all GPUs, while
+    still enabling backward flow of the gradients. This is needed since the 
+    loss must be computed between all examples of a mini-batch, and not only
+    between examples on each GPU separately.
+    """
+    
+    @staticmethod
+    def forward(ctx, tensor):
+        
+        # Save batch size to the context, for later use in backward
+        ctx.batch_size = tensor.shape[0]
+        
+        gathered = [torch.zeros_like(tensor) for _ in range(dist.get_world_size())]
+        dist.all_gather(gathered, tensor)
+        
+        # The output is the complete batch
+        return torch.cat(gathered, dim=0)
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        
+        # grad_output must NEVER be modified inplace, thus we clone it
+        grad_input = grad_output.clone()
+        
+        dist.all_reduce(grad_input, op=dist.ReduceOp.SUM, async_op=False)
+
+        # Get the indices of the batch of the current process
+        idx_from = dist.get_rank()*ctx.batch_size
+        idx_to = (dist.get_rank() + 1)*ctx.batch_size
+        
+        return grad_input[idx_from:idx_to]
+    
 
 def setup(rank, world_size):
     os.environ['MASTER_ADDR'] = 'localhost'
@@ -111,7 +146,7 @@ def main(rank, world_size):
     
     setup(rank, world_size)
     
-    func = test1.apply
+    func = Gather.apply
     
     model = DDP(get_model().cuda(rank), device_ids=[rank])
     optimizer = optim.SGD(model.parameters(), lr=0.001)
