@@ -108,6 +108,6 @@ def run_demo(function, world_size):
     
 if __name__ == '__main__':
     
-    run_demo(main, 4)
+    run_demo(main, 3)
     
     
