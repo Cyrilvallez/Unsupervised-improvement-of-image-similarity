@@ -67,8 +67,7 @@ def main(rank, world_size):
     
     setup(rank, world_size)
     
-    tensor = (torch.randn(20,20,dtype=torch.double,requires_grad=True).cuda(rank),
-              torch.randn(30,20,dtype=torch.double,requires_grad=True).cuda(rank))
+    tensor = torch.randn(20,20,dtype=torch.double,requires_grad=True).cuda(rank)
     
     func = test1.apply
     
