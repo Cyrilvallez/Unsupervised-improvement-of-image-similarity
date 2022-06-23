@@ -11,6 +11,7 @@ import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
 from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.autograd import gradcheck
 
 class test1(torch.autograd.Function):
     """Gather tensors from all process, supporting backward propagation."""
@@ -20,7 +21,7 @@ class test1(torch.autograd.Function):
         ctx.save_for_backward(input)
         output = [torch.zeros_like(input) for _ in range(dist.get_world_size())]
         dist.all_gather(output, input)
-        return torch.cat(output, 0)
+        return tuple(output)
 
     @staticmethod
     def backward(ctx, *grads):
@@ -65,24 +66,14 @@ def cleanup():
 def main(rank, world_size):
     
     setup(rank, world_size)
-    tensor = torch.rand(2,2, requires_grad=True).cuda(rank)
-    if rank == 0:
-        # test = test1.apply
-        test = test2.apply
-    else:
-        test = test2.apply
-    forward = test(tensor)
-    external_grad = torch.ones_like(forward)
-    backward = forward.backward(external_grad)
-    grad = tensor.grad
-    print('initial tensor')
-    print(tensor)
-    print('forward result')
-    print(forward)
-    print('backward result')
-    print(backward)
-    print('grad wtf initial tensor')
-    print(grad)
+    
+    tensor = (torch.randn(20,20,dtype=torch.double,requires_grad=True).cuda(rank),
+              torch.randn(30,20,dtype=torch.double,requires_grad=True).cuda(rank))
+    
+    func = test1.apply
+    
+    test = gradcheck(func, tensor, eps=1e-6, atol=1e-4)
+    print(f'Rank {rank} : test is {test}')
 
     """
     tensor = (torch.rand(2,2) + 2*rank).cuda(rank) 

@@ -40,7 +40,7 @@ class test1(torch.autograd.Function):
         ctx.save_for_backward(input)
         output = [torch.zeros_like(input) for _ in range(dist.get_world_size())]
         dist.all_gather(output, input)
-        return torch.cat(output, 0)
+        return tuple(output)
 
     @staticmethod
     def backward(ctx, *grads):
@@ -73,12 +73,13 @@ class test2(torch.autograd.Function):
     
 import os
 
+# dist.destroy_process_group()
 os.environ['MASTER_ADDR'] = 'localhost'
 os.environ['MASTER_PORT'] = '12355'
 dist.init_process_group('gloo', rank=0, world_size=1)
 a1 = torch.rand(2, requires_grad=True)
 foo1 = test1.apply(a1)
-external_grad = torch.tensor([1., 1.])
+external_grad = torch.tensor([2., 1.])
 bar1 = foo1.backward(external_grad)
 grad1 = a1.grad
 
