@@ -51,6 +51,19 @@ class test2(torch.autograd.Function):
         idx_to = (torch.distributed.get_rank() + 1) * ctx.batch_size
         return grad_input[idx_from:idx_to]
     
+class test3(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, tensor):
+        gathered = [torch.zeros_like(tensor) for _ in range(dist.get_world_size())]
+        dist.all_gather(gathered, tensor)
+        return tuple(gathered)
+
+    @staticmethod
+    def backward(ctx, *grad_outs):
+        grad_outs = torch.stack(grad_outs)
+        dist.all_reduce(grad_outs)
+        return grad_outs[dist.get_rank()]
+    
 
 def setup(rank, world_size):
     os.environ['MASTER_ADDR'] = 'localhost'
@@ -67,11 +80,11 @@ def main(rank, world_size):
     
     setup(rank, world_size)
     
-    func = test2.apply
+    func = test3.apply
     
-    x = torch.tensor([42.], requires_grad=True).cuda(rank)
-    # xs = torch.stack(func(x))
-    xs = func(x)
+    x = torch.tensor(42., requires_grad=True).cuda(rank)
+    xs = torch.stack(func(x))
+    # xs = func(x)
 
     xs *= rank # multiply by rank
     xs.sum().backward()
