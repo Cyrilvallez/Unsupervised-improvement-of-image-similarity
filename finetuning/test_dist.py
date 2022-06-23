@@ -283,7 +283,7 @@ if __name__ == '__main__':
     previous = get_model().cuda(0)
     state = torch.load('test.checkpoint')
     state = {a.split('.', 1)[1]:b for a,b in state.items()}
-    previous.load_state_dict(torch.load('test.checkpoint'))
+    previous.load_state_dict(state)
     
     print(f'ALL SAME : {all([a == b for a,b in zip(list(model.parameters), list(previous.parameters))])}')
     
