@@ -261,7 +261,7 @@ def run_demo(function, world_size):
     
     mp.spawn(function, args=(world_size,), nprocs=world_size, join=True)
     
- 
+
 if __name__ == '__main__':
     
     run_demo(main, 2)
@@ -285,6 +285,6 @@ if __name__ == '__main__':
     state = {a.split('.', 1)[1]:b for a,b in state.items()}
     previous.load_state_dict(state)
     
-    print(f'ALL SAME : {all([a == b for a,b in zip(list(model.parameters), list(previous.parameters))])}')
+    print(f'ALL SAME : {all([a == b for a,b in zip(list(model.parameters()), list(previous.parameters()))])}')
     
     
