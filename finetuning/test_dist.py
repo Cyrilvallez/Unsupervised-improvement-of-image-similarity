@@ -111,7 +111,7 @@ def main(rank, world_size):
     
     setup(rank, world_size)
     
-    func = test3.apply
+    func = test1.apply
     
     model = DDP(get_model().cuda(rank), device_ids=[rank])
     optimizer = optim.SGD(model.parameters(), lr=0.001)
