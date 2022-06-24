@@ -258,11 +258,11 @@ class SyncFunction(torch.autograd.Function):
     
 class NT_Xent3(nn.Module):
     
-    def __init__(self):
+    def __init__(self, temp):
         super(NT_Xent3, self).__init__()
+        self.temp = temp
         
-        
-    def forward(self, out_1, out_2, temperature, eps=1e-6):
+    def forward(self, out_1, out_2, eps=1e-6):
         """
         assume out_1 and out_2 are normalized
         out_1: [batch_size, dim]
@@ -286,15 +286,15 @@ class NT_Xent3(nn.Module):
         # cov and sim: [2 * batch_size, 2 * batch_size * world_size]
         # neg: [2 * batch_size]
         cov = torch.mm(out, out_dist.t().contiguous())
-        sim = torch.exp(cov / temperature)
+        sim = torch.exp(cov / self.temp)
         neg = sim.sum(dim=-1)
 
         # from each row, subtract e^(1/temp) to remove similarity measure for x1.x1
-        row_sub = Tensor(neg.shape).fill_(math.e ** (1 / temperature)).to(neg.device)
+        row_sub = Tensor(neg.shape).fill_(math.e ** (1 / self.temp)).to(neg.device)
         neg = torch.clamp(neg - row_sub, min=eps)  # clamp for numerical stability
 
         # Positive similarity, pos becomes [2 * batch_size]
-        pos = torch.exp(torch.sum(out_1 * out_2, dim=-1) / temperature)
+        pos = torch.exp(torch.sum(out_1 * out_2, dim=-1) / self.temp)
         pos = torch.cat([pos, pos], dim=0)
 
         loss = -torch.log(pos / (neg + eps)).mean()
