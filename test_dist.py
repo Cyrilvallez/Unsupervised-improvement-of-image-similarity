@@ -134,7 +134,7 @@ if __name__ == '__main__':
     batch1, batch2 = batch1.cuda(0), batch2.cuda(0)
     output1 = model(batch1)
     output2 = model(batch2)
-    criterion = loss.NT_Xent2(batch1.shape[0], 3., world_size)
+    criterion = loss.NT_Xent2(batch1.shape[0], 3., 1)
     L = criterion(output1, output2)
     print(f'loss : {L}')
     L.backward()
