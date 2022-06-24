@@ -268,6 +268,15 @@ class NT_Xent3(nn.Module):
         out_1: [batch_size, dim]
         out_2: [batch_size, dim]
         """
+        
+        # Normalize the vectors. Use max(norm, epsilon) for numerical stability
+        norm1 = torch.linalg.norm(out_1, ord=2, dim=1)
+        norm2 = torch.linalg.norm(out_2, ord=2, dim=1)
+        epsilon = self.epsilon*torch.ones(out_1.shape[0],1, dtype=out_1.dtype,
+                                          device=out_1.device)
+        out_1 = out_1 / torch.max(norm1.unsqueeze(1), epsilon)
+        out_2 = out_2 / torch.max(norm2.unsqueeze(1), epsilon)
+        
         # gather representations in case of distributed training
         # out_1_dist: [batch_size * world_size, dim]
         # out_2_dist: [batch_size * world_size, dim]
