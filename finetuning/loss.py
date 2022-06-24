@@ -261,6 +261,7 @@ class NT_Xent3(nn.Module):
     def __init__(self, temp):
         super(NT_Xent3, self).__init__()
         self.temp = temp
+        self.epsilon = 1e-7
         
     def forward(self, out_1, out_2, eps=1e-6):
         """
