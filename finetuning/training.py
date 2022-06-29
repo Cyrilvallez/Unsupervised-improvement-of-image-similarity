@@ -15,7 +15,6 @@ from torch.utils.data.distributed import DistributedSampler
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 from datetime import datetime
-from tqdm import tqdm
 import argparse
 import os
 
@@ -230,7 +229,7 @@ def train(model, epochs, train_dataloader, val_dataloader, criterion, optimizer,
     # We need to compute the gradients
     torch.set_grad_enabled(True)
     
-    for epoch in tqdm(range(epochs)):
+    for epoch in range(epochs):
         
         # Set the epoch of the sampler (needed for correct shuffling)
         if distributed:
@@ -386,10 +385,14 @@ def main(rank, args):
     else:
         writer = None
         
+    if rank == 0:
+        print(f'Starting training for {args.epochs} epochs.')
     # Perform training
     train(model, args.epochs, train_dataloader, val_dataloader, criterion, optimizer,
               scheduler, writer, train_sampler)
-    
+    if rank == 0:
+        print('Training ended.')
+        
     # Destroy process group
     if args.gpus > 1:
         dist.destroy_process_group()
@@ -401,8 +404,8 @@ def parse_args():
 
     Returns
     -------
-    args : Tuple
-        Tuple containing all the arguments.
+    args : Namespace
+        Namespace containing all the arguments.
 
     """
     
