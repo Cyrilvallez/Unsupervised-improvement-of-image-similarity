@@ -380,8 +380,11 @@ def main(rank, args):
     # Configure the writer (will be only used by rank 0)
     if rank == 0:
         timestamp = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-        log_dir = args.log_dir + '/' + timestamp
+        folder = args.log_dir
+        log_dir = folder + '/' + timestamp
         writer = SummaryWriter(log_dir)
+        # Create folder where we will save the models
+        os.makedirs(folder + '_models/' + timestamp, exist_ok=True)
     else:
         writer = None
         
@@ -460,6 +463,10 @@ def parse_args():
                         help='Where to save the results.')
     
     args = parser.parse_args()
+    
+    # Remove last `/` if present in log_dir
+    if args.log_dir[-1] == '/':
+        args.log_dir = args.log_dir[0:-1]
     
     return args
 

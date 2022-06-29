@@ -10,14 +10,16 @@ import torch.multiprocessing as mp
 
 from finetuning.training import main, parse_args
 
+
+if __name__ == '__main__':
     
-args = parse_args()
+    args = parse_args()
     
-if args.gpus > 1:
-    mp.spawn(main, args=(args,), nprocs=args.gpus, join=True)
+    if args.gpus > 1:
+        mp.spawn(main, args=(args,), nprocs=args.gpus, join=True)
         
-else:
-    main(0, args)
+    else:
+        main(0, args)
     
     
     
