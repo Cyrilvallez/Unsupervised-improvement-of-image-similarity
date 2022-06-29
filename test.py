@@ -183,4 +183,13 @@ for i, precision in enumerate(precisions):
 
 
 
+#%%
 
+from PIL import Image
+import sys
+import os
+
+path = 'Datasets/cartoons/TRAIN/adventure_time/'
+imgs = [path + file for file in os.listdir(path) if not file.startswith('.')]
+
+print("img size in memory in bytes: ", sys.getsizeof(img.tobytes()))
