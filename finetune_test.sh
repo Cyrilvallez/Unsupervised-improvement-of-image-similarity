@@ -5,10 +5,10 @@
 #SBATCH --error=%x-%j.err
 #SBATCH --time=10-00:00:00
 #SBATCH --cpus-per-task=6
-#SBATCH --mem=50000
+#SBATCH --mem-per-cpu=3000
 #SBATCH --partition=nodes
-#SBATCH --gres=gpu:v100:2
-#SBATCH --ntasks=2
+#SBATCH --gres=gpu:a100:1
+#SBATCH --ntasks=1
 #SBATCH --chdir=/cluster/raid/home/cyril.vallez/Project2
 
 # Verify working directory
