@@ -52,3 +52,12 @@ if __name__ == '__main__':
     run_demo(main, args)
     
     
+#%%
+import argparse
+
+parser = argparse.ArgumentParser(description='Test')
+
+parser.add_argument('--world_size', type=int, default=2)
+parser.add_argument('--test', type=str, default='Hello dear')
+
+args = parser.parse_args()

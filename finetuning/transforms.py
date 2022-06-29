@@ -20,7 +20,7 @@ class SimCLR_Transforms(object):
     Parameters
     ----------
     size : tuple, optional
-        Final size for resizing the images. The default is (224, 224).
+        Final size for resizing the images. The default is 224.
     jitter : float, optional
         The color jitter strength. The default is 1..
 
@@ -101,7 +101,7 @@ class ImageDataset(Dataset):
     dataset_path : Str or list of str
         Path to find the images or list of such paths, representing the images.
     size : tuple, optional
-        Final size for resizing the images. The default is (224, 224).
+        Final size for resizing the images. The default is 224.
     jitter : float, optional
         The color jitter strength. The default is 1..
 
@@ -112,12 +112,14 @@ class ImageDataset(Dataset):
         super().__init__()
         
         if (type(dataset_path) == str or type(dataset_path) == np.str_):
-            # Append last `/` if not present
-            if dataset_path[-1] != '/':
-                dataset_path += '/'
-            # Take files in folder without hidden files (e.g .DS_Store)
-            images = [dataset_path + file for file in os.listdir(dataset_path) \
-                      if not file.startswith('.')]
+            # Recursively take files in folder without hidden subfolders or files
+            # starting by `.` (e.g .git/ or .DS_Store)
+            images = []
+            for root, subdirs, files in os.walk(dataset_path):
+                subdirs[:] = [subdir for subdir in subdirs if not subdir.startswith('.')]
+                for file in files:
+                    if not file.startswith('.'):
+                        images.append(os.path.join(root, file))
                 
             # Conversion to numpy byte array is important when using different
             # workers in Dataloader to avoid memory problems (see issue 

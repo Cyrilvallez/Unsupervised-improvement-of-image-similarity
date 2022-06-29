@@ -17,6 +17,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from datetime import datetime
 from tqdm import tqdm
 import argparse
+import os
 
 from finetuning.simclr import SimCLR
 from finetuning.nt_xent import NT_Xent
@@ -282,6 +283,31 @@ def train(model, epochs, train_dataloader, val_dataloader, criterion, optimizer,
             
             
             
+def setup(rank, world_size):
+    """
+    Initializes the process group.
+
+    Parameters
+    ----------
+    rank : int
+        The rank of the process.
+    world_size : int
+        The number of processes.
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    os.environ['MASTER_ADDR'] = 'localhost'
+    os.environ['MASTER_PORT'] = '12355'
+
+    # initialize the process group
+    dist.init_process_group('nccl', rank=rank, world_size=world_size)    
+
+        
+            
 def main(rank, args):
     """
     Main function running all the training from the parameters contained in
@@ -300,6 +326,12 @@ def main(rank, args):
     None.
 
     """
+    
+    # initialize the process group
+    if args.gpus > 1:
+        setup(rank, args.gpus)
+        
+    torch.manual_seed(123)
     
     # Model
     path = None if args.model == 'original' else args.model
@@ -354,9 +386,13 @@ def main(rank, args):
     else:
         writer = None
         
+    # Perform training
     train(model, args.epochs, train_dataloader, val_dataloader, criterion, optimizer,
               scheduler, writer, train_sampler)
     
+    # Destroy process group
+    if args.gpus > 1:
+        dist.destroy_process_group()
     
 
 def parse_args():
@@ -383,7 +419,7 @@ def parse_args():
                         help='The sk ratio of the original encoder.')
     
     # Transform and dataset arguments
-    parser.add_argument('--train_dataset', type=str, default='None',
+    parser.add_argument('--train_dataset', type=str, required=True,
                         help='Path to the dataset for training.')
     parser.add_argument('--val_dataset', type=str, default='None',
                         help='Path to the dataset for validation.')
@@ -395,7 +431,7 @@ def parse_args():
     # Training arguments
     parser.add_argument('--optimizer', type=str, default='lars', choices=['lars', 'adam'],
                         help='The optimizer used.')
-    parser.add_argument('--lr', type=float, default=1e-3, 
+    parser.add_argument('--lr', type=float, default=1e-2, 
                         help='The base learning rate.')
     parser.add_argument('--epochs', type=int, default=100, 
                         help='The number of epochs to perform.')

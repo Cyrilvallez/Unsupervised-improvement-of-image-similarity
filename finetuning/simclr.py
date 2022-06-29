@@ -13,6 +13,7 @@ import torch.nn as nn
 from extractor.SimCLRv2 import resnet as SIMv2
 
 class SimCLR(nn.Module):
+    """
     Module representing SimCLR. 
 
     Parameters
