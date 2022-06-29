@@ -258,10 +258,11 @@ def train(model, epochs, train_dataloader, val_dataloader, criterion, optimizer,
                 
         if rank == 0:
             # Print a summary of current epoch
+            timestamp = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
             if val_dataloader is not None:
-                print(f'Epoch {epoch} --- train_loss : {train_loss:.3f}, val_loss : {val_loss:.3f}')
+                print(f'{timestamp} : Epoch {epoch} --- train_loss : {train_loss:.3f}, val_loss : {val_loss:.3f}')
             else:
-                print(f'Epoch {epoch} --- train_loss : {train_loss:.3f}')
+                print(f'{timestamp} : Epoch {epoch} --- train_loss : {train_loss:.3f}')
                    
             # Log quantities
             writer.add_scalar('Loss/train', train_loss, epoch)
@@ -389,10 +390,13 @@ def main(rank, args):
         writer = None
         
     if rank == 0:
-        print(f'Starting training for {args.epochs} epochs.')
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+        print(f'{timestamp} : Starting training for {args.epochs} epochs.')
+        
     # Perform training
     train(model, args.epochs, train_dataloader, val_dataloader, criterion, optimizer,
               scheduler, writer, train_sampler)
+    
     if rank == 0:
         print('Training ended.')
         
