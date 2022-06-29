@@ -1,13 +1,13 @@
 #!/bin/bash
 
-#SBATCH --job-name=finetune
+#SBATCH --job-name=finetune_test
 #SBATCH --output=%x-%j.out
 #SBATCH --error=%x-%j.err
 #SBATCH --time=10-00:00:00
-#SBATCH --cpus-per-gpu=8
-#SBATCH --mem-per-gpu=8000
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=50000
 #SBATCH --partition=nodes
-#SBATCH --gres=gpu:a100:8
+#SBATCH --gres=gpu:v100:2
 #SBATCH --chdir=/cluster/raid/home/cyril.vallez/Project2
 
 # Verify working directory
