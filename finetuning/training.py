@@ -360,7 +360,7 @@ def main(rank, args):
     
     # Create the dataloaders
     if args.gpus > 1:
-        train_sampler = DistributedSampler(train_dataset, world_size=args.gpus,
+        train_sampler = DistributedSampler(train_dataset, num_replicas=args.gpus,
                                            rank=rank, shuffle=True, drop_last=False)
         train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size,
                                       sampler=train_sampler, num_workers=args.workers,
