@@ -7,6 +7,7 @@ Created on Fri Jun  3 13:46:36 2022
 """
 
 import argparse
+import numpy as np
 
 from clustering.clustering import cluster_DBSCAN, save_all
             
@@ -34,6 +35,8 @@ min_samples = args.samples
 precisions = args.precisions
 partition = args.partition + '_dataset'
 save = args.save == 'True'
+
+precisions = np.linspace(3, 5.5, 30)
     
 # Clustering
 directory = cluster_DBSCAN(algorithm, metric, min_samples, precisions, partition)

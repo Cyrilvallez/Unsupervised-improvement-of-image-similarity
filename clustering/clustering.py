@@ -146,7 +146,7 @@ def hierarchical_clustering(algorithm, metric, linkage_type,
     identifier = '_'.join(algorithm.split(' '))
 
     folder = f'Clustering_results/{partition}/{metric}_{linkage_type}_{identifier}/'
-    os.makedirs(folder)
+    os.makedirs(folder, exist_ok=True)
 
     features, mapping, distances = tools.extract_features_from_folder_name(folder,
                                                                            return_distances=True)
@@ -217,7 +217,7 @@ def cluster_DBSCAN(algorithm, metric, min_samples, precisions=None,
     identifier = '_'.join(algorithm.split(' '))
 
     folder = f'Clustering_results/{partition}/{metric}_DBSCAN_{identifier}_{min_samples}_samples/'
-    os.makedirs(folder)
+    os.makedirs(folder, exist_ok=True)
 
     features, mapping, distances = tools.extract_features_from_folder_name(folder,
                                                                            return_distances=True)
