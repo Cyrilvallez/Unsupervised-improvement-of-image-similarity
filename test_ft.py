@@ -12,7 +12,7 @@ from finetuning.simclr import SimCLR
 from finetuning.nt_xent import NT_Xent
 from finetuning.transforms import ImageDataset
 
-workers = 6
+workers = 4
 batch_size = 128
 
 
