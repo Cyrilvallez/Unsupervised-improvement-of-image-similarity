@@ -108,7 +108,7 @@ def cluster_size_diameter_plot(subfolder, save=False, filename=None):
     if subfolder[-1] != '/':
         subfolder += '/'
         
-    _, metric = tools.extract_params_from_folder_name(subfolder)
+    _, metric, _ = tools.extract_params_from_folder_name(subfolder)
     assignments = np.load(subfolder + 'assignment.npy')
     diameters = tools.get_cluster_diameters(subfolder)
     
@@ -354,7 +354,7 @@ def cluster_diameter_violin(directory, save=False, filename=None):
     plt.figure(figsize=(8,8))
     sns.violinplot(x='Number of clusters', y='Cluster diameter', data=frame,
                    order=order, palette=palette)
-    _, metric = tools.extract_params_from_folder_name(directory)
+    _, metric, _ = tools.extract_params_from_folder_name(directory)
     plt.ylabel(f'Cluster diameter ({metric} distance)')
     
     locs, labels = plt.xticks()
@@ -596,9 +596,9 @@ def completeness_homogeneity_plot(directory, save=False, filename=None):
     completenesses = np.array(completenesses)
     
     plt.figure()
-    plt.plot(1 - homogeneities, completenesses)
-    plt.xlabel('1 - Homogeneity score')
-    plt.ylabel('Completeness score')
+    plt.plot(completenesses, homogeneities)
+    plt.ylabel('Homogeneity score')
+    plt.xlabel('Completeness score')
     plt.grid()
     if save:
         plt.savefig(directory + filename, bbox_inches='tight')
@@ -631,4 +631,11 @@ if __name__ == '__main__':
     # a, b = tools.get_metrics(directory + '/151-clusters_4.500-eps')
     # print(f'Homogeneity : {a:.3f}')
     # print(f'Completeness : {b:.3f}')
+    
+    #%%
+if __name__ == '__main__':
+    directory = 'Clustering_results/clean_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples'
+    cluster_diameter_violin(directory)
+    # tools.ex
+    algorithm, metric, partition = tools.extract_params_from_folder_name(directory)
 

@@ -609,10 +609,10 @@ def get_groundtruth_attribute(directory, attribute, quantile=1.):
             groundtruth = compute_assignment_groundtruth(algorithm, metric,
                                                          partition=partition)
     elif attribute == 'diameters':
-        groundtruth = get_cluster_diameters(f'Clustering_results/{partition}/{metric}_GT_{algorithm}/{attribute}.npy',
+        groundtruth = get_cluster_diameters(f'Clustering_results/{partition}/{metric}_GT_{algorithm}',
                                             quantile=quantile)
     elif attribute == 'centroids':
-        groundtruth = get_cluster_centroids(f'Clustering_results/{partition}/{metric}_GT_{algorithm}/{attribute}.npy')
+        groundtruth = get_cluster_centroids(f'Clustering_results/{partition}/{metric}_GT_{algorithm}')
     else:
         raise ValueError('The attribute is not correct.')
         

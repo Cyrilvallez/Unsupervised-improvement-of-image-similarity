@@ -29,3 +29,13 @@ criterion = NT_Xent(0.1)
 
 
 train_one_epoch(model, dataloader, criterion, optimizer, 0, False)
+
+param_size = 0
+for param in model.parameters():
+    param_size += param.nelement() * param.element_size()
+buffer_size = 0
+for buffer in model.buffers():
+    buffer_size += buffer.nelement() * buffer.element_size()
+
+size_all_mb = (param_size + buffer_size) / 1024**3
+print('model size: {:.3f} GB'.format(size_all_mb))
