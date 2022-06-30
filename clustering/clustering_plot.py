@@ -577,6 +577,9 @@ def intersection_plot(subfolder, save=False, filename=None):
 
 def homogeneity_completeness_plot(directory, save=False, filename=None):
     
+    if directory[-1] != '/':
+        directory += '/'
+    
     subfolders = [f.path for f in os.scandir(directory) if f.is_dir()]
     subfolders = sorted(subfolders, reverse=True,
                         key=lambda x: int(x.rsplit('/', 1)[1].split('-', 1)[0]))
@@ -588,6 +591,15 @@ def homogeneity_completeness_plot(directory, save=False, filename=None):
         homogeneity, completeness = tools.get_metrics(subfolder)
         homogeneities.append(homogeneity)
         completenesses.append(completeness)
+        
+    plt.figure()
+    plt.plot(completenesses, homogeneities)
+    plt.xlabel('Completeness score')
+    plt.ylabel('Homogeneity score')
+    plt.grid()
+    if save:
+        plt.savefig(directory + filename, bbox_inches='tight')
+    plt.show()
 
 #%%
 
