@@ -37,8 +37,8 @@ buffer_size = 0
 for buffer in model.buffers():
     buffer_size += buffer.nelement() * buffer.element_size()
 
-size_all_mb = (param_size + buffer_size) / 1024**3
-print('model size: {:.3f} GB'.format(size_all_mb))
+size_all_mb = (param_size + buffer_size) / 1024**2
+print('model size: {:.3f} MB'.format(size_all_mb))
 
 N_param = sum(p.numel() for p in model.parameters())
-print('{N_param} parameters')
+print(f'{N_param} parameters')

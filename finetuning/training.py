@@ -317,9 +317,9 @@ def main(rank, args):
     ----------
     rank : int
         The rank of the process.
-    args : Tuple
-        Tuple containing all parameters for a run. See function `parse_args` 
-        for details om every member.
+    args : Namespace
+        Namespace containing all parameters for a run. See function `parse_args` 
+        for details on every member.
 
     Returns
     -------
@@ -405,6 +405,7 @@ def main(rank, args):
         dist.destroy_process_group()
     
 
+
 def parse_args():
     """
     Parse all arguments from the command line.
@@ -445,7 +446,7 @@ def parse_args():
                         help='The base learning rate.')
     parser.add_argument('--epochs', type=int, default=100, 
                         help='The number of epochs to perform.')
-    parser.add_argument('--batch_size', type=int, default=256, 
+    parser.add_argument('--batch_size', type=int, default=64, 
                         help='The batch size per GPU.')
     parser.add_argument('--temperature', type=float, default=0.1, 
                         help='The temperature for the loss.')
@@ -461,7 +462,7 @@ def parse_args():
     # Config arguments
     parser.add_argument('--gpus', type=int, default=8,
                         help='The number of GPUs to use.')
-    parser.add_argument('--workers', type=int, default=4,
+    parser.add_argument('--workers', type=int, default=8,
                         help='The number of workers per GPUs to use.')
     parser.add_argument('--log_dir', type=str, required=True,
                         help='Where to save the results.')

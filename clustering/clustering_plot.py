@@ -586,14 +586,23 @@ def completeness_homogeneity_plot(directory, save=False, filename=None):
     
     homogeneities = []
     completenesses = []
+    distances = []
     
     for subfolder in subfolders:
         homogeneity, completeness = tools.get_metrics(subfolder)
         homogeneities.append(homogeneity)
         completenesses.append(completeness)
+        distance = float(subfolder.rsplit('/', 1)[1].split('_', 1)[1].split('-')[0])
+        distances.append(distance)
         
     homogeneities = np.array(homogeneities)
     completenesses = np.array(completenesses)
+    distances = np.array(distances)
+    
+    sorting = np.argsort(distances)
+    distances = distances[sorting]
+    homogeneities = homogeneities[sorting]
+    completenesses = completenesses[sorting]
     
     plt.figure()
     plt.plot(completenesses, homogeneities)
@@ -604,7 +613,7 @@ def completeness_homogeneity_plot(directory, save=False, filename=None):
         plt.savefig(directory + filename, bbox_inches='tight')
     plt.show()
     
-    return homogeneities, completenesses
+    return homogeneities, completenesses, distances
 
 #%%
 
@@ -625,10 +634,10 @@ if __name__ == '__main__':
         # assignment = assignment[assignment != -1]
 
     directory = 'Clustering_results/clean_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples'
-    c, d = completeness_homogeneity_plot(directory, True, 'test')
+    homogeneity, completeness, distance = completeness_homogeneity_plot(directory, True, 'test')
 
 
-    # a, b = tools.get_metrics(directory + '/151-clusters_4.500-eps')
+    # a, b = tools.get_metrics(directory + '/24-clusters_5.500-eps')
     # print(f'Homogeneity : {a:.3f}')
     # print(f'Completeness : {b:.3f}')
     
