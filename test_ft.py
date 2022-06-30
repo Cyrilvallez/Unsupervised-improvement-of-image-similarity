@@ -39,3 +39,6 @@ for buffer in model.buffers():
 
 size_all_mb = (param_size + buffer_size) / 1024**3
 print('model size: {:.3f} GB'.format(size_all_mb))
+
+N_param = sum(p.numel() for p in model.parameters())
+print('{N_param} parameters')
