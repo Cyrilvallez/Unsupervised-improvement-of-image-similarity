@@ -461,7 +461,7 @@ def parse_args():
     # Config arguments
     parser.add_argument('--gpus', type=int, default=8,
                         help='The number of GPUs to use.')
-    parser.add_argument('--workers', type=int, default=6,
+    parser.add_argument('--workers', type=int, default=4,
                         help='The number of workers per GPUs to use.')
     parser.add_argument('--log_dir', type=str, required=True,
                         help='Where to save the results.')
