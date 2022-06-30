@@ -581,8 +581,7 @@ def completeness_homogeneity_plot(directory, save=False, filename=None):
         directory += '/'
     
     subfolders = [f.path for f in os.scandir(directory) if f.is_dir()]
-    subfolders = sorted(subfolders, reverse=True,
-                        key=lambda x: int(x.rsplit('/', 1)[1].split('-', 1)[0]))
+    subfolders = sorted(subfolders, key=lambda x: int(x.rsplit('/', 1)[1].split('-', 1)[0]))
     
     homogeneities = []
     completenesses = []
@@ -592,17 +591,19 @@ def completeness_homogeneity_plot(directory, save=False, filename=None):
         homogeneity, completeness, _ = tools.get_metrics(subfolder)
         homogeneities.append(homogeneity)
         completenesses.append(completeness)
-        distance = float(subfolder.rsplit('/', 1)[1].split('_', 1)[1].split('-')[0])
-        distances.append(distance)
+        if 'DBSCAN' in directory:
+            distance = float(subfolder.rsplit('/', 1)[1].split('_', 1)[1].split('-')[0])
+            distances.append(distance)
         
     homogeneities = np.array(homogeneities)
     completenesses = np.array(completenesses)
     distances = np.array(distances)
     
-    sorting = np.argsort(distances)
-    distances = distances[sorting]
-    homogeneities = homogeneities[sorting]
-    completenesses = completenesses[sorting]
+    if 'DBSCAN' in directory:
+        sorting = np.argsort(distances)
+        distances = distances[sorting]
+        homogeneities = homogeneities[sorting]
+        completenesses = completenesses[sorting]
     
     plt.figure()
     # plt.plot(completenesses, homogeneities)
@@ -680,7 +681,7 @@ if __name__ == '__main__':
     # if 'DBSCAN' in subfolder:
         # assignment = assignment[assignment != -1]
 
-    directory = 'Clustering_results/clean_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples'
+    directory = 'Clustering_results/full_dataset/euclidean_ward_SimCLR_v2_ResNet50_2x'
     homogeneity, completeness, distance = completeness_homogeneity_plot(directory, True, 'test.pdf')
     metrics_plot(directory, save=True, filename='test2.pdf')
 
@@ -691,8 +692,10 @@ if __name__ == '__main__':
     
    #%%
 if __name__ == '__main__':
-    from sklearn.metrics import completeness_score
+    from sklearn.metrics import completeness_score, homogeneity_score
     
     directory = 'Clustering_results/clean_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples'
     gt_assignment = tools.get_groundtruth_attribute(directory, 'assignment')
+    print(completeness_score(gt_assignment, np.ones(len(gt_assignment))))
+    print(homogeneity_score(gt_assignment, np.arange(len(gt_assignment))))
 

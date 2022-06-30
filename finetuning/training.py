@@ -366,12 +366,12 @@ def main(rank, args):
                                            rank=rank, shuffle=True, drop_last=False)
         train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size,
                                       sampler=train_sampler, num_workers=args.workers,
-                                      pin_memory=True, drop_last=False)
+                                      pin_memory=True, drop_last=True)
     else:
         train_sampler = None
         train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size,
                                       shuffle=True, num_workers=args.workers,
-                                      pin_memory=True, drop_last=False)
+                                      pin_memory=True, drop_last=True)
     if args.val_dataset != 'None':
         val_dataloader = DataLoader(val_dataset, batch_size=args.batch_size,
                                     shuffle=False, num_workers=args.workers,
@@ -447,7 +447,7 @@ def parse_args():
                         help='The base learning rate. Give 0 to use a square root rule based on batch size')
     parser.add_argument('--epochs', type=int, default=100, 
                         help='The number of epochs to perform.')
-    parser.add_argument('--batch_size', type=int, default=64, 
+    parser.add_argument('--batch_size', type=int, default=32, 
                         help='The batch size per GPU.')
     parser.add_argument('--temperature', type=float, default=0.1, 
                         help='The temperature for the loss.')
