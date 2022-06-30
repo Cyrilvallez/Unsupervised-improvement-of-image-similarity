@@ -592,9 +592,12 @@ def completeness_homogeneity_plot(directory, save=False, filename=None):
         homogeneities.append(homogeneity)
         completenesses.append(completeness)
         
+    homogeneities = np.array(homogeneities)
+    completenesses = np.array(completenesses)
+    
     plt.figure()
-    plt.plot(homogeneities, completenesses)
-    plt.xlabel('Homogeneity score')
+    plt.plot(1 - homogeneities, completenesses)
+    plt.xlabel('1 - Homogeneity score')
     plt.ylabel('Completeness score')
     plt.grid()
     if save:
@@ -621,11 +624,11 @@ if __name__ == '__main__':
     # if 'DBSCAN' in subfolder:
         # assignment = assignment[assignment != -1]
 
-    directory = 'Clustering_results/full_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples'
+    directory = 'Clustering_results/clean_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples'
     c, d = completeness_homogeneity_plot(directory, True, 'test')
 
 
-    a, b = tools.get_metrics(directory + '/151-clusters_4.500-eps')
-    print(f'Homogeneity : {a:.3f}')
-    print(f'Completeness : {b:.3f}')
+    # a, b = tools.get_metrics(directory + '/151-clusters_4.500-eps')
+    # print(f'Homogeneity : {a:.3f}')
+    # print(f'Completeness : {b:.3f}')
 

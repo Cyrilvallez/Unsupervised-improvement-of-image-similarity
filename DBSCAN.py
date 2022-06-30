@@ -36,7 +36,7 @@ precisions = args.precisions
 partition = args.partition + '_dataset'
 save = args.save == 'True'
 
-precisions = np.linspace(3, 5.5, 30)
+# precisions = np.linspace(3, 5.5, 30)
     
 # Clustering
 directory = cluster_DBSCAN(algorithm, metric, min_samples, precisions, partition)
