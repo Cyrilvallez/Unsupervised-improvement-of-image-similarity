@@ -575,7 +575,7 @@ def intersection_plot(subfolder, save=False, filename=None):
     plt.show()
 
 
-def homogeneity_completeness_plot(directory, save=False, filename=None):
+def completeness_homogeneity_plot(directory, save=False, filename=None):
     
     if directory[-1] != '/':
         directory += '/'
@@ -613,12 +613,14 @@ if __name__ == '__main__':
                 # test = 'Clustering_results/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples/220-clusters_4.125-eps'
                 # intersection_plot(test, save=True, filename='test.pdf')
 
-    subfolder = 'Clustering_results/clean_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_5_samples/253-clusters_4.375-eps'
-    intersection_over_union(subfolder, save=True, filename='test1.pdf')
+    # subfolder = 'Clustering_results/clean_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_5_samples/253-clusters_4.375-eps'
+    # intersection_over_union(subfolder, save=True, filename='test1.pdf')
     # assignment = np.load(subfolder + '/assignment.npy')
     # if 'DBSCAN' in subfolder:
         # assignment = assignment[assignment != -1]
 
+    directory = 'Clustering_results/full_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples'
+    completeness_homogeneity_plot(directory, True, 'test')
 
 
 
