@@ -188,8 +188,16 @@ for i, precision in enumerate(precisions):
 from PIL import Image
 import sys
 import os
+from finetuning.transforms import ImageDataset
 
 path = 'Datasets/cartoons/TRAIN/adventure_time/'
-imgs = [path + file for file in os.listdir(path) if not file.startswith('.')]
 
-print("img size in memory in bytes: ", sys.getsizeof(img.tobytes()))
+dataset = ImageDataset(path)
+foo = []
+
+for i in range(512):
+    foo.append(dataset[i])
+    
+#%%
+
+print("img size in memory in GB: ", 512*2*foo[0][0].element_size()*foo[0][0].nelement()/1e9)

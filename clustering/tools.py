@@ -13,6 +13,7 @@ import itertools
 from scipy.spatial.distance import pdist
 from sklearn.neighbors import NearestCentroid
 from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import homogeneity_score, completeness_score
 from tqdm import tqdm
 
 from helpers import utils
@@ -732,6 +733,41 @@ def clean_dataset(mapping):
             
     return indices
         
+
+def get_metrics(subfolder):
+    """
+    Compute the homogeneity and completeness of the clustering experiment in
+    `subfolder` against the groundtruths.
+
+    Parameters
+    ----------
+    subfolder : str
+        Subfolder of a clustering experiment, containing the assignments,
+        representatives images etc...
+
+    Returns
+    -------
+    homogeneity : float
+        The homogeneity score. It measures if each cluster contains only
+        members of a single class.
+    completeness : float
+        The completeness score. It measures if all members of a given class
+        are assigned to the same cluster.
+
+    """
+    
+    _is_subfolder(subfolder)
+
+    if subfolder[-1] != '/':
+        subfolder += '/'
+        
+    assignments = np.load(subfolder + 'assignment.npy')
+    groundtruth_assignment = get_groundtruth_attribute(subfolder, 'assignment')
+    
+    homogeneity = homogeneity_score(groundtruth_assignment, assignments)
+    completeness = completeness_score(groundtruth_assignment, assignments)
+    
+    return homogeneity, completeness
 #%%
 
 if __name__ == '__main__':
