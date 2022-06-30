@@ -13,7 +13,7 @@ from finetuning.nt_xent import NT_Xent
 from finetuning.transforms import ImageDataset
 
 workers = 6
-batch_size = 256
+batch_size = 128
 
 
 model = SimCLR.load()
