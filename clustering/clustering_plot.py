@@ -15,7 +15,7 @@ import numpy as np
 import os
 
 from clustering import tools
-from helpers import plot_config
+# from helpers import plot_config
 
 
 def cluster_size_plot(subfolder, save=False, filename=None):
@@ -589,7 +589,7 @@ def completeness_homogeneity_plot(directory, save=False, filename=None):
     distances = []
     
     for subfolder in subfolders:
-        homogeneity, completeness = tools.get_metrics(subfolder)
+        homogeneity, completeness, _ = tools.get_metrics(subfolder)
         homogeneities.append(homogeneity)
         completenesses.append(completeness)
         distance = float(subfolder.rsplit('/', 1)[1].split('_', 1)[1].split('-')[0])
@@ -605,15 +605,62 @@ def completeness_homogeneity_plot(directory, save=False, filename=None):
     completenesses = completenesses[sorting]
     
     plt.figure()
-    plt.plot(completenesses, homogeneities)
-    plt.ylabel('Homogeneity score')
-    plt.xlabel('Completeness score')
+    # plt.plot(completenesses, homogeneities)
+    plt.plot(homogeneities, completenesses)
+    plt.xlabel('Homogeneity score')
+    plt.ylabel('Completeness score')
     plt.grid()
     if save:
         plt.savefig(directory + filename, bbox_inches='tight')
     plt.show()
     
     return homogeneities, completenesses, distances
+
+
+def metrics_plot(directory, save=False, filename=None):
+    
+    if directory[-1] != '/':
+        directory += '/'
+    
+    subfolders = [f.path for f in os.scandir(directory) if f.is_dir()]
+    subfolders = sorted(subfolders, reverse=True,
+                        key=lambda x: int(x.rsplit('/', 1)[1].split('-', 1)[0]))
+    
+    homogeneities = []
+    completenesses = []
+    v_measures = []
+    N_clusters = []
+    
+    for subfolder in subfolders:
+        homogeneity, completeness, v_measure = tools.get_metrics(subfolder)
+        homogeneities.append(homogeneity)
+        completenesses.append(completeness)
+        v_measures.append(v_measure)
+        N_cluster = int(subfolder.rsplit('/', 1)[1].split('-', 1)[0])
+        N_clusters.append(N_cluster)
+        
+    homogeneities = np.array(homogeneities)
+    completenesses = np.array(completenesses)
+    v_measures = np.array(v_measures)
+    N_clusters = np.array(N_clusters)
+    
+    sorting = np.argsort(N_clusters)
+    N_clusters = N_clusters[sorting]
+    homogeneities = homogeneities[sorting]
+    completenesses = completenesses[sorting]
+    v_measures = v_measures[sorting]
+    
+    plt.figure()
+    plt.plot(N_clusters, homogeneities, label='Homogeneity score')
+    plt.plot(N_clusters, completenesses, label='Completeness score')
+    plt.plot(N_clusters, v_measures, label='V-measure score')
+    plt.xlabel('Number of clusters')
+    plt.ylabel('Metrics')
+    plt.legend()
+    plt.grid()
+    if save:
+        plt.savefig(directory + filename, bbox_inches='tight')
+    plt.show()
 
 #%%
 
@@ -634,17 +681,18 @@ if __name__ == '__main__':
         # assignment = assignment[assignment != -1]
 
     directory = 'Clustering_results/clean_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples'
-    homogeneity, completeness, distance = completeness_homogeneity_plot(directory, True, 'test')
+    homogeneity, completeness, distance = completeness_homogeneity_plot(directory, True, 'test.pdf')
+    metrics_plot(directory, save=True, filename='test2.pdf')
 
 
     # a, b = tools.get_metrics(directory + '/24-clusters_5.500-eps')
     # print(f'Homogeneity : {a:.3f}')
     # print(f'Completeness : {b:.3f}')
     
-    #%%
+   #%%
 if __name__ == '__main__':
+    from sklearn.metrics import completeness_score
+    
     directory = 'Clustering_results/clean_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples'
-    cluster_diameter_violin(directory)
-    # tools.ex
-    algorithm, metric, partition = tools.extract_params_from_folder_name(directory)
+    gt_assignment = tools.get_groundtruth_attribute(directory, 'assignment')
 

@@ -14,6 +14,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
+import numpy as np
 from datetime import datetime
 import argparse
 import os
@@ -442,8 +443,8 @@ def parse_args():
     # Training arguments
     parser.add_argument('--optimizer', type=str, default='lars', choices=['lars', 'adam'],
                         help='The optimizer used.')
-    parser.add_argument('--lr', type=float, default=1e-2, 
-                        help='The base learning rate.')
+    parser.add_argument('--lr', type=float, default=0., 
+                        help='The base learning rate. Give 0 to use a square root rule based on batch size')
     parser.add_argument('--epochs', type=int, default=100, 
                         help='The number of epochs to perform.')
     parser.add_argument('--batch_size', type=int, default=64, 
@@ -472,6 +473,12 @@ def parse_args():
     # Remove last `/` if present in log_dir
     if args.log_dir[-1] == '/':
         args.log_dir = args.log_dir[0:-1]
+    # if lr is 0, we use a square root rule
+    if args.lr == 0:
+        args.lr = 0.005*np.sqrt(args.batch_size*args.gpus)
     
     return args
 
+#%%
+
+args = parse_args()

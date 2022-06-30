@@ -13,7 +13,7 @@ import itertools
 from scipy.spatial.distance import pdist
 from sklearn.neighbors import NearestCentroid
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import homogeneity_score, completeness_score
+from sklearn.metrics import homogeneity_completeness_v_measure
 from tqdm import tqdm
 
 from helpers import utils
@@ -747,13 +747,16 @@ def get_metrics(subfolder):
 
     Returns
     -------
-    homogeneity : float
+    h : float
         The homogeneity score. It measures if each cluster contains only
         members of a single class.
-    completeness : float
+    c : float
         The completeness score. It measures if all members of a given class
         are assigned to the same cluster.
-
+    v : float
+        The v-measure score. This is the harmonic mean of homogeneity and
+        completeness.
+        
     """
     
     _is_subfolder(subfolder)
@@ -764,10 +767,9 @@ def get_metrics(subfolder):
     assignments = np.load(subfolder + 'assignment.npy')
     groundtruth_assignment = get_groundtruth_attribute(subfolder, 'assignment')
     
-    homogeneity = homogeneity_score(groundtruth_assignment, assignments)
-    completeness = completeness_score(groundtruth_assignment, assignments)
+    h, c, v = homogeneity_completeness_v_measure(groundtruth_assignment, assignments)
     
-    return homogeneity, completeness
+    return h, c, v
 #%%
 
 if __name__ == '__main__':
