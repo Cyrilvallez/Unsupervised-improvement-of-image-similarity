@@ -343,7 +343,7 @@ def main(rank, args):
     if args.gpus > 1:
         # converts to synchronized batchnorm layers
         model = SyncBatchNorm.convert_sync_batchnorm(model)
-        model = DDP(model, device_ids=[rank])
+        model = DDP(model, device_ids=[rank], find_unused_parameters=True)
     
     # Optimizer and scheduler
     optimizer, scheduler = get_optimizer(model, args.epochs, args.optimizer, 
