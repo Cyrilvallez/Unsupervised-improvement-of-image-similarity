@@ -275,7 +275,10 @@ def train(model, epochs, train_dataloader, val_dataloader, criterion, optimizer,
             outer_folder, inner_folder = writer.log_dir.rsplit('/', 1)
             path = outer_folder + '_models/' + inner_folder
             path += f'/epoch_{epoch+1}.pth'
-            model.save(path)
+            if distributed:
+                model.module.save(path)
+            else:
+                model.save(path)
         
         # Synchonize processes as process on rank 0 should have an overhead
         # from validation, saving etc...
