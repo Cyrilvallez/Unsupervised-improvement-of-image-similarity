@@ -20,4 +20,4 @@ features, mapping = extractor.extract_neural(model, dataset, batch_size=256)
 
 features2, mapping2 = tools.get_dataset('full_dataset', 'SimCLR v2 ResNet50 2x')
 
-assert mapping == mapping2
+assert (mapping == mapping2).all()
