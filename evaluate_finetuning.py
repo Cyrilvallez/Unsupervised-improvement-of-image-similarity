@@ -82,7 +82,7 @@ if __name__ == '__main__':
 
     epochs = [10, 20, 30, 40, 50, 60, 70, 80]
     
-    paths = [f'first_test_models/2022-06-30_20:03:28/epoch_{a}.pth' for a in epochs[1:]]
+    paths = [f'first_test_models/2022-06-30_20:03:28/epoch_{a}.pth' for a in epochs]
     
     all_diameters = []
     all_centroids = []
