@@ -70,25 +70,12 @@ if __name__ == '__main__':
     transforms = extractor.SIMCLR_TRANSFORMS
     dataset = extractor.all_memes_dataset(transforms)
 
-    epochs = [0, 10, 20, 30, 40, 50, 60, 70, 80]
+    epochs = [10, 20, 30, 40, 50, 60, 70, 80]
     
     paths = ['first_test_models/2022-06-30_20:03:28/epoch_{a}.pth' for a in epochs[1:]]
     
     all_diameters = []
-    all_diameters.append(
-        # Fake directory, just to get the groundtruth from the clean dataset and original
-        # model
-        tools.get_groundtruth_attribute(
-            'Clustering_results/clean_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples',
-            'diameters', quantile=1.))
-    
     all_centroids = []
-    all_centroids.append(
-        # Fake directory, just to get the groundtruth from the clean dataset and original
-        # model
-        tools.get_groundtruth_attribute(
-            'Clustering_results/clean_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples',
-            'centroids'))
     
     for path in paths:
         
