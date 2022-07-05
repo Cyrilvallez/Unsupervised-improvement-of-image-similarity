@@ -12,16 +12,14 @@ from torch.nn.functional import pdist
 import itertools
 import os
 from sklearn.neighbors import NearestCentroid
+from sklearn.preprocessing import LabelEncoder
 
 import extractor
 from clustering import tools
 from finetuning.simclr import SimCLR
 
 
-def compute_diameters(distances, quantile=1.):
-        
-    assignments = np.load(('Clustering_results/clean_dataset/'
-                           'euclidean_GT_SimCLR_v2_ResNet50_2x/assignment.npy'))
+def compute_diameters(distances, assignments, quantile=1.):
         
     # Mapping from distance matrix indices to condensed representation index
     N = len(assignments)
@@ -50,10 +48,7 @@ def compute_diameters(distances, quantile=1.):
     return np.array(diameters)
 
 
-def compute_centroids(features):
-    
-    assignments = np.load(('Clustering_results/clean_dataset/'
-                           'euclidean_GT_SimCLR_v2_ResNet50_2x/assignment.npy'))
+def compute_centroids(features, assignments):
     
     unique, counts = np.unique(assignments, return_counts=True)
 
@@ -63,6 +58,21 @@ def compute_centroids(features):
     # They are already sorted correctly with respect to the cluster indices
     return engine.centroids_
 
+
+def assignment_groundtruth(mapping):
+    
+    # Find the count of memes inside each "real" clusters (from the groundtruths)
+    identifiers = []
+    for name in mapping:
+        identifier = name.rsplit('/', 1)[1].split('_', 1)[0]
+        if '.' in identifier:
+            identifier = name.rsplit('/', 1)[1].rsplit('.', 1)[0]
+        identifiers.append(identifier)
+        
+    encoder = LabelEncoder()
+    assignment = encoder.fit_transform(identifiers)
+    
+    return assignment
 
 
 if __name__ == '__main__':
@@ -83,14 +93,15 @@ if __name__ == '__main__':
         features, mapping = extractor.extract_neural(model, dataset, batch_size=64)
         indices = tools.clean_dataset(mapping)
         features, mapping = features[indices], mapping[indices]
+        assignments = assignment_groundtruth(mapping)
         features = torch.tensor(features).cuda()
         distances = pdist(features).cpu().numpy()
         features = features.cpu().numpy()
 
-        diameters = compute_diameters(distances, quantile=1.)
+        diameters = compute_diameters(distances, assignments, quantile=1.)
         all_diameters.append(diameters)
         
-        centroids = compute_centroids(features)
+        centroids = compute_centroids(features, assignments)
         all_centroids.append(centroids)
        
     os.makedirs('Finetuning_eval', exist_ok=True)
