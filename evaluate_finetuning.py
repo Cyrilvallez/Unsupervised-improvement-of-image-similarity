@@ -93,7 +93,7 @@ if __name__ == '__main__':
     for path in paths:
         
         model = SimCLR.load_encoder(path)
-        features, mapping = extractor.extract_neural(model, dataset, batch_size=256)
+        features, mapping = extractor.extract_neural(model, dataset, batch_size=64)
         indices = tools.clean_dataset(mapping)
         features, mapping = features[indices], mapping[indices]
         features = torch.tensor(features).cuda()
