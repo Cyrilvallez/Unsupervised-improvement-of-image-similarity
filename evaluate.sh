@@ -1,13 +1,13 @@
 #!/bin/bash
 
-#SBATCH --job-name=test_dist
+#SBATCH --job-name=evaluate
 #SBATCH --output=%x-%j.out
 #SBATCH --error=%x-%j.err
 #SBATCH --time=10-00:00:00
-#SBATCH --cpus-per-task=4
-#SBATCH --mem=10000
+#SBATCH --cpus-per-task=6
+#SBATCH --mem=20000
 #SBATCH --partition=nodes
-#SBATCH --gres=gpu:v100:2
+#SBATCH --gres=gpu:v100:1
 #SBATCH --chdir=/cluster/raid/home/cyril.vallez/Project2
 
 # Verify working directory
@@ -28,6 +28,6 @@ eval "$(conda shell.bash hook)"
 # Activate (local) env
 conda activate faiss
 
-python3 test_dist.py
+python3 evaluate_finetuning.py
 
 conda deactivate

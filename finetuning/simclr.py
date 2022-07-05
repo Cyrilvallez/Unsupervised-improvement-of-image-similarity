@@ -122,3 +122,44 @@ class SimCLR(nn.Module):
         return SimCLR(encoder, head)
     
     
+    @staticmethod
+    def load_encoder(path=None, depth=50, width=2, sk_ratio=0.0625):
+        """
+        Easily load the encoder of a SimCLR module.
+
+        Parameters
+        ----------
+        path : str, optional
+            Path to the saved model. Load the original by default.
+            The default is None.
+        depth : int, optional
+            The depth of the resnet used as encoder. This is needed to 
+            reconstruct the module. The default is 50.
+        width : int, optional
+            The width of the resnet used as encoder. This is needed to 
+            reconstruct the module. The default is 2.
+        sk_ratio : float, optional
+            The sk_ratio of the resnet used as encoder. This is needed to 
+            reconstruct the module. The default is 0.0625.
+
+        Returns
+        -------
+        torch.nn.Module
+            The encoder module.
+
+        """
+        
+        if path is None:
+            sk = 'sk1' if sk_ratio == 0.0625 else 'sk0'
+            path = f'extractor/SimCLRv2/Pretrained/r{depth}_{width}x_{sk}_ema.pth'
+        encoder, _ = SIMv2.get_resnet(depth=depth, width_multiplier=width,
+                                        sk_ratio=sk_ratio)
+        checkpoint = torch.load(path)
+        try:
+            encoder.load_state_dict(checkpoint['encoder'])
+        except KeyError:
+            encoder.load_state_dict(checkpoint['resnet'])
+        
+        return encoder
+        
+    

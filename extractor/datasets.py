@@ -216,7 +216,6 @@ def create_dataset(dataset_name, transforms):
         The desired dataset of images.
 
     """
-
     
     if dataset_name not in VALID_DATASET_NAMES:
         raise ValueError(f'The dataset name must be one of {*VALID_DATASET_NAMES,}.')
@@ -242,3 +241,30 @@ def create_dataset(dataset_name, transforms):
     imgs += [path2 + file for file in os.listdir(path2) if not file.startswith('.')]
     
     return ImageDataset(imgs, dataset_name, transforms=transforms)
+
+
+
+def all_memes_dataset(transforms):
+    """
+    Return a dataset containing all memes, templates and actual memes.
+
+    Parameters
+    ----------
+    transforms : Torch transforms
+        Transforms to apply to each image. If not specified, transforms are
+        not applied, and raw PIL image will be returned. 
+
+    Returns
+    -------
+    ImageDataset
+        The dataset corresponding to the merge of the two other.
+
+    """
+    
+    dataset1 = create_dataset('Kaggle_memes', transforms)
+    dataset2 = create_dataset('Kaggle_templates', transforms)
+    
+    imgs = dataset1.images.tolist() + dataset2.images.tolist()
+    name = dataset1.name + '+' + dataset2.name
+    
+    return ImageDataset(imgs, name, transforms)

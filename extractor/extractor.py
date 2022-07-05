@@ -15,14 +15,14 @@ import extractor.neural as neural
 import extractor.perceptual as perceptual
 from extractor.datasets import collate
 
-def extract_neural(model_name, dataset, batch_size=256, workers=8, device='cuda'):
+def extract_neural(model, dataset, batch_size=256, workers=8, device='cuda'):
     """
     Compute features of a neural model.
 
     Parameters
     ----------
-    model_name : string
-        The name of the model for features extraction.
+    model : string, or torch nn.Module
+        The name of the model for features extraction, or the model itself.
     dataset : Custom PyTorch Dataset
         The dataset containing the images for which to extract features.
     batch_size : float, optional
@@ -46,13 +46,18 @@ def extract_neural(model_name, dataset, batch_size=256, workers=8, device='cuda'
 
     """
     
-    if (model_name not in neural.MODEL_LOADER.keys()):
-        raise ValueError(f'Model must be one of {neural.MODEL_LOADER.keys(),}.')
+    if type(model) == str:
+        if (model not in neural.MODEL_LOADER.keys()):
+            raise ValueError(f'Model must be one of {*neural.MODEL_LOADER.keys(),}.')
         
     if (device != 'cuda' and device != 'cpu'):
         raise ValueError('Device must be either `cuda` or `cpu`.')
         
-    model = neural.MODEL_LOADER[model_name](device)
+    if type(model) == str:
+        model = neural.MODEL_LOADER[model](device)
+        
+    model = model.to(device)
+    model.eval()
 
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
                             num_workers=workers, pin_memory=True)
@@ -150,7 +155,7 @@ def extract_perceptual(algorithm, dataset, hash_size=8, batch_size=2048,
     """
     
     if (algorithm not in perceptual.NAME_TO_ALGO.keys()):
-        raise ValueError(f'Algorithm must be one of {perceptual.NAME_TO_ALGO.keys(),}.')
+        raise ValueError(f'Algorithm must be one of {*perceptual.NAME_TO_ALGO.keys(),}.')
     
     algorithm = perceptual.NAME_TO_ALGO[algorithm]
     

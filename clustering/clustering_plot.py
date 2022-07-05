@@ -681,14 +681,17 @@ if __name__ == '__main__':
     # if 'DBSCAN' in subfolder:
         # assignment = assignment[assignment != -1]
 
-    directory = 'Clustering_results/full_dataset/euclidean_ward_SimCLR_v2_ResNet50_2x'
-    homogeneity, completeness, distance = completeness_homogeneity_plot(directory, True, 'test.pdf')
-    metrics_plot(directory, save=True, filename='test2.pdf')
+    # directory = 'Clustering_results/full_dataset/euclidean_ward_SimCLR_v2_ResNet50_2x'
+    # homogeneity, completeness, distance = completeness_homogeneity_plot(directory, True, 'test.pdf')
+    # metrics_plot(directory, save=True, filename='test2.pdf')
 
 
     # a, b = tools.get_metrics(directory + '/24-clusters_5.500-eps')
     # print(f'Homogeneity : {a:.3f}')
     # print(f'Completeness : {b:.3f}')
+    
+    a = 'Clustering_results/clean_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_5_samples/'
+    cluster_diameter_violin(a, save=True, filename='diameters_violin.pdf')
     
    #%%
 if __name__ == '__main__':
