@@ -78,7 +78,7 @@ def min_dist_outside_cluster(features, centroids, assignments):
     minimums = []
     for i, cluster in enumerate(np.unique(assignments)):
         indices = assignments != cluster
-        min_ = np.min(np.linalg.norm(features[indices] - centroids[i, :], axis=1))
+        min_ = np.min(np.linalg.norm(features[indices] - centroids[i], axis=1))
         minimums.append(min_)
         
     return np.array(minimums)
