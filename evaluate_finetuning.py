@@ -80,7 +80,7 @@ if __name__ == '__main__':
     transforms = extractor.SIMCLR_TRANSFORMS
     dataset = extractor.all_memes_dataset(transforms)
 
-    epochs = [10, 20, 30, 40, 50, 60, 70, 80]
+    epochs = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     
     paths = [f'first_test_models/2022-06-30_20:03:28/epoch_{a}.pth' for a in epochs]
     
