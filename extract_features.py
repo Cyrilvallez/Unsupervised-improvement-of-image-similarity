@@ -7,28 +7,44 @@ Created on Fri May  6 14:44:42 2022
 """
 
 import extractor
+from finetuning.simclr import SimCLR
 
-# method_name = 'SimCLR v2 ResNet50 2x'
-method_name = 'Dhash'
+# model = 'SimCLR v2 ResNet50 2x'
+# model = 'Dhash'
+model = SimCLR.load_encoder('first_test_models/2022-06-30_20:03:28/epoch_100.pth')
+name = 'SimCLR finetuned'
+transforms = extractor.SIMCLR_TRANSFORMS
+
 hash_size = 8
 batch_size = 256
-workers = 3
+workers = 6
 
 
 datasets = extractor.VALID_DATASET_NAMES
 
-# Perceptual
-if 'hash' in method_name:
-    for dataset in datasets:
-        dataset = extractor.create_dataset(dataset, None)
-        extractor.extract_and_save_perceptual(method_name, dataset, hash_size=hash_size,
-                                              batch_size=batch_size, workers=workers)
-       
-# Neural
-else:
-    for dataset in datasets:
-        transforms = extractor.MODEL_TRANSFORMS[method_name]
-        dataset = extractor.create_dataset(dataset, transforms)
-        extractor.extract_and_save_neural(method_name, dataset, batch_size=batch_size,
-                                          workers=workers)
 
+if type(model) == str:
+    
+    # Perceptual
+    if 'hash' in model:
+        for dataset in datasets:
+            dataset = extractor.create_dataset(dataset, None)
+            extractor.extract_and_save_perceptual(model, dataset, hash_size=hash_size,
+                                                  batch_size=batch_size, workers=workers)
+       
+    # Neural
+    else:
+        for dataset in datasets:
+            transforms = extractor.MODEL_TRANSFORMS[model]
+            dataset = extractor.create_dataset(dataset, transforms)
+            extractor.extract_and_save_neural(model, dataset, batch_size=batch_size,
+                                              workers=workers)
+            
+else:
+    
+    # Custom model neural
+    for dataset in datasets:
+        dataset = extractor.create_dataset(dataset, transforms)
+        extractor.extract_and_save_neural(model, dataset, name=name, batch_size=batch_size,
+                                          workers=workers)
+    

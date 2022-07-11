@@ -82,10 +82,10 @@ def load_features(method_name, dataset_name, to_bytes=True):
             raise ValueError((f'Built in method name must be one of {*MODEL_LOADER.keys(),}'
                               f' or must contain {*NAME_TO_ALGO.keys(),} and the bit number.'
                               f'\nIf you are using non built-in models, check the name you provided'
-                              f' while creating the features.'))
+                              f' while creating the features.')) from None
         
         if dataset_name not in datasets.VALID_DATASET_NAMES:
-            raise ValueError(f'The dataset name must be one of {*datasets.VALID_DATASET_NAMES,}.')
+            raise ValueError(f'The dataset name must be one of {*datasets.VALID_DATASET_NAMES,}.') from None
     
     if 'bits' in method_name and to_bytes:
         features = array_of_bits_to_bytes(features)
