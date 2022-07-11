@@ -41,7 +41,7 @@ for epoch in epochs[1:]:
     
     diameters.append(np.load(f'Finetuning_eval/diameters_epochs_{epoch}.npy'))
     centroids.append(np.load(f'Finetuning_eval/centroids_epochs_{epoch}.npy'))
-    dist_to_centroids.append(np.load(f'Finetuning_eval/mean_dist_to_centroid_epochs_{epoch}.npy'))
+    dist_to_centroids.append(np.load(f'Finetuning_eval/mean_dist_inside_cluster_epochs_{epoch}.npy'))
     
 mean_diameters = [np.mean(a) for a in diameters]
 

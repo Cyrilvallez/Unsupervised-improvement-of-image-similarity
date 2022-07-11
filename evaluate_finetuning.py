@@ -73,6 +73,28 @@ def assignment_groundtruth(mapping):
     return assignment
 
 
+def min_dist_outside_cluster(features, centroids, assignments):
+    
+    minimums = []
+    for i, cluster in enumerate(np.unique(assignments)):
+        indices = assignments != cluster
+        min_ = np.min(np.linalg.norm(features[indices] - centroids[i, :], axis=1))
+        minimums.append(min_)
+        
+    return np.array(minimums)
+
+
+def mean_dist_inside_cluster(features, centroids, assignments):
+    
+    dist_to_centroid = []
+    for i, cluster in enumerate(np.unique(assignments)):
+        indices = assignments == cluster
+        mean_dist = np.mean(np.linalg.norm(features[indices] - centroids[i], axis=1))
+        dist_to_centroid.append(mean_dist)
+        
+    return np.array(dist_to_centroid)
+
+
 if __name__ == '__main__':
 
     transforms = extractor.SIMCLR_TRANSFORMS
@@ -84,7 +106,8 @@ if __name__ == '__main__':
     
     all_diameters = []
     all_centroids = []
-    all_mean_dist_to_centroids = []
+    all_mean_dist_inside_cluster = []
+    all_min_dist_outside_cluster = []
     
     for path in paths:
         
@@ -103,13 +126,11 @@ if __name__ == '__main__':
         centroids = compute_centroids(features, assignments)
         all_centroids.append(centroids)
         
-        dist_to_centroid = []
-        for i, cluster in enumerate(np.unique(assignments)):
-            indices = np.argwhere(assignments == cluster).flatten()
-            mean_dist = np.mean(np.linalg.norm(features[indices] - centroids[i], axis=1))
-            dist_to_centroid.append(mean_dist)
-            
-        all_mean_dist_to_centroids.append(np.array(dist_to_centroid))
+        dist_inside_cluster = mean_dist_inside_cluster(features, centroids, assignments) 
+        all_mean_dist_inside_cluster.append(dist_inside_cluster)
+        
+        dist_outside_cluster = min_dist_outside_cluster(features, centroids, assignments)
+        all_min_dist_outside_cluster.append(dist_outside_cluster)
        
     os.makedirs('Finetuning_eval', exist_ok=True)
 
@@ -119,8 +140,11 @@ if __name__ == '__main__':
     for centroids, epoch in zip(all_centroids, epochs):
         np.save(f'Finetuning_eval/centroids_epochs_{epoch}.npy', centroids)
         
-    for dist, epoch in zip(all_mean_dist_to_centroids, epochs):
-        np.save(f'Finetuning_eval/mean_dist_to_centroid_epochs_{epoch}.npy', dist)
+    for dist, epoch in zip(all_mean_dist_inside_cluster, epochs):
+        np.save(f'Finetuning_eval/mean_dist_inside_cluster_epochs_{epoch}.npy', dist)
+        
+    for dist, epoch in zip(all_min_dist_outside_cluster, epochs):
+        np.save(f'Finetuning_eval/min_dist_outside_cluster_epochs_{epoch}.npy', dist)
  
 
 
