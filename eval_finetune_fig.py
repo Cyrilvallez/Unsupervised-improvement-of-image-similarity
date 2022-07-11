@@ -93,10 +93,10 @@ plt.savefig('Diameters_finetuning.pdf', bbox_inches='tight')
 
 # Points to centroids distances
 distances = np.concatenate(dist_to_centroids)
-frame2 = pd.DataFrame({'Epoch': N_epochs, 'Mean distance to centroid': distances})
+frame2 = pd.DataFrame({'Epoch': N_epochs, 'Mean point to centroid distance': distances})
 
 plt.figure(figsize=[0.7*6.4, 0.7*4.8])
-sns.violinplot(x='Epoch', y='Mean distance to centroid', data=frame2, palette=palette)
+sns.violinplot(x='Epoch', y='Mean point to centroid distance', data=frame2, palette=palette)
 # _, metric, _ = tools.extract_params_from_folder_name(directory)
 # plt.ylabel(f'Cluster diameter ({metric} distance)')
 

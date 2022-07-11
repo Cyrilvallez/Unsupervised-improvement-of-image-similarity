@@ -70,18 +70,22 @@ def load_features(method_name, dataset_name, to_bytes=True):
         A mapping from indices to image names.
 
     """
-    
-    if (method_name not in MODEL_LOADER.keys() and not \
-        any(a in method_name for a in NAME_TO_ALGO.keys())):
-        raise ValueError(f'Method name must be one of {*MODEL_LOADER.keys(),} or must contain {*NAME_TO_ALGO.keys(),} and the bit number.')
-    
-    if dataset_name not in datasets.VALID_DATASET_NAMES:
-        raise ValueError(f'The dataset name must be one of {*datasets.VALID_DATASET_NAMES,}.')
         
     path = 'Features/' + dataset_name + '-' + '_'.join(method_name.split(' '))
-
-    features = np.load(path + '_features.npy')
-    mapping = np.load(path + '_map_to_names.npy', allow_pickle=True)
+    
+    try:
+        features = np.load(path + '_features.npy')
+        mapping = np.load(path + '_map_to_names.npy', allow_pickle=True)
+    except FileNotFoundError:
+        if (method_name not in MODEL_LOADER.keys() and not \
+            any(a in method_name for a in NAME_TO_ALGO.keys())):
+            raise ValueError((f'Built in method name must be one of {*MODEL_LOADER.keys(),}'
+                              f' or must contain {*NAME_TO_ALGO.keys(),} and the bit number.'
+                              f'\nIf you are using non built-in models, check the name you provided'
+                              f' while creating the features.'))
+        
+        if dataset_name not in datasets.VALID_DATASET_NAMES:
+            raise ValueError(f'The dataset name must be one of {*datasets.VALID_DATASET_NAMES,}.')
     
     if 'bits' in method_name and to_bytes:
         features = array_of_bits_to_bytes(features)

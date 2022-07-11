@@ -87,17 +87,20 @@ def extract_neural(model, dataset, batch_size=256, workers=8, device='cuda'):
 
 
 
-def extract_and_save_neural(model_name, dataset, batch_size=256,
+def extract_and_save_neural(model, dataset, name=None, batch_size=256,
                               workers=8, device='cuda'):
     """
     Compute and save features of a neural model to file.
 
     Parameters
     ----------
-    model_name : string
-        The name of the model for features extraction.
+    model : string, or torch nn.Module
+        The name of the model for features extraction, or the model itself.
     dataset : Custom PyTorch Dataset
         The dataset containing the images for which to extract features.
+    name : str, optional
+        A name for the model if `model` is a torch.nn.Module. Otherwise this is
+        ignored. The default is None.
     batch_size : float, optional
         The batch size for the dataloader. The default is 256.
     workers : int, optional
@@ -111,10 +114,13 @@ def extract_and_save_neural(model_name, dataset, batch_size=256,
 
     """
     
-    features, indices_to_names = extract_neural(model_name, dataset, batch_size=batch_size,
+    features, indices_to_names = extract_neural(model, dataset, batch_size=batch_size,
                                                 workers=workers, device=device)
     
-    dataset_and_model_name = dataset.name + '-' + '_'.join(model_name.split(' '))
+    if name is None:
+        dataset_and_model_name = dataset.name + '-' + '_'.join(model.split(' '))
+    else:
+        dataset_and_model_name = dataset.name + '-' + '_'.join(name.split(' '))
     
     np.save('Features/' + dataset_and_model_name + '_features.npy', features)
     np.save('Features/' + dataset_and_model_name + '_map_to_names.npy', indices_to_names)
