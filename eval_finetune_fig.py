@@ -44,6 +44,21 @@ for epoch in epochs[1:]:
     dist_to_centroids.append(np.load(f'Finetuning_eval/mean_dist_to_centroid_epochs_{epoch}.npy'))
     
 mean_diameters = [np.mean(a) for a in diameters]
+
+
+# centroid to centroid distances
+centroid_to_centroid = []
+for i, epoch in enumerate(epochs):
+    distances = []
+    for j in range(len(centroids[i])):
+        current_centroid = centroids[i][j]
+        dist = np.linalg.norm(np.delete(centroids[i], j, axis=0) - current_centroid, axis=1)
+        distances.append(np.mean(dist))
+    centroid_to_centroid.append(np.array(distances))
+    
+    
+
+
     
 plt.figure()
 plt.plot(epochs, mean_diameters)
@@ -76,7 +91,7 @@ plt.savefig('Diameters_finetuning.pdf', bbox_inches='tight')
 
 
 
-
+# Points to centroids distances
 distances = np.concatenate(dist_to_centroids)
 frame2 = pd.DataFrame({'Epoch': N_epochs, 'Mean distance to centroid': distances})
 
@@ -92,3 +107,21 @@ legend_elements = [Patch(facecolor='tab:blue', label='Finetuning'),
                     Patch(facecolor='tab:red', label='Original')]
 plt.legend(handles=legend_elements, loc='best')
 plt.savefig('Distances_to_centroid.pdf', bbox_inches='tight')
+
+
+# centroid to centroid distances
+distances3 = np.concatenate(centroid_to_centroid)
+frame3 = pd.DataFrame({'Epoch': N_epochs, 'Mean centroid to centroid distance': distances3})
+
+plt.figure(figsize=[0.7*6.4, 0.7*4.8])
+sns.violinplot(x='Epoch', y='Mean centroid to centroid distance', data=frame3, palette=palette)
+# _, metric, _ = tools.extract_params_from_folder_name(directory)
+# plt.ylabel(f'Cluster diameter ({metric} distance)')
+
+locs, labels = plt.xticks()
+labels = [label.get_text().split()[0] for label in labels]
+plt.xticks(locs, labels)
+legend_elements = [Patch(facecolor='tab:blue', label='Finetuning'),
+                    Patch(facecolor='tab:red', label='Original')]
+plt.legend(handles=legend_elements, loc='best')
+plt.savefig('Centroid_to_centroid_distance.pdf', bbox_inches='tight')

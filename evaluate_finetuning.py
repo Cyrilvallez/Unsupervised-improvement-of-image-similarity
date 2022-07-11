@@ -49,8 +49,6 @@ def compute_diameters(distances, assignments, quantile=1.):
 
 
 def compute_centroids(features, assignments):
-    
-    unique, counts = np.unique(assignments, return_counts=True)
 
     engine = NearestCentroid(metric='euclidean')
     engine.fit(features, assignments)
@@ -118,8 +116,8 @@ if __name__ == '__main__':
     for diameters, epoch in zip(all_diameters, epochs):
         np.save(f'Finetuning_eval/diameters_epochs_{epoch}.npy', diameters)
         
-    for centroids, epoch in zip(all_diameters, epochs):
-        np.save(f'Finetuning_eval/centroids_epochs_{epoch}.npy', diameters)
+    for centroids, epoch in zip(all_centroids, epochs):
+        np.save(f'Finetuning_eval/centroids_epochs_{epoch}.npy', centroids)
         
     for dist, epoch in zip(all_mean_dist_to_centroids, epochs):
         np.save(f'Finetuning_eval/mean_dist_to_centroid_epochs_{epoch}.npy', dist)
