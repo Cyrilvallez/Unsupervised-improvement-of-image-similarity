@@ -45,9 +45,9 @@ class SimCLR(nn.Module):
         Returns
         -------
         z1 : Tensor
-            DESCRIPTION.
+            Output corresponding to 1st data augmentation.
         z2 : Tensor
-            DESCRIPTION.
+            Output corresponding to 2nd data augmentation.
 
         """
     
