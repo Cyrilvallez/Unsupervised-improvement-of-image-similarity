@@ -42,7 +42,7 @@ dist_to_centroids.append(np.array(dist_to_centroid_))
 minimums = []
 for i, cluster in enumerate(np.unique(assignments)):
     indices = assignments != cluster
-    min_ = np.min(np.linalg.norm(features[indices] - centroids[i, :], axis=1))
+    min_ = np.min(np.linalg.norm(features[indices] - centroids[0][i, :], axis=1))
     minimums.append(min_)
     
 min_to_centroids.append(np.array(minimums))

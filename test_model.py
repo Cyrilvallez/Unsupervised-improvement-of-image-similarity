@@ -12,10 +12,10 @@ from finetuning.simclr import SimCLR
 from extractor.SimCLRv1 import resnet_wider
 from extractor.SimCLRv2 import resnet
 
-"""
 model1 = SimCLR.load()
-model2 = SimCLR.load('/Users/cyrilvallez/Desktop/r50_2x_sk1_ema.pth')
-"""
+model2 = SimCLR.load('/Users/cyrilvallez/Desktop/Project2/test1_models/2022-07-12_09:52:24/epoch_2.pth', map_location=torch.device('cpu'))
+
+
 """
 model1 = resnet_wider.get_resnet(width=4)
 model2 = resnet_wider.get_resnet(width=4)
@@ -29,6 +29,7 @@ model2.load_state_dict(checkpoint2['state_dict'])
 # model1.fc = nn.Identity()
 # model2.fc = nn.Identity()
 
+"""
 model1, _ = resnet.get_resnet(depth=50, width_multiplier=2, sk_ratio=0.0625)
 model2, _ = resnet.get_resnet(depth=50, width_multiplier=2, sk_ratio=0.0625)
 
@@ -37,7 +38,7 @@ model1.load_state_dict(checkpoint1['encoder'])
 
 checkpoint2 = torch.load('/Users/cyrilvallez/Desktop/Project2/extractor/SimCLRv2/Pretrained/r50_2x_sk1_ema.pth')
 model2.load_state_dict(checkpoint2['resnet'])
-
+"""
 model1.eval()
 model2.eval()
 

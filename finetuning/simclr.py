@@ -80,7 +80,7 @@ class SimCLR(nn.Module):
         
         
     @staticmethod
-    def load(path=None, depth=50, width=2, sk_ratio=0.0625):
+    def load(path=None, depth=50, width=2, sk_ratio=0.0625, map_location=None):
         """
         Easily load a SimCLR module.
 
@@ -98,6 +98,9 @@ class SimCLR(nn.Module):
         sk_ratio : float, optional
             The sk_ratio of the resnet used as encoder. This is needed to 
             reconstruct the module. The default is 0.0625.
+        map_location : function, torch device, str or dict
+            Specify how to remap storage locations. See torch.load for more details.
+            The default is None.
 
         Returns
         -------
@@ -111,7 +114,7 @@ class SimCLR(nn.Module):
             path = f'SimCLRv2/torch_checkpoints/Pretrained/r{depth}_{width}x_{sk}_ema.pth'
         encoder, head = SIMv2.get_resnet(depth=depth, width_multiplier=width,
                                         sk_ratio=sk_ratio)
-        checkpoint = torch.load(path)
+        checkpoint = torch.load(path, map_location=map_location)
         encoder.load_state_dict(checkpoint['encoder'])
         head.load_state_dict(checkpoint['head'])
         
@@ -119,7 +122,7 @@ class SimCLR(nn.Module):
     
     
     @staticmethod
-    def load_encoder(path=None, depth=50, width=2, sk_ratio=0.0625):
+    def load_encoder(path=None, depth=50, width=2, sk_ratio=0.0625, map_location=None):
         """
         Easily load the encoder of a SimCLR module.
 
@@ -137,6 +140,9 @@ class SimCLR(nn.Module):
         sk_ratio : float, optional
             The sk_ratio of the resnet used as encoder. This is needed to 
             reconstruct the module. The default is 0.0625.
+        map_location : function, torch device, str or dict
+            Specify how to remap storage locations. See torch.load for more details.
+            The default is None.
 
         Returns
         -------
@@ -150,7 +156,7 @@ class SimCLR(nn.Module):
             path = f'SimCLRv2/torch_checkpoints/Pretrained/r{depth}_{width}x_{sk}_ema.pth'
         encoder, _ = SIMv2.get_resnet(depth=depth, width_multiplier=width,
                                         sk_ratio=sk_ratio)
-        checkpoint = torch.load(path)
+        checkpoint = torch.load(path, map_location=map_location)
         encoder.load_state_dict(checkpoint['encoder'])
         
         return encoder
