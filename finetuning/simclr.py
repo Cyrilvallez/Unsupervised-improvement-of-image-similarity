@@ -9,8 +9,7 @@ Created on Fri Jun 24 11:28:09 2022
 import torch
 import torch.nn as nn
 
-# TODO : change location or duplicate this file
-from extractor.SimCLRv2 import resnet as SIMv2
+from SimCLRv2 import resnet as SIMv2
 
 class SimCLR(nn.Module):
     """
@@ -109,14 +108,11 @@ class SimCLR(nn.Module):
         
         if path is None:
             sk = 'sk1' if sk_ratio == 0.0625 else 'sk0'
-            path = f'extractor/SimCLRv2/Pretrained/r{depth}_{width}x_{sk}_ema.pth'
+            path = f'SimCLRv2/torch_checkpoints/Pretrained/r{depth}_{width}x_{sk}_ema.pth'
         encoder, head = SIMv2.get_resnet(depth=depth, width_multiplier=width,
                                         sk_ratio=sk_ratio)
         checkpoint = torch.load(path)
-        try:
-            encoder.load_state_dict(checkpoint['encoder'])
-        except KeyError:
-            encoder.load_state_dict(checkpoint['resnet'])
+        encoder.load_state_dict(checkpoint['encoder'])
         head.load_state_dict(checkpoint['head'])
         
         return SimCLR(encoder, head)
@@ -151,14 +147,11 @@ class SimCLR(nn.Module):
         
         if path is None:
             sk = 'sk1' if sk_ratio == 0.0625 else 'sk0'
-            path = f'extractor/SimCLRv2/Pretrained/r{depth}_{width}x_{sk}_ema.pth'
+            path = f'SimCLRv2/torch_checkpoints/Pretrained/r{depth}_{width}x_{sk}_ema.pth'
         encoder, _ = SIMv2.get_resnet(depth=depth, width_multiplier=width,
                                         sk_ratio=sk_ratio)
         checkpoint = torch.load(path)
-        try:
-            encoder.load_state_dict(checkpoint['encoder'])
-        except KeyError:
-            encoder.load_state_dict(checkpoint['resnet'])
+        encoder.load_state_dict(checkpoint['encoder'])
         
         return encoder
         

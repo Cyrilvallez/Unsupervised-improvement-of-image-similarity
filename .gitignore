@@ -1,7 +1,5 @@
 **/.DS_Store
 **/__pycache__
-extractor/SimCLRv1
-extractor/SimCLRv2
 Datasets
 Features
 Neighbors
@@ -9,3 +7,5 @@ Clustering_results
 first_test
 first_test_models
 Finetuning_eval
+**/tf_checkpoints
+**/torch_checkpoints

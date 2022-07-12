@@ -6,17 +6,13 @@ Created on Fri May  6 10:54:08 2022
 @author: cyrilvallez
 """
 
-import os
 import torch
 import torch.nn as nn
 import torchvision.transforms as T
 import torchvision.models as models
 
-from extractor.SimCLRv1 import resnet_wider as SIMv1
-from extractor.SimCLRv2 import resnet as SIMv2
-
-path = os.path.abspath(__file__)
-current_folder = os.path.dirname(path)
+from SimCLRv1 import resnet_wider as SIMv1
+from SimCLRv2 import resnet as SIMv2
     
 def load_inception_v3(device='cuda'):
     """
@@ -131,7 +127,7 @@ def load_simclr_v1(width):
 
     """
     
-    checkpoint_file = current_folder + f'/SimCLRv1/Pretrained/resnet50-{width}x.pth'
+    checkpoint_file = f'SimCLRv1/torch_checkpoints/Pretrained/resnet50-{width}x.pth'
     
     def load(device='cuda'):
         
@@ -170,9 +166,9 @@ def load_simclr_v2(depth, width, selective_kernel=True):
     """
     
     if selective_kernel:
-        checkpoint_file = current_folder + f'/SimCLRv2/Pretrained/r{depth}_{width}x_sk1_ema.pth'
+        checkpoint_file = f'SimCLRv2/torch_checkpoints/Pretrained/r{depth}_{width}x_sk1_ema.pth'
     else:
-        checkpoint_file = current_folder + f'/SimCLRv2/Pretrained/r{depth}_{width}x_ema.pth'
+        checkpoint_file = f'SimCLRv2/torch_checkpoints/Pretrained/r{depth}_{width}x_sk1_ema.pth'
     
     def load(device='cuda'):
         
@@ -180,7 +176,7 @@ def load_simclr_v2(depth, width, selective_kernel=True):
         sk_ratio = 0.0625 if selective_kernel else 0
         simclr, _ = SIMv2.get_resnet(depth=depth, width_multiplier=width, sk_ratio=sk_ratio)
         checkpoint = torch.load(checkpoint_file)
-        simclr.load_state_dict(checkpoint['resnet'])
+        simclr.load_state_dict(checkpoint['encoder'])
         simclr.eval()
         simclr.to(torch.device(device))
     
