@@ -108,7 +108,6 @@ def cluster_size_diameter_plot(subfolder, save=False, filename=None):
     if subfolder[-1] != '/':
         subfolder += '/'
         
-    _, metric, _ = tools.extract_params_from_folder_name(subfolder)
     assignments = np.load(subfolder + 'assignment.npy')
     diameters = tools.get_cluster_diameters(subfolder)
     
@@ -118,7 +117,7 @@ def cluster_size_diameter_plot(subfolder, save=False, filename=None):
     plt.scatter(counts, diameters)
     plt.xscale('log')
     plt.xlabel('Cluster size')
-    plt.ylabel(f'Cluster diameter ({metric} distance)')
+    plt.ylabel('Cluster diameter (euclidean distance)')
     plt.grid()
 
     if save:
@@ -354,8 +353,7 @@ def cluster_diameter_violin(directory, save=False, filename=None):
     plt.figure(figsize=(8,8))
     sns.violinplot(x='Number of clusters', y='Cluster diameter', data=frame,
                    order=order, palette=palette)
-    _, metric, _ = tools.extract_params_from_folder_name(directory)
-    plt.ylabel(f'Cluster diameter ({metric} distance)')
+    plt.ylabel('Cluster diameter (euclidean distance)')
     
     locs, labels = plt.xticks()
     labels = [label.get_text().split()[0] for label in labels]

@@ -89,7 +89,10 @@ def cluster_centroids(features, assignments):
         indices).
 
     """
-
+    
+    # Giving other metric than euclidean or L1, this just compute the same as
+    # euclidean (mean), thus we do not bother giving the option since this
+    # may give unexpected results
     engine = NearestCentroid(metric='euclidean')
     engine.fit(features, assignments)
     
@@ -182,6 +185,4 @@ def inside_cluster_dispersion(features, assignments, centroids=None):
         distances.append(distance)
         
     return np.array(distances)
-
-
 

@@ -470,7 +470,7 @@ def save_diameters(directory, quantile=1.):
     for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
         
         features, _ = extract_features_from_folder_name(subfolder)
-        assignments = np.load(subfolder + 'assignment.npy')
+        assignments = np.load(subfolder + '/assignment.npy')
         diameters = metrics.cluster_diameters(features, assignments, quantile)
         np.save(subfolder + f'/diameters_{quantile:.2f}.npy', diameters)
         
@@ -495,7 +495,7 @@ def save_centroids(directory):
     for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
         
         features, _ = extract_features_from_folder_name(subfolder)
-        assignments = np.load(subfolder + 'assignment.npy')
+        assignments = np.load(subfolder + '/assignment.npy')
         centroids = metrics.cluster_centroids(features, assignments)
         np.save(subfolder + '/centroids.npy', centroids)
     
@@ -777,24 +777,5 @@ if __name__ == '__main__':
     features, mapping = extract_features_from_folder_name(directory2)
     
     
-    
-    #%%
-    """
-    import time
-    from scipy.spatial.distance import squareform
-    from sklearn.manifold import TSNE
-
-    folder = 'Clustering_results/clean_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_5_samples'
-    features, mapping, distances = extract_features_from_folder_name(folder, return_distances=True)
-    # Reshape the distances as a symmetric matrix
-    distances = squareform(distances)
-
-    t0 = time.time()
-    embedding = TSNE(metric='precomputed', learning_rate='auto', method='exact')
-    foo = embedding.fit_transform(distances)
-    dt = time.time() - t0
-    """
-
-
 
     

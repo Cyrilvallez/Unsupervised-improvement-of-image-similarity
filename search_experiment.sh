@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=main
+#SBATCH --job-name=search_experiment
 #SBATCH --output=%x-%j.out
 #SBATCH --error=%x-%j.err
 #SBATCH --time=10-00:00:00
@@ -25,6 +25,6 @@ eval "$(conda shell.bash hook)"
 # Activate (local) env
 conda activate faiss
 
-python3 main.py $1
+python3 search_experiment $1
 
 conda deactivate
