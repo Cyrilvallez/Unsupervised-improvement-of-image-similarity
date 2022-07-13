@@ -8,8 +8,9 @@ Created on Tue May 10 17:28:03 2022
 
 
 import numpy as np
+
 from helpers import utils
-import experiment as ex
+from fast_search import search
 
 # Force the use of a user input at run-time to specify the path 
 # so that we do not mistakenly reuse the path from previous experiments
@@ -36,7 +37,7 @@ nprobes = [1, 5, 10, 20, 50, 100, 200]
 ks = [1, 2, 3, 4, 5, 10, 20]
 
 filename = save_folder + 'results.json'
-ex.compare_k_Flat(ks, algorithm, main_dataset, query_dataset,
+search.compare_k_Flat(ks, algorithm, main_dataset, query_dataset,
                         distractor_dataset, filename)
 # ex.compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
                         # distractor_dataset, filename, k=10)

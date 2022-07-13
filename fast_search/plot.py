@@ -6,7 +6,6 @@ Created on Wed May 18 15:54:40 2022
 @author: cyrilvallez
 """
 import matplotlib.pyplot as plt
-import seaborn as sns
 import numpy as np
 
 # Some preset rc params

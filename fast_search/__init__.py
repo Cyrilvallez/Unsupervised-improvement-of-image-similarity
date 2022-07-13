@@ -5,5 +5,3 @@ Created on Wed May 18 11:18:03 2022
 
 @author: cyrilvallez
 """
-
-from experiment.experiment import *

@@ -6,9 +6,10 @@ Created on Tue May 24 13:57:01 2022
 @author: cyrilvallez
 """
 
-from helpers import utils
-import experiment as ex
 import os
+
+from helpers import utils
+from fast_search import search
 
 
 algorithm = 'SimCLR v2 ResNet50 2x'
@@ -24,7 +25,7 @@ save_folder = 'Results/Contrastive_memes_L2/'
 factory_str = 'Flat'
 metric = 'L2'
 
-experiment = ex.Experiment(algorithm, main_dataset, query_dataset,
+experiment = search.Experiment(algorithm, main_dataset, query_dataset,
                         distractor_dataset=distractor_dataset)
 
 experiment.set_index(factory_str, metric=metric)

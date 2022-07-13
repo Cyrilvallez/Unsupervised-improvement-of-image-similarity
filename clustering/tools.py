@@ -17,6 +17,7 @@ from sklearn.metrics import homogeneity_completeness_v_measure
 from tqdm import tqdm
 
 from helpers import utils
+from clustering import metrics
 
 # =============================================================================
 # In this file we refer to `directory` as the root directory of a clusterting
@@ -369,98 +370,6 @@ def compute_assignment_groundtruth(algorithm, metric, partition='full_dataset'):
     np.save(folder + '/assignment.npy', assignment)
     
     return assignment
- 
-        
-def _compute_cluster_diameters(subfolder, quantile=1.):
-    """
-    Compute the diameter of each clusters.
-
-    Parameters
-    ----------
-    subfolder : str
-        Subfolder of a clustering experiment, containing the assignments,
-        representatives images etc...
-    quantile : float, optional
-        The quantile on which to base the diameters. Give 1 for the maximum
-        of the distances. The default is 1.
-
-    Returns
-    -------
-    Numpy array
-        The diameter of each cluster.
-
-    """
-    
-    _is_subfolder(subfolder)
-    
-    if subfolder[-1] != '/':
-        subfolder += '/'
-        
-    _, _, distances = extract_features_from_folder_name(subfolder, return_distances=True)
-        
-    assignments = np.load(subfolder + 'assignment.npy')
-        
-    # Mapping from distance matrix indices to condensed representation index
-    N = len(assignments)
-    
-    def square_to_condensed(i, j):
-        assert i != j, "no diagonal elements in condensed matrix"
-        if i < j:
-            i, j = j, i
-        return N*j - j*(j+1)//2 + i - 1 - j
-        
-    diameters = []
-    for cluster_idx in np.unique(assignments):
-        
-        correct_indices = np.argwhere(assignments == cluster_idx).flatten()
-        
-        condensed_indices = [square_to_condensed(i,j) for i,j \
-                             in itertools.combinations(correct_indices, 2)]
-        cluster_distances = distances[condensed_indices]
-        
-        # If the cluster contains only 1 image
-        if len(cluster_distances) == 0:
-            diameters.append(0.)
-        else:
-            diameters.append(np.quantile(cluster_distances, quantile))
-        
-    return np.array(diameters)
-
-
-def _compute_cluster_centroids(subfolder):
-    """
-    Compute the centroids of each clusters.
-
-    Parameters
-    ----------
-    subfolder : str
-        Subfolder of a clustering experiment, containing the assignments,
-        representatives images etc...
-
-    Returns
-    -------
-    Numpy array
-        The diameter of each cluster.
-
-    """
-    
-    _is_subfolder(subfolder)
-
-    if subfolder[-1] != '/':
-        subfolder += '/'
-    
-    _, metric, _ = extract_params_from_folder_name(subfolder)
-    features, _ = extract_features_from_folder_name(subfolder)
-    assignments = np.load(subfolder + 'assignment.npy')
-    
-    unique, counts = np.unique(assignments, return_counts=True)
-
-    engine = NearestCentroid(metric=metric)
-    engine.fit(features, assignments)
-    
-    # They are already sorted correctly with respect to the cluster indices
-    return engine.centroids_
-
 
 
 def get_cluster_diameters(subfolder, quantile=1., save_if_absent=True):
@@ -484,13 +393,18 @@ def get_cluster_diameters(subfolder, quantile=1., save_if_absent=True):
 
     """
     
+    _is_subfolder(subfolder)
+    
     if subfolder[-1] != '/':
         subfolder += '/'
+        
+    features, _ = extract_features_from_folder_name(subfolder)
+    assignments = np.load(subfolder + 'assignment.npy')
         
     try:
         diameters = np.load(subfolder + f'diameters_{quantile:.2f}.npy')
     except FileNotFoundError:
-        diameters = _compute_cluster_diameters(subfolder, quantile=quantile)
+        diameters = metrics.cluster_diameters(features, assignments, quantile)
         if save_if_absent:
             np.save(subfolder + f'diameters_{quantile:.2f}.npy', diameters)
             
@@ -518,13 +432,18 @@ def get_cluster_centroids(subfolder, save_if_absent=True):
 
     """
     
+    _is_subfolder(subfolder)
+    
     if subfolder[-1] != '/':
         subfolder += '/'
+        
+    features, _ = extract_features_from_folder_name(subfolder)
+    assignments = np.load(subfolder + 'assignment.npy')
         
     try:
         centroids = np.load(subfolder + 'centroids.npy')
     except FileNotFoundError:
-        centroids = _compute_cluster_centroids(subfolder)
+        centroids = metrics.cluster_centroids(features, assignments)
         if save_if_absent:
             np.save(subfolder + 'centroids.npy', centroids)
             
@@ -546,9 +465,13 @@ def save_diameters(directory, quantile=1.):
 
     """
     
+    _is_directory(directory)
+    
     for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
         
-        diameters = _compute_cluster_diameters(subfolder, quantile=quantile)
+        features, _ = extract_features_from_folder_name(subfolder)
+        assignments = np.load(subfolder + 'assignment.npy')
+        diameters = metrics.cluster_diameters(features, assignments, quantile)
         np.save(subfolder + f'/diameters_{quantile:.2f}.npy', diameters)
         
 
@@ -567,9 +490,13 @@ def save_centroids(directory):
 
     """
     
+    _is_directory(directory)
+    
     for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
         
-        centroids = _compute_cluster_centroids(subfolder)
+        features, _ = extract_features_from_folder_name(subfolder)
+        assignments = np.load(subfolder + 'assignment.npy')
+        centroids = metrics.cluster_centroids(features, assignments)
         np.save(subfolder + '/centroids.npy', centroids)
     
     

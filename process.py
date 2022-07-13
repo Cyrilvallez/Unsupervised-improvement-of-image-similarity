@@ -12,7 +12,7 @@ Created on Fri Mar 18 09:12:07 2022
 
 import os
 from helpers import utils
-from helpers import plot
+from fast_search import plot
 
 EXPERIMENT_NAME = 'Flat_sweep_k_BSDS500_dhash'
 
