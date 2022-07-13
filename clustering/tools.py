@@ -329,7 +329,6 @@ def extract_features_from_folder_name(directory, return_distances=False):
     
     
 def compute_assignment_groundtruth(algorithm, metric, partition='full_dataset'):
-
     """
     Find and save the assignment of memes inside each "real" clusters (from the
     groundtruths we have).
