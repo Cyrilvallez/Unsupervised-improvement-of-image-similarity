@@ -25,6 +25,6 @@ eval "$(conda shell.bash hook)"
 # Activate (local) env
 conda activate faiss
 
-python3 search_experiment $1
+python3 search_experiment.py $1
 
 conda deactivate
