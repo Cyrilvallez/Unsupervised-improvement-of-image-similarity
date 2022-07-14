@@ -249,3 +249,107 @@ def inside_cluster_dispersion(features, assignments, centroids=None):
         
     return np.array(distances)
 
+
+def mean_centroid_to_centroid(features, assignments, centroids=None):
+    """
+    Compute the mean of the centroid to centroid distance, for all centroids.
+
+    Parameters
+    ----------
+    features : Numpy array
+        The features corresponding to the images being clustered.
+    assignments : Numpy array
+        The cluster assignment for each feature (image).
+    centroids : Numpy array, optional
+        The centroids of the clusters. If you provide them, the function will
+        uniquely use this and ignore the first two arguments. Otherwise it is
+        computed from the first 2 arguments. The default is None.
+
+    Returns
+    -------
+    Numpy array
+        The mean distances (sorted in increasing order of cluster indices).
+
+    """
+    
+    if centroids is None:
+        centroids = cluster_centroids(features, assignments)
+    
+    N = len(centroids)
+    distances = []
+    for i, centroid in enumerate(centroids):
+        indices = np.ones(N, dtype=int)
+        indices[i] = 0
+        distance = np.mean(np.linalg.norm(centroids[indices] - centroids[i], axis=1))
+        distances.append(distance)
+        
+    return np.array(distances)
+
+
+def diameters_over_separations(features, assignments, diameters=None, 
+                               centroids=None):
+    """
+    Compute a kind of signal to noise ratio : the diameters over the separations,
+    to see how well the diameters did reduce, taking into account that the
+    entire space region may be smaller.
+
+    Parameters
+    ----------
+    features : Numpy array
+        The features corresponding to the images being clustered.
+    assignments : Numpy array
+        The cluster assignment for each feature (image).
+    diameters : Numpy array, optional
+        The diameters, as returned by `cluster_diameters`. If you provide them,
+        this function is likely to be really faster, as computing the diameters
+        can be very costly. The default is None.
+    centroids : Numpy array, optional
+        The centroids of the clusters. If not given, this will compute them.
+        The default is None.
+
+    Returns
+    -------
+    Numpy array
+        The ratio of diameters to separations.
+
+    """
+    
+    if diameters is None:
+        diameters = cluster_diameters(features, assignments)
+    if centroids is None:
+        centroids = cluster_centroids(features, assignments)
+        
+    separations = outside_cluster_separation(features, assignments, centroids)
+    
+    return diameters/separations
+
+
+def dispersion_over_centroid_to_centroid(features, assignments, centroids=None):
+    """
+    Compute a kind of signal to noise ratio : the inside cluster dispersion, over
+    the centroid to centroid mean distance.
+
+    Parameters
+    ----------
+    features : Numpy array
+        The features corresponding to the images being clustered.
+    assignments : Numpy array
+        The cluster assignment for each feature (image).
+    centroids : Numpy array, optional
+        The centroids of the clusters. If not given, this will compute them.
+        The default is None.
+
+    Returns
+    -------
+    Numpy array
+        The ratio of dispersions over centroid to centroid distance.
+
+    """
+    
+    if centroids is None:
+        centroids = cluster_centroids(features, assignments)
+        
+    dispersions = inside_cluster_dispersion(features, assignments)
+    centroid_to_centroid = mean_centroid_to_centroid(features, assignments, centroids)
+    
+    return dispersions/centroid_to_centroid

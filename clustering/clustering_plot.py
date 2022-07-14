@@ -253,7 +253,7 @@ def cluster_size_violin(directory, cut=2, save=False, filename=None):
     
     order = [str(len(counts[i])) for i in range(len(counts)-1)] + \
         [f'{len(counts[-1])} (original)']
-    order = sorted(order)
+    order = sorted(order, key=lambda x: int(x.split()[0]))
     # Creates a dataframe for easy violinplot with seaborn
     N_clusters = [len(counts[i])*np.ones(len(counts[i]), dtype=int) \
                    for i in range(len(counts)-1)]
@@ -290,6 +290,7 @@ def cluster_size_violin(directory, cut=2, save=False, filename=None):
         plt.savefig(directory + filename, bbox_inches='tight')
     plt.show()
     
+
     
 def cluster_diameter_violin(directory, save=False, filename=None):
     """
@@ -341,7 +342,7 @@ def cluster_diameter_violin(directory, save=False, filename=None):
     
     order = [str(len(diameters[i])) for i in range(len(diameters)-1)] + \
         [f'{len(diameters[-1])} (original)']
-    order = sorted(order)
+    order = sorted(order, key=lambda x: int(x.split()[0]))
     # Creates a dataframe for easy violinplot with seaborn
     N_clusters = [len(diameters[i])*np.ones(len(diameters[i]), dtype=int) \
                    for i in range(len(diameters)-1)]
