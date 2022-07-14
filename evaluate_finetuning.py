@@ -17,7 +17,7 @@ from clustering import tools
 
 
 transforms = extractor.SIMCLR_TRANSFORMS
-dataset = extractor.get_dataset('all_memes', transforms)
+dataset = extractor.create_dataset('all_memes', transforms)
 
 epochs = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     
