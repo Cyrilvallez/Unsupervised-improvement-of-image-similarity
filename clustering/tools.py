@@ -636,6 +636,21 @@ def cluster_intersection_over_union(assignment1, assignment2):
 
 
 def clean_dataset(mapping):
+    """
+    Returns the indices corresponding to only the perceptualy identical memes
+    in the Kaggle dataset.
+
+    Parameters
+    ----------
+    mapping : Numpy array
+        Mapping from indices to image path.
+
+    Returns
+    -------
+    indices : list
+        The indices.
+
+    """
     
     templates_to_remove = [
         'zuckerberg',
