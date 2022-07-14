@@ -290,6 +290,9 @@ def save_plots(directory):
     cplot.cluster_size_evolution(directory, save=True, filename='sizes.pdf')
     cplot.cluster_size_violin(directory, save=True, filename='sizes_violin.pdf')
     cplot.cluster_diameter_violin(directory, save=True, filename='diameters_violin.pdf')
+    cplot.completeness_homogeneity_plot(directory, save=True,
+                                        filename='completeness_homogeneity.pdf')
+    cplot.metrics_plot(directory, save=True, filename='metrics.pdf')
     
     for subfolder in tqdm([f.path for f in os.scandir(directory) if f.is_dir()]):
         cplot.cluster_size_plot(subfolder, save=True, filename='cluster_balance.pdf')

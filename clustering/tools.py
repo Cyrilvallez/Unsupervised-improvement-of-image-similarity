@@ -9,11 +9,8 @@ Created on Thu Jun  9 10:24:02 2022
 from PIL import Image
 import numpy as np
 import os
-import itertools
 from scipy.spatial.distance import pdist
-from sklearn.neighbors import NearestCentroid
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import homogeneity_completeness_v_measure
 from tqdm import tqdm
 
 from helpers import utils
@@ -329,19 +326,15 @@ def extract_features_from_folder_name(directory, return_distances=False):
         return features, mapping   
     
     
-def compute_assignment_groundtruth(algorithm, metric, partition='full_dataset'):
+def compute_assignment_groundtruth(mapping):
     """
     Find and save the assignment of memes inside each "real" clusters (from the
     groundtruths we have).
 
     Parameters
     ----------
-    algorithm : str
-        Algorithm name used for extracting the features from images.
-    metric : str
-        Metric to use for later distance computation (e.g diameters).
-    partition : str
-        The desired partition. Either `full_dataset` or `clean_dataset`.
+    mapping : Numpy array
+        Mapping from feature index to actual image (as a path name).
 
     Returns
     -------
@@ -349,11 +342,6 @@ def compute_assignment_groundtruth(algorithm, metric, partition='full_dataset'):
         The clustering assignment of the groundtruth.
     
     """
-    assert partition in ALLOWED_PARTITIONS
-    algorithm = '_'.join(algorithm.split())
-    folder = f'Clustering_results/{partition}/{metric}_GT_{algorithm}'
-    
-    _, mapping = extract_features_from_folder_name(folder)
     
     # Find the count of memes inside each "real" clusters (from the groundtruths)
     identifiers = []
@@ -365,9 +353,6 @@ def compute_assignment_groundtruth(algorithm, metric, partition='full_dataset'):
         
     encoder = LabelEncoder()
     assignment = encoder.fit_transform(identifiers)
-    
-    os.makedirs(folder, exist_ok=True)
-    np.save(folder + '/assignment.npy', assignment)
     
     return assignment
 
@@ -527,13 +512,17 @@ def get_groundtruth_attribute(directory, attribute, quantile=1.):
     """
     
     algorithm, metric, partition = extract_params_from_folder_name(directory)
+    _, mapping = extract_features_from_folder_name(directory)
     algorithm = '_'.join(algorithm.split())
     if attribute == 'assignment':
         try:
             groundtruth = np.load(f'Clustering_results/{partition}/{metric}_GT_{algorithm}/{attribute}.npy') 
         except FileNotFoundError:
-            groundtruth = compute_assignment_groundtruth(algorithm, metric,
-                                                         partition=partition)
+            groundtruth = compute_assignment_groundtruth(mapping)
+            folder = f'Clustering_results/{partition}/{metric}_GT_{algorithm}'
+            os.makedirs(folder, exist_ok=True)
+            np.save(folder + '/assignment.npy', groundtruth)
+            
     elif attribute == 'diameters':
         groundtruth = get_cluster_diameters(f'Clustering_results/{partition}/{metric}_GT_{algorithm}',
                                             quantile=quantile)
@@ -588,53 +577,6 @@ def extremes_from_centroids(features, mapping, assignment, centroids):
     return extremes
 
 
-def cluster_intersection_over_union(assignment1, assignment2):
-    """
-    Compute the intersection over union matrix of 2 cluster assignments. Each 
-    entry [i,j] represents the intersection over union of cluster i in `assignment1`
-    with cluster j in `assignment2`.
-
-    Parameters
-    ----------
-    assignment1 : Numpy array
-        The first cluster assignments.
-    assignment2 : Numpy array
-        TThe second cluster assignments.
-
-    Returns
-    -------
-    intersection : Numpy array
-        The intersection matrix.
-    indices1 : Numpy array
-        Indices of clusters corresponding to the columns.
-    indices2 : Numpy array
-        Indices of clusters corresponding to the rows.
-
-    """
-    
-    indices1 = np.unique(assignment1)
-    indices2 = np.unique(assignment2)
-    
-    # Do not take cluster of outliers into account, if it exists
-    indices1 = indices1[indices1 != -1]
-    indices2 = indices2[indices2 != -1]
-    
-    intersection = np.empty((len(indices1), len(indices2)))
-    
-    for i, index1 in enumerate(indices1):
-        
-        cluster1 = np.argwhere(assignment1 == index1).flatten()
-
-        for j, index2 in enumerate(indices2):
-            
-            cluster2 = np.argwhere(assignment2 == index2).flatten()
-            inter = np.intersect1d(cluster1, cluster2, assume_unique=True)
-            union = np.union1d(cluster1, cluster2)
-            intersection[i,j] = len(inter)/len(union)
-
-    return intersection, indices1, indices2
-
-
 def clean_dataset(mapping):
     """
     Returns the indices corresponding to only the perceptualy identical memes
@@ -673,9 +615,9 @@ def clean_dataset(mapping):
             indices.append(i)
             
     return indices
-        
 
-def get_metrics(subfolder):
+
+def get_scores(subfolder):
     """
     Compute the homogeneity and completeness of the clustering experiment in
     `subfolder` against the groundtruths.
@@ -708,89 +650,4 @@ def get_metrics(subfolder):
     assignments = np.load(subfolder + 'assignment.npy')
     groundtruth_assignment = get_groundtruth_attribute(subfolder, 'assignment')
     
-    h, c, v = homogeneity_completeness_v_measure(groundtruth_assignment, assignments)
-    
-    return h, c, v
-#%%
-
-if __name__ == '__main__':
-    
-    
-    
-    # algorithm = 'Dhash 64 bits'
-    # metric = 'hamming'
-    # compute_assignment_groundtruth(algorithm, metric)
-    # get_cluster_diameters('Clustering_results/hamming_GT_Dhash_64_bits', True)
-    # directory = 'Clustering_results/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples'
-    # foo = cluster_diameter_violin(directory, save=True, filename='test34.pdf')
-    
-    # directory = 'Clustering_results'
-    # for folder in [f.path for f in os.scandir(directory) if f.is_dir()]:
-        # if 'DBSCAN' in folder:
-            # for subfolder in [f.path for f in os.scandir(folder) if f.is_dir()]:
-                # save_extremes(subfolder)
-    
-    def find_templates(assignment, mapping):
-        
-        identifiers = []
-        for name in mapping:
-            identifier = name.rsplit('/', 1)[1].split('_', 1)[0]
-            if '.' in identifier:
-                identifier = name.rsplit('/', 1)[1].rsplit('.', 1)[0]
-            identifiers.append(identifier)
-                
-        identifiers = np.array(identifiers)
-                
-        cluster_names = []
-        for idx in np.unique(assignment):
-            cluster = identifiers[assignment == idx]
-            assert len(np.unique(cluster)) == 1
-            cluster_names.append(cluster[0])
-                
-        return np.array(cluster_names)
-    
-    """
-    path = 'Clustering_results/euclidean_GT_SimCLR_v2_ResNet50_2x'
-    assignment = np.load(path + '/assignment.npy')
-    diameters = get_cluster_diameters(path, quantile=0.5)
-    _, mapping = extract_features_from_folder_name(path)
-    templates = find_templates(assignment, mapping)
-    sorting = np.argsort(diameters)
-    bad = templates[sorting[-10:]]
-    """
-    
-    """
-    path = 'Clustering_results/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples/233-clusters_4.000-eps'
-    assignment = np.load(path + '/assignment.npy')
-    _, mapping = extract_features_from_folder_name(path)
-    
-    identifiers = []
-    for name in mapping:
-        identifier = name.rsplit('/', 1)[1].split('_', 1)[0]
-        if '.' in identifier:
-            identifier = name.rsplit('/', 1)[1].rsplit('.', 1)[0]
-        identifiers.append(identifier)
-            
-    identifiers = np.array(identifiers)
-    
-    
-    # meme = 'who-would-win'
-    meme = 'skyrim-100'
-    cond = identifiers == meme
-    foo = assignment[cond]
-    bar = (assignment == -1).sum()
-    """
-    
-    directory1 = 'Clustering_results/clean_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_5_samples/253-clusters_4.375-eps'
-    gt_assignment1 = get_groundtruth_attribute(directory1, 'assignment')
-    assignment1 = np.load(directory1 + '/assignment.npy')
-    
-    directory2 = 'Clustering_results/full_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_5_samples/268-clusters_4.375-eps'
-    gt_assignment2 = get_groundtruth_attribute(directory2, 'assignment')
-    assignment2 = np.load(directory2 + '/assignment.npy')
-    
-    features, mapping = extract_features_from_folder_name(directory2)
-    
-    
-
-    
+    return metrics.scores(groundtruth_assignment, assignments)

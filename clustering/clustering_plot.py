@@ -13,8 +13,10 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 import os
+import warnings
 
 from clustering import tools
+from clustering import metrics
 # from helpers import plot_config
 
 
@@ -495,7 +497,7 @@ def intersection_over_union(subfolder, other_subfolder=None, save=False, filenam
     else:
         other_assignment = np.load(other_subfolder + '/assignment.npy')
         
-    intersection, indices1, indices2 = tools.cluster_intersection_over_union(assignment, other_assignment)
+    intersection, indices1, indices2 = metrics.cluster_intersection_over_union(assignment, other_assignment)
     
     
     intersection = _reorder(intersection)
@@ -511,73 +513,39 @@ def intersection_over_union(subfolder, other_subfolder=None, save=False, filenam
         fig.savefig(subfolder + filename, bbox_inches='tight')
     plt.show()
     
-    
-def intersection_plot(subfolder, save=False, filename=None):
-    
-    tools._is_subfolder(subfolder)
-    
-    if save and filename is None:
-        raise ValueError('Filename cannot be None if save is True.')
-        
-    if subfolder[-1] == '/':
-        subfolder = subfolder.rsplit('/', 1)[0]
-        
-    directory = subfolder.rsplit('/', 1)[0]
-    algorithm, _, _ = tools.extract_params_from_folder_name(directory)
-    ref_assignment = np.load(subfolder + 'assignment.npy')
-    
-    subfolders = [f.path for f in os.scandir(directory) if f.is_dir()]
-    subfolders = sorted(subfolders, reverse=True,
-                        key=lambda x: int(x.rsplit('/', 1)[1].split('-', 1)[0]))
-    
-    max_intersections = []
-    N_clusters = []
-    
-    for folder in subfolders:
-        if folder == subfolder:
-            continue
-        assignment = np.load(folder + '/assignment.npy')
-        intersection, _, _ = tools.cluster_intersections(ref_assignment, assignment,
-                                                         algorithm)
-        max_intersection = np.max(intersection, axis=1)
-        max_intersections.append(max_intersection)
-        N_clusters.append(len(intersection[0,:]))
-        
-    groundtruth_assignment = tools.get_groundtruth_attribute(directory, 'assignment')
-    intersection, _, _ = tools.cluster_intersections(ref_assignment, groundtruth_assignment,
-                                                     algorithm)
-    max_intersection = np.max(intersection, axis=1)
-    max_intersections.append(max_intersection)
-    N_clusters.append(len(intersection[0,:]))
-    
-    N = len(max_intersections)
-    
-    fig, axes = plt.subplots(N, 1, figsize=(15, 15), sharex=True, sharey=True)
-    
-    for intersection, N_clust, ax in zip(max_intersections[0:-1], N_clusters[0:-1],
-                                         axes[0:-1]):
-        
-        ax.hist(intersection, bins=100, range=(0, 1))
-        ax.set(ylabel=f'{N_clust} clusters')
-        ax.set(yscale='log')
-        ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda x, pos: f'{x:.2%} %'))
-        
-    axes[-1].hist(max_intersections[-1], bins=100, color=['tab:red'], range=(0, 1))
-    axes[-1].set(ylabel='Original')
-    axes[-1].set(xlabel='Maximum clusters intersection')
-    axes[-1].set(yscale='log')
-    axes[-1].xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda x, pos: f'{x:.2%} %'))
-    
-    if save:
-        fig.savefig(subfolder + '/' + filename, bbox_inches='tight')
-    plt.show()
 
 
 def completeness_homogeneity_plot(directory, save=False, filename=None):
+    """
+    Creates a plot showing homogeneity vs completeness for different value of
+    the distance in the clustering (which is equivalent to the number of cluster
+    varying). The idea is to get something similar to a precision-recall curve 
+    for clustering. Note that for DBSCAN, the metrics are ill defined because
+    of the cluster of outliers.
+
+    Parameters
+    ----------
+    directory : str
+        Directory where the results are.
+    save : bool, optional
+        Whether to save the figure or not. The default is False.
+    filename : str, optional
+        Filename for saving the figure. The default is None.
+
+    Returns
+    -------
+    None.
+
+    """
     
     if directory[-1] != '/':
         directory += '/'
-    
+        
+    if 'DBSCAN' in directory:
+        warnings.warn(('The clustering metrics `completeness`, `homogeneity`'
+                       ' and `v-score` are ill defined for DBSCAN because of'
+                       ' the cluster of outliers'), UserWarning)
+        
     subfolders = [f.path for f in os.scandir(directory) if f.is_dir()]
     subfolders = sorted(subfolders, key=lambda x: int(x.rsplit('/', 1)[1].split('-', 1)[0]))
     
@@ -586,7 +554,7 @@ def completeness_homogeneity_plot(directory, save=False, filename=None):
     distances = []
     
     for subfolder in subfolders:
-        homogeneity, completeness, _ = tools.get_metrics(subfolder)
+        homogeneity, completeness, _ = tools.get_scores(subfolder)
         homogeneities.append(homogeneity)
         completenesses.append(completeness)
         if 'DBSCAN' in directory:
@@ -613,13 +581,37 @@ def completeness_homogeneity_plot(directory, save=False, filename=None):
         plt.savefig(directory + filename, bbox_inches='tight')
     plt.show()
     
-    return homogeneities, completenesses, distances
 
 
 def metrics_plot(directory, save=False, filename=None):
+    """
+    Creates a plot showing homogeneity, completeness and v-score for different
+    value of the distance in the clustering (which is equivalent to the number
+    of cluster varying). Note that for DBSCAN, the metrics are ill defined because
+    of the cluster of outliers.
+
+    Parameters
+    ----------
+    directory : str
+        Directory where the results are.
+    save : bool, optional
+        Whether to save the figure or not. The default is False.
+    filename : str, optional
+        Filename for saving the figure. The default is None.
+
+    Returns
+    -------
+    None.
+
+    """
     
     if directory[-1] != '/':
         directory += '/'
+        
+    if 'DBSCAN' in directory:
+        warnings.warn(('The clustering metrics `completeness`, `homogeneity`'
+                       ' and `v-score` are ill defined for DBSCAN because of'
+                       ' the cluster of outliers'), UserWarning)
     
     subfolders = [f.path for f in os.scandir(directory) if f.is_dir()]
     subfolders = sorted(subfolders, reverse=True,
@@ -631,7 +623,7 @@ def metrics_plot(directory, save=False, filename=None):
     N_clusters = []
     
     for subfolder in subfolders:
-        homogeneity, completeness, v_measure = tools.get_metrics(subfolder)
+        homogeneity, completeness, v_measure = tools.get_scores(subfolder)
         homogeneities.append(homogeneity)
         completenesses.append(completeness)
         v_measures.append(v_measure)
@@ -660,43 +652,4 @@ def metrics_plot(directory, save=False, filename=None):
     if save:
         plt.savefig(directory + filename, bbox_inches='tight')
     plt.show()
-
-#%%
-
-if __name__ == '__main__':
-
-    # directory = 'Clustering_results'
-    # for folder in [f.path for f in os.scandir(directory) if f.is_dir()]:
-        # if 'DBSCAN' in folder:
-            # for subfolder in [f.path for f in os.scandir(folder) if f.is_dir()]:
-                # intersection_plot(subfolder, save=True, filename='intersection.pdf')
-                # test = 'Clustering_results/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples/220-clusters_4.125-eps'
-                # intersection_plot(test, save=True, filename='test.pdf')
-
-    # subfolder = 'Clustering_results/clean_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_5_samples/253-clusters_4.375-eps'
-    # intersection_over_union(subfolder, save=True, filename='test1.pdf')
-    # assignment = np.load(subfolder + '/assignment.npy')
-    # if 'DBSCAN' in subfolder:
-        # assignment = assignment[assignment != -1]
-
-    # directory = 'Clustering_results/full_dataset/euclidean_ward_SimCLR_v2_ResNet50_2x'
-    # homogeneity, completeness, distance = completeness_homogeneity_plot(directory, True, 'test.pdf')
-    # metrics_plot(directory, save=True, filename='test2.pdf')
-
-
-    # a, b = tools.get_metrics(directory + '/24-clusters_5.500-eps')
-    # print(f'Homogeneity : {a:.3f}')
-    # print(f'Completeness : {b:.3f}')
-    
-    a = 'Clustering_results/clean_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_5_samples/'
-    cluster_diameter_violin(a, save=True, filename='diameters_violin.pdf')
-    
-   #%%
-if __name__ == '__main__':
-    from sklearn.metrics import completeness_score, homogeneity_score
-    
-    directory = 'Clustering_results/clean_dataset/euclidean_DBSCAN_SimCLR_v2_ResNet50_2x_20_samples'
-    gt_assignment = tools.get_groundtruth_attribute(directory, 'assignment')
-    print(completeness_score(gt_assignment, np.ones(len(gt_assignment))))
-    print(homogeneity_score(gt_assignment, np.arange(len(gt_assignment))))
 
