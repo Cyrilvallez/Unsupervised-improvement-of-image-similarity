@@ -7,11 +7,11 @@ Created on Mon Feb 14 08:29:00 2022
 """
 
 # =============================================================================
-# This script generates numerous variations of an image, designed to test
-# the robustness of different hashing algorithms
+# This script generates numerous variations of an image
 # =============================================================================
 
 import os
+import argparse
 import numpy as np
 from PIL import Image, ImageEnhance, ImageDraw, ImageFont
 import torchvision.transforms.functional as F
@@ -22,8 +22,6 @@ from io import BytesIO
 from tqdm import tqdm
 np.random.seed(256)
 
-path = os.path.abspath(__file__)
-current_folder = os.path.dirname(path)
 
 def _find(path):
     """
@@ -822,3 +820,34 @@ def retrieve_ids(**kwargs):
     return IDs
 
         
+
+
+if __name__ == '__main__':
+    
+    parser = argparse.ArgumentParser(description='Image attack generator')
+    parser.add_argument('input_path', type=str,
+                        help=('Path to the folder containing the original images.'
+                              '\nE.g : ~/Desktop/images'))
+    parser.add_argument('output_path', type=str,
+                        help=('Path to the folder where the attacks will be generated'
+                              '\nE.g : ~/Desktop/attacks'))
+    args = parser.parse_args()
+    
+    in_path = args.input_path
+    out_path = args.output_path
+    
+    if in_path[-1] != '/':
+        in_path += '/'
+    if out_path[-1] != '/':
+        out_path += '/'
+    
+    os.makedirs(out_path, exist_ok=True)
+    
+    in_images = [in_path + file for file in os.listdir(in_path) \
+                 if not file.startswith('.')]
+    out_images = [out_path + file.rsplit('.', 1)[0] for file in os.listdir(in_path) \
+                  if not file.startswith('.')]
+        
+    
+    perform_all_and_save_list(in_images, save_name_list=out_images)
+    
