@@ -6,6 +6,10 @@ Created on Tue Jul  5 10:58:28 2022
 @author: cyrilvallez
 """
 
+# =============================================================================
+# Quick python script to evaluate finetuning performances
+# =============================================================================
+
 import numpy as np
 import os
 import matplotlib.pyplot as plt
