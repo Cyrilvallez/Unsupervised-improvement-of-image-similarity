@@ -48,4 +48,7 @@ python3 kaggle_splitter.py path_to_archive/reddit_posts.csv path_to_archive/imag
 
 This will create a new folder `path_to_archive/images/Templates` containing templates for each class. Then please copy the folder `path_to_archive/images/kaggle_images` under the new name and path `path_to_repo/Datasets/Kaggle_memes/Memes`, and the folder `path_to_archive/images/Templates` to the new path `path_to_repo/Datasets/Kaggle_memes/Templates`.
 
+## Flickr dataset
+
+For the Flickr dataset, please download only the first half (images0.zip to images4.zip on their website), and then put every subfolder of those files (named `0` to `49`) inside a single folder `path_to_repo/Datasets/Flickr500K`.
 
