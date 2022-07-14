@@ -1,6 +1,5 @@
 import csv
 from pathlib import Path
-from pprint import pprint
 import os
 import shutil
 import argparse
@@ -34,7 +33,7 @@ def get_ref_memes():
         corrected_template_name = template.replace('_', '-')
         destination_path = Path(reference_store).joinpath(template + Path(stem_2_fname[
                                                                               occurence]).suffix)
-        print("%s > %s" % (source_path, destination_path))
+        # print("%s > %s" % (source_path, destination_path))
         # shutil.copyfile(source_path, destination_path)
 
     with open(reddit_posts_csv_location, 'r', encoding='utf-8') as source_csv:
@@ -55,7 +54,7 @@ def get_ref_memes():
             rename_path = Path(corrected_template_name + '_' + corrected_fname_stem +
                                base_path.suffix)
             rename_path = Path(image_store).joinpath(rename_path)
-            print("%s > %s" % (base_path, rename_path))
+            # print("%s > %s" % (base_path, rename_path))
 
             if base_path.exists():
                 base_path.rename(rename_path)

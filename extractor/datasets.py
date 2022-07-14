@@ -223,28 +223,19 @@ def create_dataset(dataset_name, transforms):
         raise ValueError(f'The dataset name must be one of {*VALID_DATASET_NAMES,}.')
     
     if dataset_name == 'Kaggle_templates':
-        path1 = 'Datasets/Kaggle_memes/Templates_experimental/'
-        path2 = 'Datasets/Kaggle_memes/Templates_control/'
+        path = 'Datasets/Kaggle_memes/Templates/'
     elif dataset_name == 'Kaggle_memes':
-        path1 = 'Datasets/Kaggle_memes/Experimental/'
-        path2 = 'Datasets/Kaggle_memes/Control/'
+        path = 'Datasets/Kaggle_memes/Memes/'
     elif dataset_name == 'BSDS500_original':
-        path1 = 'Datasets/BSDS500/Experimental/'
-        path2 = 'Datasets/BSDS500/Control/'
+        path = 'Datasets/BSDS500/Original/'
     elif dataset_name == 'BSDS500_attacks':
-        path1 = 'Datasets/BSDS500/Experimental_attacks/'
-        path2 = 'Datasets/BSDS500/Control_attacks/'
+        path = 'Datasets/BSDS500/Attacks/'
     elif dataset_name == 'Flickr500K':
         return FlickrDataset(transforms)
     elif dataset_name == 'all_memes':
         return all_memes_dataset(transforms)
-        
-    # Combine the images into a single list because they are split into
-    # control/experimental
-    imgs = [path1 + file for file in os.listdir(path1) if not file.startswith('.')]
-    imgs += [path2 + file for file in os.listdir(path2) if not file.startswith('.')]
     
-    return ImageDataset(imgs, dataset_name, transforms=transforms)
+    return ImageDataset(path, dataset_name, transforms=transforms)
 
 
 

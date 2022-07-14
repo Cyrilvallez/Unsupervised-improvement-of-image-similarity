@@ -112,8 +112,8 @@ class ImageDataset(Dataset):
         super().__init__()
         
         if (type(dataset_path) == str or type(dataset_path) == np.str_):
-            # Recursively take files in folder without hidden subfolders or files
-            # starting by `.` (e.g .git/ or .DS_Store)
+            # Recursively take files in folder without hidden subfolders or hidden
+            # files starting by `.` (e.g .git/ or .DS_Store)
             images = []
             for root, subdirs, files in os.walk(dataset_path):
                 subdirs[:] = [subdir for subdir in subdirs if not subdir.startswith('.')]
