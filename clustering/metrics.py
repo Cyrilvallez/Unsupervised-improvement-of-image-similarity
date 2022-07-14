@@ -50,7 +50,7 @@ def cluster_diameters(features, assignments, quantile=1.):
         indices = assignments == cluster_idx
         
         # If the cluster has a lot of representants, try computing on gpu
-        if indices.sum() > 4000 and torch.cuda.is_available():
+        if indices.sum() > 2000 and torch.cuda.is_available():
             cluster_features = torch.tensor(features[indices], device='cuda')
             distances = F.pdist(cluster_features).cpu().numpy()
         else:

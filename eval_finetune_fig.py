@@ -129,9 +129,6 @@ sns.violinplot(x='Epoch', y='Mean centroid to centroid distance', data=frame3, p
 # _, metric, _ = tools.extract_params_from_folder_name(directory)
 # plt.ylabel(f'Cluster diameter ({metric} distance)')
 
-locs, labels = plt.xticks()
-labels = [label.get_text().split()[0] for label in labels]
-plt.xticks(locs, labels)
 legend_elements = [Patch(facecolor='tab:blue', label='Finetuning'),
                     Patch(facecolor='tab:red', label='Original')]
 plt.legend(handles=legend_elements, loc='best')

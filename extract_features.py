@@ -20,7 +20,8 @@ batch_size = 256
 workers = 6
 
 
-datasets = extractor.VALID_DATASET_NAMES
+datasets = ['Kaggle_templates', 'Kaggle_memes', 'BSDS500_original',
+            'BSDS500_attacks', 'Flickr500K',]
 
 
 if type(model) == str:

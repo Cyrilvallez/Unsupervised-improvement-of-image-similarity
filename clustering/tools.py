@@ -211,7 +211,7 @@ ALLOWED_PARTITIONS = [
     'clean_dataset',
     ]
         
-def get_dataset(partition, algorithm):
+def get_features(partition, algorithm):
     """
     Extract the features and mapping corresponding to the wanted `partition` of
     the kaggle memes dataset.
@@ -237,8 +237,12 @@ def get_dataset(partition, algorithm):
     dataset2 = 'Kaggle_templates'
     
     # Load features and mapping to actual images
-    features, mapping = utils.combine_features(algorithm, dataset1, dataset2,
-                                           to_bytes=False)
+    try:
+        features, mapping = utils.combine_features(algorithm, dataset1, dataset2,
+                                                   to_bytes=False)
+    except ValueError:
+        features, mapping = utils.load_features(algorithm, 'all_memes',
+                                                   to_bytes=False)
     if partition == 'clean_dataset':
         indices = clean_dataset(mapping)
         features, mapping = features[indices], mapping[indices]
@@ -310,7 +314,7 @@ def extract_features_from_folder_name(directory, return_distances=False):
     algorithm, metric, partition = extract_params_from_folder_name(directory)
     
     # Load features and mapping to actual images
-    features, mapping = get_dataset(partition, algorithm)
+    features, mapping = get_features(partition, algorithm)
     
     if return_distances:
         identifier = '_'.join(algorithm.split(' '))

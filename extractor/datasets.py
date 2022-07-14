@@ -182,6 +182,7 @@ VALID_DATASET_NAMES = [
     'BSDS500_original',
     'BSDS500_attacks',
     'Flickr500K',
+    'all_memes'
     ]
 
 DATASET_DIMS = {
@@ -190,6 +191,7 @@ DATASET_DIMS = {
     'BSDS500_original' : 500,
     'BSDS500_attacks' : 11600,
     'Flickr500K': 500000,
+    'all_memes': 43910,
     }
 
     
@@ -234,6 +236,8 @@ def create_dataset(dataset_name, transforms):
         path2 = 'Datasets/BSDS500/Control_attacks/'
     elif dataset_name == 'Flickr500K':
         return FlickrDataset(transforms)
+    elif dataset_name == 'all_memes':
+        return all_memes_dataset(transforms)
         
     # Combine the images into a single list because they are split into
     # control/experimental
@@ -265,6 +269,8 @@ def all_memes_dataset(transforms):
     dataset2 = create_dataset('Kaggle_templates', transforms)
     
     imgs = dataset1.images.tolist() + dataset2.images.tolist()
-    name = dataset1.name + '+' + dataset2.name
+    name = 'all_memes'
     
     return ImageDataset(imgs, name, transforms)
+
+
