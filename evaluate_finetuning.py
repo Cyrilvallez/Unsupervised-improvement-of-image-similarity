@@ -50,7 +50,7 @@ dataset = extractor.create_dataset('all_memes', transforms)
 epochs = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     
 # Paths where the finetuned models have been saved
-paths = [f'first_test_models/2022-06-30_20:03:28/epoch_{a}.pth' for a in epochs[1:]]
+paths = [f'first_test_models/2022-06-30_20:03:28/epoch_{a}.pth' for a in epochs]
     
 all_diameters = []
 all_centroids = []
