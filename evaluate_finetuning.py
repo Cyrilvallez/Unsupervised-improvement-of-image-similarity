@@ -94,7 +94,7 @@ for epoch, path in zip(epochs, paths):
                                                                                 centroids))
     
     
-folder = 'Finetuning_eval_fig'
+folder = 'Finetuning_eval_fig/'
 os.makedirs(folder, exist_ok=True)
 
 density_plot(epochs, all_diameters, filename=folder + 'diameters.pdf',
