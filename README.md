@@ -30,7 +30,9 @@ This is the script used to perform experiments. You need to provide the name of 
 
 You need to manually change these parameters in the script before running it. Once you changed the parameters, you can run the file as
 
-> python3 search_experiment.py experiment_name
+```
+python3 search_experiment.py experiment_name
+```
 
 and it will save the results under `Results/experiment_name/results.json
 
@@ -54,7 +56,10 @@ python3 hierarchical.py [--algo ALGO [ALGO ...]] [--metric {euclidean,cosine}] \
 ```
 
 It will save the cluster assignments and (if --save is True), different plots and cluster attribute in a directory tree starting at `Clustering_results`. To get details about each argument, use 
-> python3 hierarchical.py -h
+
+```
+python3 hierarchical.py -h
+```
 
 ### **DBSCAN.py** 
 
@@ -67,7 +72,10 @@ python3 DBSCAN.py [--algo ALGO [ALGO ...]] [--metric {euclidean,cosine}] \
 ```
 
 It will save the cluster assignments and (if --save is True), different plots and cluster attribute in a directory tree starting at `Clustering_results`. To get details about each argument, use 
-> python3 DBSCAN.py -h
+
+```
+python3 DBSCAN.py -h
+```
 
 ### **finetune.py**
 
@@ -85,7 +93,16 @@ python3 finetune.py --train_dataset TRAIN_DATASET --log_dir LOG_DIR \
 ```
 
 It will perform the training and log some metric to `log_dir`, and the model at each epoch under `log_dir_models`. To get details about each argument, use 
-> python3 finetune.py -h
+
+```
+python3 finetune.py -h
+```
+
+### **evaluate_finetuning.py**
+
+This is a quick file to evaluate the improvement/degradation of models during the finetuning process. You need to specify the paths to the model checkpoints during finetuning, and the folder where the figures will be saved.
+
+You need to manually change these parameters in the script before running it.
 
 # Pre-trained SimCLR models 
 
@@ -107,7 +124,9 @@ python3 download.py
 
 By default, this will only download one model. To download others, please have a look at the `--model` argument. If unsure what is accepted argument, you can always check the help message :
 
-> python3 download.py -h
+```
+python3 download.py -h
+```
 
 # Datasets
 
@@ -142,3 +161,7 @@ For the Flickr dataset, please download only the first half (images0.zip to imag
 ## Cartoons dataset
 
 This dataset is only used for finetuning the models, and hence does not need to be placed in any specific location in the repository. However if you want to train on it, you will need to provide a valid path to it at runtime.
+
+# Computational setup
+
+For most of the scripts, at least 1 GPU is almost essential. For the finetuning, we do not even give the possibility to run on CPU, as it is absolutely impossible to get results in a realistic time. Moreover, for the finetuning GPUs with a lot of memory(such as a100 GPUs) are very much welcome as it benefits from large batch sizes.

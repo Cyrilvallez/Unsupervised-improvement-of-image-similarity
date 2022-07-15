@@ -457,7 +457,8 @@ def parse_args():
     parser.add_argument('--epochs', type=int, default=100, 
                         help='The number of epochs to perform.')
     parser.add_argument('--batch_size', type=int, default=32, 
-                        help='The batch size per GPU.')
+                        help=('The batch size per GPU. Multiply by the number of'
+                              ' GPUs you provide to get the total batch size'))
     parser.add_argument('--temperature', type=float, default=0.1, 
                         help='The temperature for the loss.')
     parser.add_argument('--weight_decay', type=float, default=1e-6, 

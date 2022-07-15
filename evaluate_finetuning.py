@@ -50,7 +50,7 @@ dataset = extractor.create_dataset('all_memes', transforms)
 epochs = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     
 # Paths where the finetuned models have been saved
-paths = [f'first_test_models/2022-06-30_20:03:28/epoch_{a}.pth' for a in epochs]
+paths = [f'cartoons_finetuning_models/2022-06-30_20:03:28/epoch_{a}.pth' for a in epochs]
     
 all_diameters = []
 all_centroids = []
@@ -69,7 +69,7 @@ for epoch, path in zip(epochs, paths):
         model = SimCLR.load_encoder(path)
         # Give the model a name
         name = f'SimCLR_finetuned_epoch_{epoch}'
-        # Save features
+        # Extract and save features
         extractor.extract_and_save_neural(model, dataset, name=name)
         # Load the features of only the perceptually similar memes
         features, mapping = tools.get_features('clean_dataset', name)
