@@ -46,6 +46,24 @@ You need to manually change these parameters in the script before running it.
 
 ### **hierarchical.py**
 
+This script allows to run hierarchical clustering on a dataset of images. The syntax to run it is the following :
+
+> python3 hierarchical.py [--algo] [--metric] [--linkage] [--partition] [--save]
+
+It will save the cluster assignments and (if --save is True), different plots and cluster attribute in a directory tree starting at `Clustering_results`. To get details about each argument, use 
+> python3 hierarchical.py -h
+
+### **DBSCAN.py** 
+
+Run DBSCAN clustering algorithm on a dataset of images. The syntax to run it is the following :
+
+> python3 DBSCAN.py [--algo] [--metric] [--precisions] [--samples] [--partition] [--save]
+
+It will save the cluster assignments and (if --save is True), different plots and cluster attribute in a directory tree starting at `Clustering_results`. To get details about each argument, use 
+> python3 DBSCAN.py -h
+
+### **finetune.py**
+
 
 
 # Pre-trained SimCLR models 

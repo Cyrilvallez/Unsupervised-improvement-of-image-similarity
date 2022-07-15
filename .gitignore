@@ -4,8 +4,7 @@ Datasets
 Features
 Neighbors
 Clustering_results
-first_test
-first_test_models
-Finetuning_eval
+cartoons_finetuning
+cartoons_finetuning_models
 **/tf_checkpoints
 **/torch_checkpoints

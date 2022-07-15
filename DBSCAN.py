@@ -22,8 +22,9 @@ parser.add_argument('--metric', type=str, default='euclidean', choices=['euclide
                     help='The metric for distance between features.')
 
 parser.add_argument('--precisions', type=float, nargs='+', default=None,
-                    help=('The maximum distance between two samples for one to be'
-                          'considered as in the neighborhood of the other.'))
+                    help=('The maximum distances between two samples for one to be'
+                          'considered as in the neighborhood of the other.'
+                          ' You can give more than 1 value'))
 
 parser.add_argument('--samples', type=int, default=5, 
                     help='The number of samples in a neighborhood for a point to be considered as a core point.')
