@@ -24,7 +24,7 @@ By default, this will only download one model. To download others, please have a
 
 # Datasets
 
-We personally used 3 datasets that can be found online. They are the [BSDS500 dataset](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/resources.html), [Kaggle memes dataset](https://www.kaggle.com/datasets/gmorinan/most-viewed-memes-templates-of-2018) and the first half of the [Flickr 1M dataset](https://press.liacs.nl/mirflickr/mirdownload.html). For the kaggle memes dataset, one then need to run `data_retrieval/kaggle_splitter.py` to extract templates and annotate correctly the memes. 
+We personally used 4 datasets that can be found online. They are the [BSDS500 dataset](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/resources.html), [Kaggle memes dataset](https://www.kaggle.com/datasets/gmorinan/most-viewed-memes-templates-of-2018), the first half of the [Flickr 1M dataset](https://press.liacs.nl/mirflickr/mirdownload.html) and the [Cartoon classification dataset](https://www.kaggle.com/datasets/volkandl/cartoon-classification). 
 
 ## BSDS500 dataset
 
@@ -52,3 +52,6 @@ This will create a new folder `path_to_archive/images/Templates` containing temp
 
 For the Flickr dataset, please download only the first half (images0.zip to images4.zip on their website), and then put every subfolder of those files (named `0` to `49`) inside a single folder `path_to_repo/Datasets/Flickr500K`.
 
+## Cartoons dataset
+
+This dataset is only used for finetuning the models, and hence does not need to be placed in any specific location in the repository. However if you want to train on it, you will need to provide a valid path to it at runtime.
