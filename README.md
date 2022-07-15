@@ -1,4 +1,4 @@
-# Feature search at scale
+# Unsupervised improvement of image similarity
 
 This library provides solutions for extracting features from images, perform experiments on search time in large databases of such features, clustering experiments, and learning augmentation (fine-tuning) of SimCLR trained models. It is organized in 4 main packages :
 
