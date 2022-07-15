@@ -1,4 +1,52 @@
-# Feature-search-at-scale
+# Feature search at scale
+
+This library provides solutions for extracting features from images, perform experiments on search time in large databases of such features, clustering experiments, and learning augmentation (fine-tuning) of SimCLR trained models. It is organized in 4 main packages :
+
+1. *extractor* : package to extract the features from images using different techniques
+2. *fast_search* : package to perform experiments on efficient nearest neighbors search in large databases
+3. *clustering* : package to perform experiemnts on clustering of images
+4. *finetuning* : package to finetune SimCLR models
+
+There are also other packages being used more or less as helpers for running the main packages :
+
+5. *helpers* : helpers functions
+6. *data_retrieval* : processing of the datasets 
+7. *SimCLRv1* : Model definitions and downloader for the SimCLRv1 pre-trained models
+7. *SimCLRv2* : Model definitions and downloader for the SimCLRv2 pre-trained models
+
+# Usage
+
+In the root of the repository, there are different scripts made for specific tasks. 
+
+### **extract_features.py**
+
+This is designed to extract features from images and save them under the folder `Features` in the repository. This way they can be easily accessed for downstream tasks. You need to specify a model name (or a Pytorch module), the transforms you wish to apply as pre-processing on images, and the datasets of images you want to extract the features from.
+
+You need to manually change these parameters in the script before running it.
+
+### **search_experiment.py**
+
+This is the script used to perform experiments. You need to provide the name of the algorithm from which the features were extracted, the datasets on which you want to perform the experiment, and some parameters depending on the experiment function you choose.
+
+You need to manually change these parameters in the script before running it. Once you changed the parameters, you can run the file as
+
+> python3 search_experiment.py experiment_name
+
+and it will save the results under `Results/experiment_name/results.json
+
+### **process.py**
+
+Process the results from an experiment as performed by `search_experiment.py`. You will need to provide the experiment_name you provided while performing the experiment. Then you can choose what plot to create or not. It will save them in the experiment_name folder.
+
+### **explore_neighbors.py**
+
+The script will save the 10 nearest neighbors of each image in the query_dataset for visual inspection of the quality of retrieval in the database. You need to provide the algorithm name, the datasets names, the metric for image distance, and the folder to which save the results.
+
+You need to manually change these parameters in the script before running it. 
+
+### **hierarchical.py**
+
+
 
 # Pre-trained SimCLR models 
 
@@ -24,7 +72,7 @@ By default, this will only download one model. To download others, please have a
 
 # Datasets
 
-We personally used 3 datasets that can be found online. They are the [BSDS500 dataset](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/resources.html), [Kaggle memes dataset](https://www.kaggle.com/datasets/gmorinan/most-viewed-memes-templates-of-2018) and the first half of the [Flickr 1M dataset](https://press.liacs.nl/mirflickr/mirdownload.html). For the kaggle memes dataset, one then need to run `data_retrieval/kaggle_splitter.py` to extract templates and annotate correctly the memes. 
+We personally used 4 datasets that can be found online. They are the [BSDS500 dataset](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/resources.html), [Kaggle memes dataset](https://www.kaggle.com/datasets/gmorinan/most-viewed-memes-templates-of-2018), the first half of the [Flickr 1M dataset](https://press.liacs.nl/mirflickr/mirdownload.html) and the [Cartoon classification dataset](https://www.kaggle.com/datasets/volkandl/cartoon-classification). 
 
 ## BSDS500 dataset
 
@@ -52,3 +100,6 @@ This will create a new folder `path_to_archive/images/Templates` containing temp
 
 For the Flickr dataset, please download only the first half (images0.zip to images4.zip on their website), and then put every subfolder of those files (named `0` to `49`) inside a single folder `path_to_repo/Datasets/Flickr500K`.
 
+## Cartoons dataset
+
+This dataset is only used for finetuning the models, and hence does not need to be placed in any specific location in the repository. However if you want to train on it, you will need to provide a valid path to it at runtime.

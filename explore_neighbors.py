@@ -20,10 +20,13 @@ distractor_dataset = 'Flickr500K'
 # query_dataset = 'BSDS500_attacks'
 query_dataset = 'Kaggle_memes'
 
-save_folder = 'Results/Contrastive_memes_L2/'
-
-factory_str = 'Flat'
+save_folder = 'SimCLR_memes'
 metric = 'L2'
+
+
+
+save_folder = 'Neighbors/' + save_folder + '/'
+factory_str = 'Flat'
 
 experiment = search.Experiment(algorithm, main_dataset, query_dataset,
                         distractor_dataset=distractor_dataset)

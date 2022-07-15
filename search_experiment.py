@@ -39,5 +39,5 @@ ks = [1, 2, 3, 4, 5, 10, 20]
 filename = save_folder + 'results.json'
 search.compare_k_Flat(ks, algorithm, main_dataset, query_dataset,
                         distractor_dataset, filename)
-# ex.compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
+# search.compare_nprobe_IVF(nlist, nprobes, algorithm, main_dataset, query_dataset,
                         # distractor_dataset, filename, k=10)
