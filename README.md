@@ -1,5 +1,19 @@
 # Feature-search-at-scale
 
+This library provides solutions for extracting features from images, perform experiments on search time in large databases of such features, clustering experiments, and learning augmentation (fine-tuning) of SimCLR trained models. It is organized in 4 main packages :
+
+1. *extractor* : package to extract the features from images using different techniques
+2. *fast_search* : package to perform experiments on efficient nearest neighbors search in large databases
+3. *clustering* : package to perform experiemnts on clustering of images
+4. *finetuning* : package to finetune SimCLR models
+
+There are also other packages being used more or less as helpers for running the main packages :
+
+5. *helpers* : helpers functions
+6. *data_retrieval* : processing of the datasets 
+7. *SimCLRv1* : Model definitions and downloader for the SimCLRv1 pre-trained models
+7. *SimCLRv2* : Model definitions and downloader for the SimCLRv2 pre-trained models
+
 # Pre-trained SimCLR models 
 
 The pre-trained SimCLR models we used are not available in this repository due to their large size. To download them, please navigate to the path where you cloned the repo and run the following commands from your terminal :
