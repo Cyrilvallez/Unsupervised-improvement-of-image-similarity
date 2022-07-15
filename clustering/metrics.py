@@ -278,8 +278,8 @@ def mean_centroid_to_centroid(features, assignments, centroids=None):
     N = len(centroids)
     distances = []
     for i, centroid in enumerate(centroids):
-        indices = np.ones(N, dtype=int)
-        indices[i] = 0
+        indices = [True for i in range(N)]
+        indices[i] = False
         distance = np.mean(np.linalg.norm(centroids[indices] - centroids[i], axis=1))
         distances.append(distance)
         
