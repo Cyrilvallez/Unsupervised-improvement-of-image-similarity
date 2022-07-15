@@ -57,7 +57,7 @@ def cluster_size_plot(subfolder, save=False, filename=None):
     
     unique, counts = np.unique(assignments, return_counts=True)
 
-    fig, (ax1,ax2) = plt.subplots(2,1, figsize=(15,7),
+    fig, (ax1, ax2) = plt.subplots(2,1, figsize=(15,7),
                                   gridspec_kw={'height_ratios': [3, 1]})
 
     sns.countplot(x=assignments, ax=ax1)
@@ -162,7 +162,8 @@ def cluster_size_evolution(directory, save=False, filename=None):
     counts = []
     
     subfolders = [f.path for f in os.scandir(directory) if f.is_dir()]
-    subfolders = sorted(subfolders, reverse=True,
+    subfolders = sorted(subfolders,
+                        reverse=True,
                         key=lambda x: int(x.rsplit('/', 1)[1].split('-', 1)[0]))
     
     for folder in subfolders:
@@ -188,7 +189,7 @@ def cluster_size_evolution(directory, save=False, filename=None):
     count = -np.sort(-count)
     
     axes[-1].bar(np.arange(len(count)), count, color='r')
-    axes[-1].set(ylabel='Original clusters')
+    axes[-1].set(ylabel='Original clusters')  # AK: so that only generates clusters?
     axes[-1].set(xlabel='Number of cluster')
     axes[-1].set(yscale='log')
     lims = axes[-1].get_ylim()
@@ -253,10 +254,12 @@ def cluster_size_violin(directory, cut=2, save=False, filename=None):
     
     order = [str(len(counts[i])) for i in range(len(counts)-1)] + \
         [f'{len(counts[-1])} (original)']
+
     order = sorted(order, key=lambda x: int(x.split()[0]))
     # Creates a dataframe for easy violinplot with seaborn
     N_clusters = [len(counts[i])*np.ones(len(counts[i]), dtype=int) \
                    for i in range(len(counts)-1)]
+
     N_clusters.append([f'{len(counts[-1])} (original)' for i in range(len(counts[-1]))])
     N_clusters = np.concatenate(N_clusters)
     # Put data in log because violinplot cannot use log-scale directly
@@ -265,9 +268,10 @@ def cluster_size_violin(directory, cut=2, save=False, filename=None):
     frame = pd.DataFrame({'Number of clusters': N_clusters, 'Cluster size': counts})
     palette = {N: 'tab:red' if 'original' in N else 'tab:blue' for N in order}
     
-    plt.figure(figsize=(8,8))
+    plt.figure(figsize=(8, 8))
     sns.violinplot(x='Number of clusters', y='Cluster size', data=frame,
                     order=order, cut=cut, palette=palette)
+
     # Set the ticks correctly for log plot in a linear scale (since this is the data
     # which is in log)
     ax = plt.gca()
@@ -282,8 +286,10 @@ def cluster_size_violin(directory, cut=2, save=False, filename=None):
     locs, labels = plt.xticks()
     labels = [label.get_text().split()[0] for label in labels]
     plt.xticks(locs, labels)
+
     legend_elements = [Patch(facecolor='tab:blue', label='Clustering'),
                        Patch(facecolor='tab:red', label='Original')]
+
     plt.legend(handles=legend_elements, loc='best')
 
     if save:
@@ -333,7 +339,7 @@ def cluster_diameter_violin(directory, save=False, filename=None):
     for folder in subfolders:
         # For DBSCAN, do not take the first diameter (which is the cluster of outliers)
         if 'DBSCAN' in directory:
-            diameters.append(tools.get_cluster_diameters(folder)[1:])
+            diameters.append(tools.get_clugster_diameters(folder)[1:])
         else:
             diameters.append(tools.get_cluster_diameters(folder))
         
@@ -353,8 +359,10 @@ def cluster_diameter_violin(directory, save=False, filename=None):
     palette = {N: 'tab:red' if 'original' in N else 'tab:blue' for N in order}
     frame = pd.DataFrame({'Number of clusters': N_clusters, 'Cluster diameter': diameters})
     
-    plt.figure(figsize=(8,8))
-    sns.violinplot(x='Number of clusters', y='Cluster diameter', data=frame,
+    plt.figure(figsize=(8, 8))
+    sns.violinplot(x='Number of clusters',
+                   y='Cluster diameter',
+                   data=frame,
                    order=order, palette=palette)
     plt.ylabel('Cluster diameter (euclidean distance)')
     

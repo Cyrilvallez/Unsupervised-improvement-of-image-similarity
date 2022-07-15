@@ -15,12 +15,14 @@ ImageFile.LOAD_TRUNCATED_IMAGES=True
 
 from helpers import utils
 
+
 METRICS = {
     'JS': faiss.METRIC_JensenShannon,
     'L2': faiss.METRIC_L2,
     'L1': faiss.METRIC_L1,
     'cosine': faiss.METRIC_INNER_PRODUCT,
     }
+
 
 class Experiment(object):
     """
@@ -99,6 +101,7 @@ class Experiment(object):
             raise ValueError(f'Metric should be one of {*METRICS.keys(),}')
             
         self.factory_str = factory_str
+        #AK once again, all the self.<XXX> need to be defined in the __init__ part of the code
 
         if not self.binary:
             self.index = faiss.index_factory(self.d, factory_str, METRICS[metric])
@@ -210,9 +213,10 @@ class Experiment(object):
         N_iter = length//batch_size
         
         self.D = np.zeros((length, self.k), dtype='float32')
+        # AK: yeah, those names are not exactly very informative - would you mind renaming?
         self.I = np.zeros((length, self.k), dtype='int64')
         
-        N = 0
+        N = 0  # AK: same thing for informativity of the name
         for i in range(N_iter):
             if self.metric == 'cosine':
                 D, I = self.index.search(
@@ -294,7 +298,7 @@ class Experiment(object):
         ref_image = Image.open(self.mapping_query[query_index]).convert('RGB')
         if target: 
             target_index = np.argwhere(self.identifiers_db == self.identifiers_query[query_index])
-            assert (target_index.shape == (1,1)), 'More than one target for this query'
+            assert (target_index.shape == (1, 1)), 'More than one target for this query'
             target_index = target_index[0][0]
             target_image = Image.open(self.mapping_db[target_index]).convert('RGB')
             
@@ -305,6 +309,7 @@ class Experiment(object):
             
         if target:
             return (ref_image, neighbors, target_image)
+            # AK: I am not sure why there is a double packing. functions return multiples as tuples
         else:
             return (ref_image, neighbors)
     

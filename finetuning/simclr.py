@@ -3,13 +3,17 @@
 """
 Created on Fri Jun 24 11:28:09 2022
 
+AK: looks like a wrapper to inflate/deflate a SimCLR instance
+
 @author: cyrilvallez
 """
 
 import torch
 import torch.nn as nn
 
+
 from SimCLRv2 import resnet as SIMv2
+
 
 class SimCLR(nn.Module):
     """

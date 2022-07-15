@@ -18,7 +18,7 @@ EXPERIMENT_NAME = 'Flat_sweep_k_BSDS500_finetuned'
 
 
 if EXPERIMENT_NAME[-1] != '/':
-    EXPERIMENT_NAME += '/'
+    EXPERIMENT_NAME += '/'          # AK: ????
 
 experiment_folder = 'Results/' + EXPERIMENT_NAME 
 experiment_name = experiment_folder + 'results.json'

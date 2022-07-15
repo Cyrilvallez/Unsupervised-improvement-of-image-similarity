@@ -23,10 +23,13 @@ from clustering import metrics
 # "Clustering_results/euclidean_ward_SimCLR_v2_ResNet50_2x/100-clusters_thresh-66.637"
 # =============================================================================
 
+
 def cluster_representation(images):
     """
     Concatenate images from the same cluster into one image to get a visual idea
     of the clustering.
+
+    AK: looks like it's **all** images from the same cluster?
 
     Parameters
     ----------
@@ -42,7 +45,7 @@ def cluster_representation(images):
     
     images = [Image.open(image).convert('RGB') for image in images]
     # Resize all images to 300x300
-    images = [image.resize((300,300), Image.BICUBIC) for image in images]
+    images = [image.resize((300, 300), Image.BICUBIC) for image in images]
     
     Nlines = len(images) // 3 + 1
     Ncols = 3 if len(images) >= 3 else len(images)
@@ -209,8 +212,9 @@ def _is_subfolder(subfolder):
 ALLOWED_PARTITIONS = [
     'full_dataset',
     'clean_dataset',
-    ]
-        
+    ]  # AK: once again, that's a good candidate to move to a configs file
+
+
 def get_features(partition, algorithm):
     """
     Extract the features and mapping corresponding to the wanted `partition` of
@@ -269,7 +273,7 @@ def extract_params_from_folder_name(directory):
         Metric used for the experiment.
 
     """
-    
+    # AK: Pathlib is your friend once again
     if directory[-1] == '/':
         directory = directory.rsplit('/', 1)[0]
         

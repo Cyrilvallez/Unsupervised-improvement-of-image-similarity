@@ -27,6 +27,7 @@ MARKERS = {
     'hamming': '*'
     }
 
+
 def time_recall_plot_flat(results, save=False, filename=None):
     """
     Creates a plot with searching time against recall@k for flat indices.
@@ -50,7 +51,6 @@ def time_recall_plot_flat(results, save=False, filename=None):
     None.
 
     """
-    
     if save and filename is None:
         raise ValueError('You need to specify a filename if you want to save the figure')
     
@@ -66,8 +66,7 @@ def time_recall_plot_flat(results, save=False, filename=None):
         searching_time.append(results[key]['searching_time'])
         
     assert(np.array_equal(k, len(k)*[k[0]]))
-        
-    
+
     plt.figure()
     for i in range(len(recall)):
         plt.scatter(recall[i], searching_time[i], color=COLORS[metric[i]], 
@@ -79,7 +78,8 @@ def time_recall_plot_flat(results, save=False, filename=None):
     if save:
         plt.savefig(filename, bbox_inches='tight')
     plt.show()
-    
+
+
 def time_recall_plot_flat_sweep_k(results, save=False, filename=None):
     """
     Creates a plot with searching time against recall@k for different k for 

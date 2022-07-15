@@ -128,12 +128,15 @@ def train_one_epoch(model, train_dataloader, criterion, optimizer,
         
     # Get the average of the loss and converts to tensor
     running_average_loss /= (step+1)
-    running_average_loss = torch.tensor(running_average_loss, dtype=loss.dtype,
+    running_average_loss = torch.tensor(running_average_loss,
+                                        dtype=loss.dtype,
                                         device=loss.device)
         
     # Get average of running losses if distributed training
     if distributed:
-        dist.all_reduce(running_average_loss, op=dist.ReduceOp.AVG, async_op=False)
+        dist.all_reduce(running_average_loss,
+                        op=dist.ReduceOp.AVG,
+                        async_op=False)
         
     return running_average_loss.item()
 
@@ -248,7 +251,7 @@ def train(model, epochs, train_dataloader, val_dataloader, criterion, optimizer,
             # Update learning rate
             scheduler.step()
         else:
-            lr =  optimizer.param_groups[0]['lr']
+            lr = optimizer.param_groups[0]['lr']
         
         # Eventually validate (but only on one GPU in case of distributed training)
         if val_dataloader is not None:
@@ -346,7 +349,9 @@ def main(rank, args):
     if args.gpus > 1:
         # converts to synchronized batchnorm layers
         model = SyncBatchNorm.convert_sync_batchnorm(model)
-        model = DDP(model, device_ids=[rank], find_unused_parameters=True)
+        model = DDP(model,
+                    device_ids=[rank],
+                    find_unused_parameters=True)
     
     # Optimizer and scheduler
     optimizer, scheduler = get_optimizer(model, args.epochs, args.optimizer, 

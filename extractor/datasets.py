@@ -15,8 +15,10 @@ from PIL import Image, ImageFile
 # (this does not come from the download --> this was tested with different browsers
 # multiple times). They are numbers 59898, 104442, 107349 and 108460. One is almost 
 # completely lost (most image is grey), two are about half lost, and one has little
-# damage. We still keep them by loading the image parts we can.
-ImageFile.LOAD_TRUNCATED_IMAGES=True
+# damage. We still keep them by loading the image parts we can.\
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+# AK: those are configs and are best managed by loading cnf.XXX rather than hard-coded
 
 
 class ImageDataset(Dataset):
@@ -84,7 +86,7 @@ class FlickrDataset(Dataset):
         dataset_path = 'Datasets/Flickr500K/'
         # Take subfolders without hidden files (e.g .DS_Store)
         subfolders = [dataset_path + folder + '/' for folder in os.listdir(dataset_path) \
-                      if not folder.startswith('.')]
+                      if not folder.startswith('.')]  # AK: Pathlib is your friend again.
         
         imgs = []
         for folder in subfolders:
@@ -92,6 +94,7 @@ class FlickrDataset(Dataset):
             
         # Sort the images according the their number in the name
         imgs.sort(key=lambda x: int(x.rsplit('/', 1)[1].split('.', 1)[0]))
+        # AK: Pathlib is your friend, yet again
         
         # Conversion to numpy byte array is important when using different
         # workers in Dataloader to avoid memory problems (see issue 
@@ -187,9 +190,9 @@ VALID_DATASET_NAMES = [
 
 DATASET_DIMS = {
     'Kaggle_templates': 250,
-    'Kaggle_memes' : 43660,
-    'BSDS500_original' : 500,
-    'BSDS500_attacks' : 11600,
+    'Kaggle_memes': 43660,
+    'BSDS500_original': 500,
+    'BSDS500_attacks': 11600,
     'Flickr500K': 500000,
     'all_memes': 43910,
     }

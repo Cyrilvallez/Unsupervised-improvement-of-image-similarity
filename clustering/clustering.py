@@ -17,10 +17,11 @@ from tqdm import tqdm
 from clustering import tools
 from clustering import clustering_plot as cplot
 
+
 def find_threshold(Z, N_clusters, max_iter=1e4):
     """
     Find the threshold and the cluster assignments corresponding to the given number of
-    clusters desired. It uses a very simple dichotomy algorithm.
+    clusters desired. It uses a very simple dichotomy algorithm. #AK black/red tree
 
     Parameters
     ----------
@@ -43,12 +44,13 @@ def find_threshold(Z, N_clusters, max_iter=1e4):
     """
     
     a = 0
-    b = np.max(Z[:,2])
+    b = np.max(Z[:, 2])
     m = (a+b)/2
     clusters = fcluster(Z, m, criterion='distance')
     N = int(max(clusters))
 
     iter_count = 0
+
     while N != N_clusters and iter_count < max_iter:
         
         if N < N_clusters:
@@ -239,6 +241,7 @@ def cluster_DBSCAN(algorithm, metric, min_samples, precisions=None,
     
         clustering = DBSCAN(eps=precision, metric='precomputed', algorithm='brute',
                             min_samples=min_samples, n_jobs=10)
+
         clusters = clustering.fit_predict(distances)
         N_clusters = len(np.unique(clusters))
         
@@ -267,6 +270,7 @@ def save_attributes(directory):
     
     print('Saving diameters', flush=True)
     tools.save_diameters(directory)
+
     print('Saving centroids', flush=True)
     tools.save_centroids(directory)
     

@@ -19,6 +19,7 @@ from sklearn.metrics import homogeneity_completeness_v_measure
 # a different distance, those metrics may not be coherent.
 # =============================================================================
 
+
 def cluster_diameters(features, assignments, quantile=1.): 
     """
     Compute the diameters of each cluster. The diameters are based on the
@@ -53,6 +54,7 @@ def cluster_diameters(features, assignments, quantile=1.):
         if indices.sum() > 2000 and torch.cuda.is_available():
             cluster_features = torch.tensor(features[indices], device='cuda')
             distances = F.pdist(cluster_features).cpu().numpy()
+            # AK: same thing for excessive abbreviations of imports when used rarely.
         else:
             distances = D.pdist(features[indices])
         
@@ -174,9 +176,9 @@ def scores(groundtruth_assignment, assignment):
     """
     
     h, c, v = homogeneity_completeness_v_measure(groundtruth_assignment, assignment)
-    
-    return h, c, v
+    # AK: same thing for excessively short names
 
+    return h, c, v
 
 
 def outside_cluster_separation(features, assignments, centroids=None):

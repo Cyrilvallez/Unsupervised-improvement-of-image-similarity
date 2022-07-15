@@ -1,6 +1,12 @@
+""""
+
+AK: is it a copy from somewhere?
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 
 BATCH_NORM_EPSILON = 1e-5
 BATCH_NORM_DECAY = 0.9  # == pytorch's default value as well
@@ -23,7 +29,8 @@ class SelectiveKernel(nn.Module):
         self.main_conv = nn.Sequential(conv(in_channels, 2 * out_channels, stride=stride),
                                        BatchNormRelu(2 * out_channels))
         mid_dim = max(int(out_channels * sk_ratio), min_dim)
-        self.mixing_conv = nn.Sequential(conv(out_channels, mid_dim, kernel_size=1), BatchNormRelu(mid_dim),
+        self.mixing_conv = nn.Sequential(conv(out_channels, mid_dim, kernel_size=1),
+                                         BatchNormRelu(mid_dim),
                                          conv(mid_dim, 2 * out_channels, kernel_size=1))
 
     def forward(self, x):
@@ -107,6 +114,7 @@ class Stem(nn.Sequential):
 
 
 class ResNet(nn.Module):
+
     def __init__(self, layers, width_multiplier, sk_ratio):
         super().__init__()
         ops = [Stem(sk_ratio, width_multiplier)]
@@ -119,8 +127,11 @@ class ResNet(nn.Module):
         channels_in = ops[-1].channels_out
         ops.append(Blocks(layers[3], channels_in, 512 * width_multiplier, 2, sk_ratio))
         channels_in = ops[-1].channels_out
+
         self.channels_out = channels_in
+
         self.net = nn.Sequential(*ops)
+
         self.fc = nn.Linear(channels_in, 1000)
 
     def forward(self, x, apply_fc=False):

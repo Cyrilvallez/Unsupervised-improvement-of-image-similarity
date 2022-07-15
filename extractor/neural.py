@@ -13,7 +13,8 @@ import torchvision.models as models
 
 from SimCLRv1 import resnet_wider as SIMv1
 from SimCLRv2 import resnet as SIMv2
-    
+
+
 def load_inception_v3(device='cuda'):
     """
     Load the inception net v3 from Pytorch.
@@ -58,15 +59,15 @@ def load_resnet(depth, width):
 
     """
     
-    if depth==50 and width==1:
+    if depth == 50 and width == 1:
         loader = models.resnet50
-    elif depth==101 and width==1:
+    elif depth == 101 and width == 1:
         loader = models.resnet101
-    elif depth==152 and width==1:
+    elif depth == 152 and width == 1:
         loader = models.resnet152
-    elif depth==50 and width==2:
+    elif depth == 50 and width == 2:
         loader = models.wide_resnet50_2
-    elif depth==101 and width==2:
+    elif depth == 101 and width == 2:
         loader = models.wide_resnet101_2
     else:
         raise ValueError('This combination of depth and width is not valid.')
@@ -214,7 +215,7 @@ SIMCLR_TRANSFORMS = T.Compose([
 
 # Pretrained pytorch models transforms
 RESNET_TRANSFORMS = T.Compose([
-    T.Resize((256,256), interpolation=T.InterpolationMode.LANCZOS),
+    T.Resize((256, 256), interpolation=T.InterpolationMode.LANCZOS),
     T.CenterCrop(224),
     T.ToTensor(),
     T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
@@ -229,18 +230,18 @@ MODEL_TRANSFORMS = {
         T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ]),
     
-    'ResNet50 1x' : RESNET_TRANSFORMS,
+    'ResNet50 1x': RESNET_TRANSFORMS,
     
-    'ResNet101 1x' : RESNET_TRANSFORMS,
+    'ResNet101 1x': RESNET_TRANSFORMS,
     
-    'ResNet152 1x' : RESNET_TRANSFORMS,
+    'ResNet152 1x': RESNET_TRANSFORMS,
     
     'ResNet50 2x': RESNET_TRANSFORMS,
     
     'ResNet101 2x': RESNET_TRANSFORMS,
     
     'EfficientNet B7': T.Compose([
-        T.Resize((600,600), interpolation=T.InterpolationMode.LANCZOS),
+        T.Resize((600, 600), interpolation=T.InterpolationMode.LANCZOS),
         T.ToTensor(),
         T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ]),
@@ -258,5 +259,3 @@ MODEL_TRANSFORMS = {
     'SimCLR v2 ResNet152 3x': SIMCLR_TRANSFORMS,
     
     }
-
-           

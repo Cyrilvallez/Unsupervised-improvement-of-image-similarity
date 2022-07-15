@@ -5,7 +5,6 @@ Created on Tue May 10 14:46:20 2022
 
 @author: cyrilvallez
 """
-
 import torch
 from torch.utils.data import DataLoader
 import numpy as np
@@ -14,6 +13,7 @@ from tqdm import tqdm
 import extractor.neural as neural
 import extractor.perceptual as perceptual
 from extractor.datasets import collate
+
 
 def extract_neural(model, dataset, batch_size=256, workers=8, device='cuda'):
     """
@@ -71,7 +71,7 @@ def extract_neural(model, dataset, batch_size=256, workers=8, device='cuda'):
         with torch.no_grad():
             feats = model(images).cpu().numpy()
         
-        if start==0:
+        if start == 0:
             features = np.empty((len(dataset), len(feats[0])), dtype='float32')
             indices_to_names = np.empty(len(dataset), dtype=object)
             
@@ -84,7 +84,6 @@ def extract_neural(model, dataset, batch_size=256, workers=8, device='cuda'):
         start += N
     
     return features, indices_to_names
-
 
 
 def extract_and_save_neural(model, dataset, name=None, batch_size=256,
@@ -176,7 +175,7 @@ def extract_perceptual(algorithm, dataset, hash_size=8, batch_size=2048,
     for images, names in tqdm(dataloader):
     
         for image, name in zip(images, names):
-            features[index,:] = algorithm(image, hash_size=hash_size)
+            features[index, :] = algorithm(image, hash_size=hash_size)
             indices_to_names[index] = name
             index += 1
             

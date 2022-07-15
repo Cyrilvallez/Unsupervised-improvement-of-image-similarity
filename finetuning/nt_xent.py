@@ -3,6 +3,9 @@
 """
 Created on Wed Jun 22 15:20:16 2022
 
+AK: That's normalized temperature-scaled cross-entropy loss
+AK: the hard part here was distribution execution across GPUs
+
 @author: cyrilvallez
 """
 
@@ -115,7 +118,10 @@ class NT_Xent(torch.nn.Module):
         # Normalize the vectors. Use max(norm, epsilon) for numerical stability
         norm1 = torch.linalg.norm(z1, ord=2, dim=1)
         norm2 = torch.linalg.norm(z2, ord=2, dim=1)
-        epsilon = self.epsilon*torch.ones(z1.shape[0],1, dtype=z1.dtype,
+
+        epsilon = self.epsilon*torch.ones(z1.shape[0],
+                                          1,
+                                          dtype=z1.dtype,
                                           device=z1.device)
         z1 = z1 / torch.max(norm1.unsqueeze(1), epsilon)
         z2 = z2 / torch.max(norm2.unsqueeze(1), epsilon)

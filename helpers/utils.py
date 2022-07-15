@@ -15,6 +15,7 @@ import extractor.datasets as datasets
 from extractor.neural import MODEL_LOADER
 from extractor.perceptual import NAME_TO_ALGO
 
+
 def array_of_bits_to_bytes(array):
     """
     Convert an array containing bits to an array of corresponding bytes,
@@ -39,7 +40,7 @@ def array_of_bits_to_bytes(array):
     for i in range(array.shape[0]):
         for j, idx in enumerate(np.arange(0, array.shape[1], 8)):
             binary_str = ''.join(str(x) for x in array[i, idx:idx+8])
-            out[i,j] = int(binary_str, 2)
+            out[i, j] = int(binary_str, 2)
         
     return out
 
@@ -77,6 +78,7 @@ def load_features(method_name, dataset_name, to_bytes=True):
         features = np.load(path + '_features.npy')
         mapping = np.load(path + '_map_to_names.npy', allow_pickle=True)
     except FileNotFoundError:
+
         if (method_name not in MODEL_LOADER.keys() and not \
             any(a in method_name for a in NAME_TO_ALGO.keys())):
             raise ValueError((f'Built in method name must be one of {*MODEL_LOADER.keys(),}'
@@ -295,7 +297,6 @@ def parse_input():
     return save_folder + '/'
 
 
-
 def concatenate_images(images, target=True):
     """
     Concatenate a reference image, target image, and list of images (neighbors of
@@ -316,8 +317,8 @@ def concatenate_images(images, target=True):
     """
     
     # Resize all images to 300x300
-    neighbor_images = [image.resize((300,300), Image.BICUBIC) for image in images[1]]
-    ref_image = images[0].resize((300,300), Image.BICUBIC)
+    neighbor_images = [image.resize((300, 300), Image.BICUBIC) for image in images[1]]
+    ref_image = images[0].resize((300, 300), Image.BICUBIC)
     if target:
         target_image = images[2].resize((300,300), Image.BICUBIC)
     
