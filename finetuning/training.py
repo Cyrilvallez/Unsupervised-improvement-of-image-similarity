@@ -430,7 +430,8 @@ def parse_args():
     
     # Model arguments
     parser.add_argument('--model', type=str, default='original',
-                        help='Path to the model to finetune.')
+                        help=('Path to the model to finetune. The default'
+                              ' `original` will use the pretrained Resnet50 2x'))
     parser.add_argument('--arch_depth', type=int, default=50,
                         help='The depth of the original encoder.')
     parser.add_argument('--arch_width', type=int, default=2,

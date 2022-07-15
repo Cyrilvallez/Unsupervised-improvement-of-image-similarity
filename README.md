@@ -48,7 +48,10 @@ You need to manually change these parameters in the script before running it.
 
 This script allows to run hierarchical clustering on a dataset of images. The syntax to run it is the following :
 
-> python3 hierarchical.py [--algo] [--metric] [--linkage] [--partition] [--save]
+```
+python3 hierarchical.py [--algo ALGO [ALGO ...]] [--metric {euclidean,cosine}] \
+    [--linkage {single,complete,average,centroid,ward}] [--partition {full,clean}] \[--save {True,False}]
+```
 
 It will save the cluster assignments and (if --save is True), different plots and cluster attribute in a directory tree starting at `Clustering_results`. To get details about each argument, use 
 > python3 hierarchical.py -h
@@ -57,14 +60,32 @@ It will save the cluster assignments and (if --save is True), different plots an
 
 Run DBSCAN clustering algorithm on a dataset of images. The syntax to run it is the following :
 
-> python3 DBSCAN.py [--algo] [--metric] [--precisions] [--samples] [--partition] [--save]
+```
+python3 DBSCAN.py [--algo ALGO [ALGO ...]] [--metric {euclidean,cosine}] \
+   [--precisions PRECISIONS [PRECISIONS ...]] [--samples SAMPLES] \
+   [--partition {full,clean}] [--save {True,False}]
+```
 
 It will save the cluster assignments and (if --save is True), different plots and cluster attribute in a directory tree starting at `Clustering_results`. To get details about each argument, use 
 > python3 DBSCAN.py -h
 
 ### **finetune.py**
 
+This will perform augmentative learning (finetuning) for the SimCLR models. The call signature is 
 
+```
+python3 finetune.py --train_dataset TRAIN_DATASET --log_dir LOG_DIR \
+   [--model MODEL] [--arch_depth ARCH_DEPTH] [--arch_width ARCH_WIDTH] \
+   [--arch_sk ARCH_SK] [--val_dataset VAL_DATASET] [--size SIZE] \
+   [--jitter JITTER] [--optimizer {lars,adam}] [--lr LR] [--epochs EPOCHS] \
+   [--batch_size BATCH_SIZE] [--temperature TEMPERATURE] \
+   [--weight_decay WEIGHT_DECAY] [--momentum MOMENTUM] \
+   [--nesterov {False,True}] [--scheduler {False,True}] [--gpus GPUS] \
+   [--workers WORKERS] 
+```
+
+It will perform the training and log some metric to `log_dir`, and the model at each epoch under `log_dir_models`. To get details about each argument, use 
+> python3 finetune.py -h
 
 # Pre-trained SimCLR models 
 
