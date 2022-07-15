@@ -14,8 +14,9 @@ from finetuning.simclr import SimCLR
 model = SimCLR.load_encoder('first_test_models/2022-06-30_20:03:28/epoch_100.pth')
 name = 'SimCLR finetuned'
 transforms = extractor.SIMCLR_TRANSFORMS
+# transforms = None
 
-hash_size = 8
+hash_size = 8  # This will be squred, thus giving 8 means hash of 8**2=64 bits
 batch_size = 256
 workers = 6
 
