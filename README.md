@@ -52,7 +52,8 @@ This script allows to run hierarchical clustering on a dataset of images. The sy
 
 ```
 python3 hierarchical.py [--algo ALGO [ALGO ...]] [--metric {euclidean,cosine}] \
-    [--linkage {single,complete,average,centroid,ward}] [--partition {full,clean}] \[--save {True,False}]
+    [--linkage {single,complete,average,centroid,ward}] [--partition {full,clean}] \
+    [--save {True,False}]
 ```
 
 It will save the cluster assignments and (if --save is True), different plots and cluster attribute in a directory tree starting at `Clustering_results`. To get details about each argument, use 
