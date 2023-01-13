@@ -33,6 +33,9 @@ files = ['checkpoint', 'graph.pbtxt', 'model.ckpt-{category}.data-00000-of-00001
 simclr_categories = {'finetuned_100pct': 37535, 'finetuned_10pct': 3754,
                      'finetuned_1pct': 751, 'pretrained': 250228, 'supervised': 28151}
 
+mapping = {'finetuned_100pct': 'Finetuned_100pct', 'finetuned_10pct': 'Finetuned_10pct', 
+           'finetuned_1pct': 'Finetuned_1pct', 'pretrained': 'Pretrained', 'supervised': 'Supervised'}
+
 chunk_size = 1024 * 8
 
 
